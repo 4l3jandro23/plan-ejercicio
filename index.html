@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>💪 Plan de Ejercicio — Alejandro</title>
+<!-- Ajustes para que se comporte como app al añadirla a pantalla de inicio en iPhone -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ejercicio">
+<meta name="theme-color" content="#2b6cb0">
+<meta name="description" content="Plan de ejercicio para volver al gimnasio sin culpa: qué toca hoy, rutina explicada desde cero y vía de escape para los días malos.">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<style>
+  /* Tipografías incrustadas como archivos locales: mismas que el plan de
+     alimentación, cacheadas por el service worker para que funcionen offline. */
+  @font-face{font-family:'Fraunces';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/fraunces-600.woff2) format('woff2');}
+  @font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/jetbrains-mono-400.woff) format('woff');}
+  @font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/jetbrains-mono-700.woff) format('woff');}
+
+  :root{
+    --font-display:'Fraunces',Georgia,serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+    /* Misma escala tipográfica de 7 pasos que el plan de alimentación */
+    --t-2xs:.66rem; --t-xs:.76rem; --t-sm:.84rem; --t-base:.92rem;
+    --t-md:1.05rem; --t-lg:1.25rem; --t-xl:1.5rem;
+    --bg:#faf9f5; --card:#ffffff; --ink:#2b2b28; --muted:#6b6b63;
+    --accent:#2b6cb0; --accent2:#4a8fd1; --accent-soft:#e5eef8; --warn:#b5651d; --warn-soft:#fbeee2;
+    --border:#dcd9d0; --radius:3px; --shadow:none;
+    /* Gris deliberadamente neutro para los días sin nada: nunca rojo, nunca alarma */
+    --neutral:#e8e5dd; --neutral-ink:#9b978c;
+  }
+  html.dark{
+    --bg:#12161a; --card:#1b2126; --ink:#eceef0; --muted:#98a1aa;
+    --accent:#6fb3f0; --accent2:#4a8fd1; --accent-soft:#1b2c3d; --warn:#e0955a; --warn-soft:#3a2a1c;
+    --border:#2f383f;
+    --neutral:#232b30; --neutral-ink:#68727a;
+  }
+
+  /* Temas de color alternativos (Ajustes) */
+  html[data-color="verde"]{ --accent:#2f7a5f; --accent2:#57a686; --accent-soft:#e7f3ee; }
+  html.dark[data-color="verde"]{ --accent:#5fd3a4; --accent2:#3f9975; --accent-soft:#1d332b; }
+  html[data-color="morado"]{ --accent:#6b46c1; --accent2:#9061e0; --accent-soft:#f0eafa; }
+  html.dark[data-color="morado"]{ --accent:#b794f4; --accent2:#9061e0; --accent-soft:#2c2438; }
+  html[data-color="naranja"]{ --accent:#c2660a; --accent2:#e8901f; --accent-soft:#fdf1e0; }
+  html.dark[data-color="naranja"]{ --accent:#fbbf24; --accent2:#e8901f; --accent-soft:#3a2c14; }
+  html[data-color="turquesa"]{ --accent:#0f766e; --accent2:#14b8a6; --accent-soft:#e0f5f3; }
+  html.dark[data-color="turquesa"]{ --accent:#5eead4; --accent2:#14b8a6; --accent-soft:#142e2b; }
+  html[data-color="rosa"]{ --accent:#be185d; --accent2:#ec4899; --accent-soft:#fbe7f0; }
+  html.dark[data-color="rosa"]{ --accent:#f472b6; --accent2:#ec4899; --accent-soft:#3a1f2c; }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html{ overscroll-behavior-y:contain; }
+  body{
+    margin:0; font-family:var(--font-body);
+    background:var(--bg); color:var(--ink); line-height:1.6;
+    padding-bottom:calc(78px + env(safe-area-inset-bottom));
+    transition:background .25s, color .25s;
+    overscroll-behavior-y:contain;
+  }
+  header{
+    background:linear-gradient(115deg,var(--accent),var(--accent2));
+    color:#fff;
+    padding:calc(18px + env(safe-area-inset-top)) 18px 20px;
+    position:sticky; top:0; z-index:20; border-bottom:1px solid rgba(0,0,0,.08);
+  }
+  .headtop{display:flex; justify-content:space-between; align-items:center;}
+  header h1{margin:0 0 4px; font-size:var(--t-xl); font-family:var(--font-display); font-weight:600; letter-spacing:-.2px;}
+  header p{margin:0; opacity:.92; font-size:var(--t-sm);}
+  .headbtns{display:flex; gap:8px; flex-shrink:0;}
+  .headbtns button{background:rgba(255,255,255,.22); border:none; color:#fff; font-size:var(--t-lg); width:38px; height:38px; border-radius:50%; cursor:pointer; flex-shrink:0;}
+
+  /* Panel de Ajustes */
+  .settings-overlay{
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:50;
+    align-items:flex-end; justify-content:center;
+  }
+  .settings-overlay.show{display:flex;}
+  .settings-panel{
+    background:var(--card); width:100%; max-width:520px; border-radius:4px 4px 0 0;
+    padding:18px 18px calc(20px + env(safe-area-inset-bottom)); max-height:82vh; overflow-y:auto;
+  }
+  .settings-panel h3{margin:0 0 4px; font-size:var(--t-lg); font-family:var(--font-display); font-weight:600; color:var(--ink);}
+  .settings-row{margin:16px 0;}
+  .settings-row > div:first-child{font-size:var(--t-sm); font-weight:700; color:var(--muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:.3px;}
+  .settings-hint{font-size:var(--t-xs); color:var(--muted); margin-top:6px; text-transform:none; letter-spacing:0; font-weight:400;}
+  .swatches{display:flex; gap:10px; flex-wrap:wrap;}
+  .swatch{
+    width:38px; height:38px; border-radius:50%; cursor:pointer; border:2px solid transparent;
+    position:relative; flex-shrink:0;
+  }
+  .swatch.active{border-color:var(--ink);}
+  .swatch.active::after{content:"✓"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:var(--t-base); text-shadow:0 1px 2px rgba(0,0,0,.4);}
+  .style-options{display:flex; gap:8px;}
+  .style-opt{
+    flex:1; border:1px solid var(--border); border-radius:3px; padding:12px 6px; text-align:center;
+    cursor:pointer; font-family:inherit; font-size:var(--t-sm); font-weight:600; color:var(--ink); background:var(--bg);
+  }
+  .style-opt.active{border-color:var(--accent); background:var(--accent-soft); color:var(--accent);}
+  .daypicker{display:flex; gap:5px;}
+  .daypicker button{
+    flex:1; border:1px solid var(--border); background:var(--bg); color:var(--ink);
+    border-radius:3px; padding:10px 0; font-family:inherit; font-size:var(--t-sm); font-weight:700; cursor:pointer;
+  }
+  .daypicker button.fijo{border-color:var(--accent); background:var(--accent); color:#fff;}
+  .daypicker button.flex{border-color:var(--accent); background:var(--accent-soft); color:var(--accent);}
+  .settings-close{
+    width:100%; margin-top:8px; background:var(--accent); color:#fff; border:none; border-radius:3px;
+    padding:12px; font-family:inherit; font-size:var(--t-base); font-weight:700; cursor:pointer;
+  }
+
+  main{max-width:760px; margin:0 auto; padding:18px 16px 6px;}
+  .tabpanel{display:none; animation:fade .25s ease;}
+  .tabpanel.active{display:block;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  /* Suelo de calidad: foco de teclado visible y respeto por "reducir movimiento" */
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:2px;}
+  .headbtns button:focus-visible{outline-color:#fff;}
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{
+      animation-duration:.01ms !important; animation-iteration-count:1 !important;
+      transition-duration:.01ms !important; scroll-behavior:auto !important;
+    }
+  }
+
+  h2{
+    font-family:var(--font-display); font-weight:600; font-size:var(--t-lg); color:var(--ink);
+    margin:28px 0 14px; display:flex; align-items:center; gap:10px; letter-spacing:-.2px;
+  }
+  .tabpanel h2:first-of-type{margin-top:4px;}
+  .h2-badge{
+    display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
+    width:32px; height:32px; border-radius:3px; background:var(--accent-soft);
+    font-size:var(--t-md);
+  }
+  h3{font-family:var(--font-display); font-weight:600; font-size:var(--t-md); margin:20px 0 8px; letter-spacing:-.1px;}
+  .lead{font-size:var(--t-base); color:var(--muted); margin:0 0 18px;}
+  .tip{background:var(--accent-soft); border-left:3px solid var(--accent); border-radius:0 3px 3px 0; padding:12px 14px; font-size:var(--t-base); margin:14px 0;}
+  .warn{background:var(--warn-soft); border-left:3px solid var(--warn); border-radius:0 3px 3px 0; padding:12px 14px; font-size:var(--t-base); margin:14px 0;}
+  .quiet{border-left:3px solid var(--border); padding:12px 14px; font-size:var(--t-base); margin:14px 0; color:var(--muted);}
+  table{width:100%; border-collapse:collapse; font-size:var(--t-sm); margin:14px 0;}
+  th,td{border:none; border-bottom:1px solid var(--border); padding:9px 8px; text-align:left; vertical-align:top;}
+  th{background:transparent; font-family:var(--font-display); font-weight:600; border-bottom:2px solid var(--ink);}
+  ul{padding-left:20px; margin:8px 0;}
+  li{margin-bottom:6px;}
+  .pill{display:inline-block; background:var(--accent-soft); color:var(--accent); padding:4px 11px; border-radius:3px; font-size:var(--t-xs); margin:2px 4px 2px 0; font-weight:600;}
+  footer{text-align:center; font-size:var(--t-xs); color:var(--muted); padding:20px 20px 8px; border-top:1px solid var(--border); margin-top:10px;}
+  button:active{transform:scale(.96); transition:transform .1s;}
+  .bottomnav button:active{transform:none;}
+
+  /* ===== Pestaña HOY ===== */
+  .hoy-hero{border-top:1px solid var(--border); padding:22px 0 18px;}
+  .hoy-fecha{font-size:var(--t-xs); color:var(--muted); text-transform:uppercase; letter-spacing:.8px; font-weight:700;}
+  .hoy-que{font-family:var(--font-display); font-weight:600; font-size:var(--t-xl); margin:6px 0 4px; letter-spacing:-.3px; line-height:1.25;}
+  .hoy-sub{font-size:var(--t-base); color:var(--muted); margin:0;}
+  .hoy-hecho{
+    background:var(--accent-soft); border-left:3px solid var(--accent);
+    padding:16px 16px; margin:16px 0 0;
+  }
+  .hoy-hecho b{font-family:var(--font-display); font-size:var(--t-md); color:var(--accent); display:block; margin-bottom:2px;}
+  .hoy-hecho span{font-size:var(--t-sm); color:var(--muted);}
+
+  .actions{display:flex; flex-direction:column; gap:8px; margin:18px 0 0;}
+  .btn-main{
+    width:100%; background:var(--accent); color:#fff; border:none; border-radius:3px;
+    padding:16px 14px; font-family:inherit; font-size:var(--t-md); font-weight:700; cursor:pointer;
+    text-align:center;
+  }
+  .btn-second{
+    width:100%; background:var(--bg); color:var(--ink); border:1px solid var(--border); border-radius:3px;
+    padding:13px 14px; font-family:inherit; font-size:var(--t-base); font-weight:600; cursor:pointer;
+    text-align:center;
+  }
+  /* La vía de escape no se esconde: mismo peso visual que lo demás, cero rojo, cero alarma */
+  .btn-escape{
+    width:100%; background:var(--neutral); color:var(--ink); border:none; border-radius:3px;
+    padding:14px; font-family:inherit; font-size:var(--t-base); font-weight:700; cursor:pointer;
+    margin-top:6px;
+  }
+  .btn-undo{
+    background:none; border:none; color:var(--accent); font-family:inherit; font-size:var(--t-xs);
+    font-weight:700; cursor:pointer; padding:10px 0 0;
+  }
+  .escape-card{display:none; border-left:3px solid var(--neutral-ink); padding:14px 16px; margin:12px 0 0; background:transparent;}
+  .escape-card.show{display:block;}
+  .escape-card h4{margin:0 0 4px; font-family:var(--font-display); font-size:var(--t-md); font-weight:600;}
+  .escape-card p{margin:0 0 14px; font-size:var(--t-sm); color:var(--muted);}
+
+  .horario{border-top:1px solid var(--border); padding:16px 0; margin-top:22px;}
+  .horario-title{font-size:var(--t-xs); color:var(--muted); text-transform:uppercase; letter-spacing:.8px; font-weight:700; margin-bottom:8px;}
+  .horario-row{display:flex; justify-content:space-between; gap:12px; font-size:var(--t-sm); padding:5px 0;}
+  .horario-row span:last-child{font-family:var(--font-mono); color:var(--muted); white-space:nowrap;}
+  .horario-row.bad span:last-child{color:var(--warn);}
+
+  /* ===== Ejercicios ===== */
+  details{background:transparent; border:none; border-top:1px solid var(--border); border-radius:0; margin-bottom:0;}
+  details summary{
+    padding:16px 2px; cursor:pointer; font-weight:600; font-family:var(--font-display); font-size:var(--t-md);
+    list-style:none; display:flex; justify-content:space-between; align-items:center; gap:8px;
+  }
+  details summary::-webkit-details-marker{display:none;}
+  details summary::after{content:"⌄"; color:var(--accent); font-size:var(--t-lg); transition:transform .2s; flex-shrink:0; font-family:var(--font-body);}
+  details[open] summary::after{transform:rotate(180deg);}
+  details summary:active{background:var(--accent-soft);}
+  details .content{padding:0 2px 22px; font-size:var(--t-base);}
+  .ex-head{display:flex; align-items:baseline; gap:8px; flex:1; min-width:0;}
+  .ex-num{font-family:var(--font-mono); font-size:var(--t-sm); color:var(--muted); font-weight:700; flex-shrink:0;}
+  .ex-series{font-family:var(--font-mono); font-weight:400; color:var(--muted); font-size:var(--t-xs); flex-shrink:0;}
+  .ex-field{margin:0 0 14px;}
+  .ex-field > div:first-child{
+    font-size:var(--t-2xs); color:var(--muted); text-transform:uppercase; letter-spacing:.7px;
+    font-weight:700; margin-bottom:3px;
+  }
+  .ex-alias{font-size:var(--t-xs); color:var(--muted); font-family:var(--font-mono); margin:-8px 0 16px;}
+  .ex-check{border-left:3px solid var(--accent); padding:10px 14px; margin:0 0 10px; font-size:var(--t-sm); background:var(--accent-soft);}
+  .ex-cross{border-left:3px solid var(--warn); padding:10px 14px; margin:0 0 14px; font-size:var(--t-sm); background:var(--warn-soft);}
+
+  /* ===== Semana / progreso ===== */
+  .statgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; margin:4px 0 22px; background:var(--border); border:1px solid var(--border);}
+  .stat{background:var(--card); padding:16px 6px; text-align:center;}
+  .stat b{display:block; font-size:var(--t-xl); margin-bottom:2px; font-family:var(--font-mono); font-weight:700; color:var(--accent);}
+  .stat span{font-size:var(--t-2xs); color:var(--muted); line-height:1.25; display:block;}
+
+  .weeks{display:grid; grid-template-columns:repeat(8,1fr); gap:4px; margin:6px 0 4px;}
+  .wcell{text-align:center;}
+  .wcell .box{
+    height:46px; display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono); font-weight:700; font-size:var(--t-base);
+    background:var(--neutral); color:var(--neutral-ink); border-radius:2px;
+  }
+  .wcell .box.l1{background:var(--accent-soft); color:var(--accent);}
+  .wcell .box.l2{background:var(--accent2); color:#fff;}
+  .wcell .box.l3{background:var(--accent); color:#fff;}
+  .wcell .box.now{outline:2px solid var(--ink); outline-offset:1px;}
+  .wcell small{display:block; font-size:var(--t-2xs); color:var(--muted); margin-top:4px; font-family:var(--font-mono);}
+
+  .checkin label{display:block; font-size:var(--t-sm); font-weight:700; color:var(--muted); margin:16px 0 6px; text-transform:uppercase; letter-spacing:.3px;}
+  .opts{display:flex; gap:6px; flex-wrap:wrap;}
+  .opts button{
+    flex:1; min-width:76px; border:1px solid var(--border); background:var(--bg); color:var(--ink);
+    border-radius:3px; padding:11px 4px; font-family:inherit; font-size:var(--t-sm); font-weight:600; cursor:pointer;
+  }
+  .opts button.active{border-color:var(--accent); background:var(--accent-soft); color:var(--accent);}
+  .checkin textarea{
+    width:100%; border:1px solid var(--border); background:var(--bg); color:var(--ink);
+    border-radius:3px; padding:10px; font-family:inherit; font-size:var(--t-base); resize:vertical; min-height:70px;
+  }
+  .saved-note{font-size:var(--t-xs); color:var(--accent); font-weight:700; margin-top:10px; min-height:18px;}
+
+  /* Bottom tab bar (iOS style) */
+  .bottomnav{
+    position:fixed; bottom:0; left:0; right:0; display:flex;
+    background:var(--card); border-top:1px solid var(--border);
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+    box-shadow:0 -2px 14px rgba(0,0,0,.08); z-index:30;
+    backdrop-filter:blur(10px);
+  }
+  .bottomnav button{
+    flex:1; background:none; border:none; display:flex; flex-direction:column;
+    align-items:center; gap:2px; font-size:var(--t-2xs); color:var(--muted);
+    padding:6px 1px 4px; font-family:inherit; cursor:pointer; font-weight:600; min-width:0;
+  }
+  .bottomnav button .ic{font-size:var(--t-lg); line-height:1;}
+  .bottomnav button.active{color:var(--accent);}
+
+  /* Offline / update banners */
+  .banner{
+    position:fixed; left:12px; right:12px; z-index:40; padding:10px 14px; border-radius:3px;
+    font-size:var(--t-sm); font-weight:600; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,.15);
+    top:-200px; visibility:hidden; transition:top .25s ease, visibility .25s;
+  }
+  .banner.show{top:calc(10px + env(safe-area-inset-top)); visibility:visible;}
+  #offlineBanner{background:var(--warn-soft); color:var(--warn);}
+  #updateBanner{background:var(--accent-soft); color:var(--accent); display:flex; align-items:center; justify-content:center; gap:10px;}
+  #updateBanner button{background:var(--accent); color:#fff; border:none; border-radius:3px; padding:5px 12px; font-size:var(--t-xs); font-weight:700; cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div id="offlineBanner" class="banner">📡 Sin conexión — viendo datos guardados</div>
+<div id="updateBanner" class="banner"><span>🔄 Hay una versión nueva</span><button onclick="applyUpdate()">Actualizar</button></div>
+
+<header>
+  <div class="headtop">
+    <div>
+      <h1>💪 Plan de Ejercicio</h1>
+      <p id="headSub">Sin culpa. Sin rachas. Solo volver.</p>
+    </div>
+    <div class="headbtns">
+      <button id="themeBtn" onclick="toggleTheme()" aria-label="Cambiar modo claro/oscuro">🌙</button>
+      <button onclick="openSettings()" aria-label="Ajustes">⚙️</button>
+    </div>
+  </div>
+</header>
+
+<!-- ===== Ajustes ===== -->
+<div class="settings-overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
+  <div class="settings-panel">
+    <h3>Ajustes</h3>
+
+    <div class="settings-row">
+      <div>Días de fuerza</div>
+      <div class="daypicker" id="dayPicker"></div>
+      <div class="settings-hint">Toca una vez = día fijo. Dos veces = día flexible. Tres = libre.</div>
+    </div>
+
+    <div class="settings-row">
+      <div>Dónde entreno</div>
+      <div class="style-options" id="lugarOpts">
+        <button class="style-opt" data-lugar="gym" onclick="setLugar('gym')">🏋️ Gimnasio</button>
+        <button class="style-opt" data-lugar="casa" onclick="setLugar('casa')">🏠 Casa</button>
+        <button class="style-opt" data-lugar="ambos" onclick="setLugar('ambos')">Los dos</button>
+      </div>
+      <div class="settings-hint">Cambia qué versión de la rutina se abre primero. Las dos siguen estando disponibles.</div>
+    </div>
+
+    <div class="settings-row">
+      <div>Color</div>
+      <div class="swatches" id="colorSwatches">
+        <div class="swatch" data-color=""         style="background:#2b6cb0" onclick="setColor('')"></div>
+        <div class="swatch" data-color="verde"    style="background:#2f7a5f" onclick="setColor('verde')"></div>
+        <div class="swatch" data-color="turquesa" style="background:#0f766e" onclick="setColor('turquesa')"></div>
+        <div class="swatch" data-color="morado"   style="background:#6b46c1" onclick="setColor('morado')"></div>
+        <div class="swatch" data-color="naranja"  style="background:#c2660a" onclick="setColor('naranja')"></div>
+        <div class="swatch" data-color="rosa"     style="background:#be185d" onclick="setColor('rosa')"></div>
+      </div>
+    </div>
+
+    <button class="settings-close" onclick="closeSettings()">Listo</button>
+  </div>
+</div>
+
+<main>
+
+<!-- ==================== HOY ==================== -->
+<div id="tab-hoy" class="tabpanel active">
+  <div id="hoyHero"></div>
+  <div id="hoyActions"></div>
+
+  <div class="escape-card" id="escapeCard">
+    <h4>Vale. No pasa nada.</h4>
+    <p>De verdad que no pasa nada. Elige lo que te encaje ahora mismo — cualquiera de las tres es una respuesta correcta.</p>
+    <div class="actions">
+      <button class="btn-second" onclick="marcar('caminar')">🚶 Salgo a caminar 10 minutos y ya</button>
+      <button class="btn-second" onclick="marcar('minima')">💪 Voy y hago solo los 3 primeros (15 min)</button>
+      <button class="btn-second" onclick="marcar('descanso')">🛋️ Hoy descanso. Punto.</button>
+    </div>
+  </div>
+
+  <div class="horario" id="horarioBox"></div>
+</div>
+
+<!-- ==================== RUTINA ==================== -->
+<div id="tab-rutina" class="tabpanel">
+  <h2><span class="h2-badge">💪</span>Tu rutina</h2>
+  <p class="lead">Una sola rutina, siempre la misma, cuerpo entero. No es por vagancia mía: si cada día haces lo mismo, a la tercera semana entras y ya no piensas. Y no pensar es exactamente lo que necesitas para no dejarlo.</p>
+
+  <div class="tip">
+    <b>La regla del peso, que es la única que importa:</b><br>
+    El primer día pon <b>el peso más bajo de la máquina</b> en todo. Haz 10 repeticiones. ¿Te han salido fáciles? La próxima vez subes una placa. Ya está. No existe el peso "correcto" — si te quedas corto, lo subes el día siguiente y no ha pasado nada.
+  </div>
+
+  <div class="style-options" style="margin:18px 0 8px;">
+    <button class="style-opt" id="btnVerGym" onclick="setVista('gym')">🏋️ En el gimnasio</button>
+    <button class="style-opt" id="btnVerCasa" onclick="setVista('casa')">🏠 En casa, sin nada</button>
+  </div>
+
+  <div id="vistaGym">
+    <h3>Calentar — 5 minutos</h3>
+    <p style="font-size:var(--t-base); margin-top:0;">Cinta andando en cuesta, o bici estática, suave. Sin más. Es para que el cuerpo entre en calor, no es parte del entreno. Si un día te lo saltas tampoco se hunde nada.</p>
+
+    <h3 style="margin-top:26px;">Los 6 ejercicios</h3>
+    <p class="lead" style="margin-bottom:4px;">Todos en máquina y sentado. Las máquinas te obligan a hacer el movimiento bien: es físicamente difícil hacerlo mal. Por eso empiezas aquí y no con pesas sueltas.</p>
+    <div id="listaGym"></div>
+
+    <div class="quiet" style="margin-top:22px;">
+      <b>Descanso entre series:</b> de 60 a 90 segundos. Que es: te sientas, respiras, miras el móvil un momento y vuelves. No hace falta cronometrar nada.
+    </div>
+  </div>
+
+  <div id="vistaCasa" style="display:none;">
+    <p class="lead">Sin material, sin salir de casa, unos 20 minutos. Esto no es "la versión mala": los días que el gimnasio no va a pasar, esto es lo que evita que la semana entera se vaya a cero.</p>
+    <div id="listaCasa"></div>
+  </div>
+</div>
+
+<!-- ==================== GUÍA ==================== -->
+<div id="tab-guia" class="tabpanel">
+  <h2><span class="h2-badge">🧭</span>Ir sin agobio</h2>
+  <p class="lead">Esta pestaña es para lo que de verdad cuesta, que no son los ejercicios.</p>
+
+  <h3>Sobre la vergüenza</h3>
+  <p style="font-size:var(--t-base);">Vamos con lo importante primero, porque es real y no se arregla diciendo "no te preocupes":</p>
+  <ul style="font-size:var(--t-base);">
+    <li><b>Nadie te está mirando.</b> No es un tópico: la gente en un gimnasio está mirando su móvil, su propio reflejo o el suelo. Nadie recuerda a nadie al salir.</li>
+    <li><b>Las máquinas llevan instrucciones.</b> Literalmente. Cada máquina tiene un cartel con el dibujo del movimiento y el músculo pintado. Leerlo de pie delante de la máquina es normalísimo y lo hace todo el mundo.</li>
+    <li><b>El móvil es tu tapadera perfecta.</b> Ir con el móvil en la mano mirando esta app es exactamente lo que está haciendo la mitad del gimnasio. No cantas nada.</li>
+    <li><b>Poner poco peso no llama la atención.</b> Lo que llama la atención es lo contrario: el que pone mucho y hace el movimiento a lo loco. Tú vas a ser de los que van bien.</li>
+    <li><b>Si una máquina está ocupada, sáltatela y vuelve luego.</b> El orden da igual. Nadie te va a decir nada, y no tienes que esperar de pie al lado mirando.</li>
+    <li><b>Puedes preguntar.</b> "Perdona, ¿me enseñas a usar esta máquina?" son seis palabras y es literalmente el trabajo del monitor. Si te da palo, sáltatelo — pero que sepas que es una opción y que la usa muchísima gente.</li>
+  </ul>
+
+  <div class="tip">
+    <b>El primer día puede ser solo ir a mirar.</b><br>
+    En serio. Entras, das una vuelta, localizas las 6 máquinas, te sientas en cada una y haces el movimiento con el peso más bajo. Diez minutos y a casa. En esta app <b>eso cuenta como sesión</b>, y no es un premio de consolación: es la forma más rápida de que la segunda vez ya no te dé nada de corte.
+  </div>
+
+  <h2 style="margin-top:34px;"><span class="h2-badge">🕐</span>Cuándo ir</h2>
+  <p class="lead">Fitnesspark Berlín está a reventar hasta las 22:30 entre semana, y a mediodía no puedes ir aunque teletrabajes. Con eso encima de la mesa, entre semana por la tarde no hay nada que rascar. Estos son los huecos que sí te quedan:</p>
+
+  <table>
+    <tr><th>Cuándo</th><th>Cómo suele estar</th></tr>
+    <tr><td><b>Viernes 15:30-17:00</b><br><span style="color:var(--muted); font-size:var(--t-xs);">Sales a las 15h y vas directo, sin pasar por casa. Es con diferencia el mejor hueco que tienes.</span></td><td>Muy vacío</td></tr>
+    <tr><td><b>Sábado o domingo, 9:00-11:30</b><br><span style="color:var(--muted); font-size:var(--t-xs);">La mañana del finde es la otra franja tranquila de verdad.</span></td><td>Tranquilo</td></tr>
+    <tr><td><b>Entre semana, 7:30-8:30</b><br><span style="color:var(--muted); font-size:var(--t-xs);">El único hueco entre semana que te queda. Con el sueño irregular que llevas, no cuentes con esto como plan principal.</span></td><td>Vacío</td></tr>
+    <tr><td><b>Entre semana, 18:00-22:30</b><br><span style="color:var(--muted); font-size:var(--t-xs);">Lo que llevas años intentando. Ya sabes cómo acaba.</span></td><td>A reventar</td></tr>
+  </table>
+
+  <div class="tip">
+    <b>Comprueba una cosa:</b> a qué hora abre y cierra tu Fitnesspark. Si abre a las 7:00 o antes, el hueco de la mañana entre semana existe de verdad. Si abre a las 8:00, no te da tiempo y entonces tus días de fuerza son viernes y fin de semana, sin más vueltas.
+  </div>
+
+  <div class="warn">
+    <b>Ojo con agosto.</b> Ahora mismo el gimnasio está medio vacío porque media Barcelona está fuera — es el mejor mes del año para reengancharse, aprovéchalo. Pero eso significa que <b>no puedes juzgar los horarios hasta septiembre</b>, cuando vuelve todo el mundo. Si estás pensando en dejar el gimnasio, esa decisión tómala a finales de septiembre con datos reales, no ahora.
+  </div>
+
+  <h3>Lo que llevas encima</h3>
+  <p style="font-size:var(--t-base);">Toalla (en Fitnesspark es obligatoria), botella de agua, zapatillas. Ya está. No necesitas nada más ni ropa especial.</p>
+</div>
+
+<!-- ==================== VOLVER ==================== -->
+<div id="tab-volver" class="tabpanel">
+  <h2><span class="h2-badge">🔄</span>Cuando lo has dejado</h2>
+  <p class="lead">Esta pestaña no está escondida a propósito. Vas a necesitarla, y el día que la necesites quiero que esté a un toque.</p>
+
+  <div class="tip" style="font-size:var(--t-md);">
+    <b>La regla de oro</b><br>
+    Mejor un 80% sostenido durante meses que un 100% perfecto durante dos semanas. Si se rompe, no se recupera al día siguiente: se retoma en la siguiente sesión y ya está.
+  </div>
+
+  <h3>Tus propios datos, que son la mejor prueba</h3>
+  <p style="font-size:var(--t-base);">De mayo 2024 a mayo 2026 registraste <b>140 entrenamientos</b>. En marzo de 2025 hiciste <b>39 en un solo mes</b>. Y en noviembre de 2025 y enero de 2026 hiciste <b>cero</b>.</p>
+  <p style="font-size:var(--t-base);">Léelo otra vez: el problema nunca ha sido que no puedas, ni que no sepas, ni que te falte intensidad. Eres perfectamente capaz de hacer 39 sesiones en un mes. Lo que falla es lo de después. Por eso esta app no intenta que entrenes más — intenta que <b>el hueco entre una racha y la siguiente sea más corto</b>.</p>
+
+  <h3>El plan de vuelta, después de un parón</h3>
+  <p style="font-size:var(--t-base);">Da exactamente igual si has estado dos semanas o cinco meses sin ir. El plan es el mismo:</p>
+  <ul style="font-size:var(--t-base);">
+    <li><b>Primera sesión: la mínima.</b> Los 3 primeros ejercicios, peso bajo, 15 minutos. Aunque te sientas con fuerza para más. Sobre todo si te sientes con fuerza para más.</li>
+    <li><b>Segunda sesión: la mínima otra vez.</b> Sí, otra vez.</li>
+    <li><b>Tercera ya sí, la completa</b> — si te apetece. Si no, sigues con la mínima las que hagan falta.</li>
+  </ul>
+
+  <div class="warn">
+    <b>Lo que NO hay que hacer al volver</b><br>
+    Ir a saco el primer día para "compensar". Es tu patrón exacto y es lo que te lleva otra vez al cero: agujetas de tres días, la semana rota, y la sensación de que no sirve de nada. La primera semana de vuelta tiene que salirte tan fácil que te dé hasta un poco de vergüenza.
+  </div>
+
+  <h3>Si has fallado un día suelto</h3>
+  <p style="font-size:var(--t-base);">No hagas nada. No lo recuperes, no lo muevas al día siguiente, no lo compenses caminando el doble. El siguiente día que toque, vas. Un día suelto no significa absolutamente nada, y tratarlo como si significara algo es justo lo que lo convierte en tres semanas.</p>
+
+  <h3>Si estás en un momento malo de ansiedad</h3>
+  <p style="font-size:var(--t-base);">Baja el listón hasta donde haga falta y sin negociarlo contigo mismo. Caminar 10 minutos cuenta. Ir al gimnasio y hacer un solo ejercicio cuenta. La app te lo va a dar por bueno igual, porque en esas semanas el objetivo no es entrenar: es no perder del todo el hilo, para que retomar después sea cuestión de días y no de meses.</p>
+</div>
+
+<!-- ==================== SEMANA ==================== -->
+<div id="tab-semana" class="tabpanel">
+  <h2><span class="h2-badge">📊</span>Cómo va</h2>
+  <div class="statgrid" id="statGrid"></div>
+
+  <h3>Las últimas 8 semanas</h3>
+  <p class="lead" style="margin-bottom:10px;">Número de sesiones por semana. Las semanas en cero salen en gris, no en rojo: son información, no una falta.</p>
+  <div class="weeks" id="weeksGrid"></div>
+  <p style="font-size:var(--t-xs); color:var(--muted); margin-top:12px;">Aquí no hay rachas que romper. El total de arriba solo sube, nunca baja, pase lo que pase.</p>
+
+  <h2 style="margin-top:34px;"><span class="h2-badge">📝</span>Check-in de la semana</h2>
+  <p class="lead">Opcional y una vez por semana como mucho. Si lo saltas no pasa nada, no hay nada que rellenar ni recuperar.</p>
+
+  <div class="checkin">
+    <label>¿Cómo has estado de energía?</label>
+    <div class="opts" id="optEnergia">
+      <button onclick="setCheck('energia','baja',this)">Bajo mínimos</button>
+      <button onclick="setCheck('energia','normal',this)">Normal</button>
+      <button onclick="setCheck('energia','alta',this)">Con fuerza</button>
+    </div>
+
+    <label>¿Cómo te sienta la ropa?</label>
+    <div class="opts" id="optRopa">
+      <button onclick="setCheck('ropa','apretada',this)">Más apretada</button>
+      <button onclick="setCheck('ropa','igual',this)">Igual</button>
+      <button onclick="setCheck('ropa','holgada',this)">Más holgada</button>
+      <button onclick="setCheck('ropa','nose',this)">Ni idea</button>
+    </div>
+
+    <label>Notas (si te apetece)</label>
+    <textarea id="checkNota" placeholder="Lo que sea. O nada." oninput="guardarNota()"></textarea>
+    <div class="saved-note" id="savedNote"></div>
+  </div>
+
+  <h3 style="margin-top:30px;">Días de esta semana</h3>
+  <p class="lead" style="margin-bottom:10px;">Por si quieres corregir algo o marcar un día que se te pasó.</p>
+  <div id="semanaDias"></div>
+</div>
+
+<footer>
+  Plan de Ejercicio de Alejandro · hermana del <a href="https://4l3jandro23.github.io/plan-alimentacion/" style="color:var(--accent);">plan de alimentación</a><br>
+  Funciona sin conexión · Se sincroniza entre iPhone y PC
+</footer>
+</main>
+
+<nav class="bottomnav" id="tabnav">
+  <button class="active" onclick="showTab('hoy', this)"><span class="ic">☀️</span>Hoy</button>
+  <button onclick="showTab('rutina', this)"><span class="ic">💪</span>Rutina</button>
+  <button onclick="showTab('guia', this)"><span class="ic">🧭</span>Guía</button>
+  <button onclick="showTab('volver', this)"><span class="ic">🔄</span>Volver</button>
+  <button onclick="showTab('semana', this)"><span class="ic">📊</span>Semana</button>
+</nav>
+
+<script>
+/* ==========================================================================
+   Plan de Ejercicio — Alejandro
+   Principio de diseño que manda sobre todo lo demás: la app nunca cuenta
+   cuántos días llevas sin entrenar, nunca usa el rojo para un día vacío y
+   nunca tiene una racha que romperse. Volver siempre cuesta un solo toque.
+   ========================================================================== */
+
+/* ===== Ejercicios: gimnasio ===== */
+const EJERCICIOS_GYM = [
+  {
+    nombre:'Prensa de piernas',
+    alias:'En la máquina pone "Leg Press" o "Prensa"',
+    series:'2 × 10',
+    musculo:'Los muslos y el culo. Es el ejercicio que más peso vas a mover de todos, con diferencia.',
+    maquina:'Te sientas medio tumbado y empujas con los pies una plataforma que tienes delante.',
+    ajuste:'Mueve el respaldo hasta que, con las piernas dobladas, las rodillas no se te claven en el pecho. Si te cuesta encontrar la palanca, suele estar a la derecha del asiento.',
+    pasos:[
+      'Siéntate con la espalda y el culo bien pegados al respaldo.',
+      'Pon los pies en el centro de la plataforma, separados como tus hombros.',
+      'Empuja hasta casi estirar las piernas — sin llegar a bloquear la rodilla del todo.',
+      'Vuelve despacio, contando dos segundos, hasta que las rodillas estén dobladas en ángulo recto.'
+    ],
+    bien:'Notas el esfuerzo en la parte de delante del muslo y en el glúteo.',
+    mal:'Si se te levanta el culo del asiento o la espalda baja se despega, estás bajando demasiado. Baja menos.'
+  },
+  {
+    nombre:'Jalón al pecho',
+    alias:'En la máquina pone "Lat Pulldown" o "Jalón"',
+    series:'2 × 10',
+    musculo:'La espalda (los laterales, los que dan forma de V) y de paso el bíceps.',
+    maquina:'Es una polea: o sea, un cable con una barra colgando arriba. Te sientas debajo y tiras de la barra hacia abajo. Eso es todo lo que significa "polea".',
+    ajuste:'Hay una almohadilla que te queda encima de los muslos: ajústala apretada, es lo que impide que el peso te levante del asiento.',
+    pasos:[
+      'Agarra la barra con las manos más separadas que los hombros, palmas hacia delante.',
+      'Siéntate y mete los muslos debajo de la almohadilla.',
+      'Tira de la barra hacia la parte alta del pecho, sacando pecho un poco.',
+      'Deja que suba despacio, controlando, hasta estirar los brazos.'
+    ],
+    bien:'Notas que trabajan los laterales de la espalda, debajo de las axilas.',
+    mal:'Si te echas muy hacia atrás o das tirones con todo el cuerpo, el peso es demasiado. Bájalo, en serio, no pasa nada.'
+  },
+  {
+    nombre:'Press de pecho',
+    alias:'En la máquina pone "Chest Press"',
+    series:'2 × 10',
+    musculo:'El pecho, la parte de delante del hombro y el tríceps (la parte de atrás del brazo).',
+    maquina:'Te sientas y empujas dos asas hacia delante, como si empujaras una puerta pesada. "Press" significa empujar, nada más.',
+    ajuste:'Sube o baja el asiento hasta que las asas te queden a la altura del pecho, no del cuello. Esto es lo que más gente hace mal y es lo único que hay que mirar.',
+    pasos:[
+      'Siéntate con la espalda completamente pegada al respaldo.',
+      'Agarra las asas a la altura del pecho.',
+      'Empuja hacia delante hasta casi estirar los brazos, sin bloquear el codo.',
+      'Vuelve despacio hasta que las manos estén otra vez a la altura del pecho.'
+    ],
+    bien:'Notas el pecho trabajando y quizá algo el brazo.',
+    mal:'Si tienes que arquear la espalda o despegarla del respaldo para empujar, hay demasiado peso.'
+  },
+  {
+    nombre:'Remo sentado',
+    alias:'En la máquina pone "Seated Row" o "Remo"',
+    series:'2 × 10',
+    musculo:'La espalda del medio: la que te mantiene derecho. Muy útil si pasas ocho horas sentado delante de un ordenador, que es tu caso.',
+    maquina:'Te sientas y tiras de dos asas hacia tu barriga, como si remaras.',
+    ajuste:'Si la máquina tiene una almohadilla para el pecho, ajústala para apoyarte en ella; así la espalda baja no trabaja de más.',
+    pasos:[
+      'Siéntate derecho, pecho apoyado si hay almohadilla.',
+      'Agarra las asas con los brazos estirados.',
+      'Tira hacia tu ombligo, juntando los omóplatos como si quisieras sujetar un lápiz entre ellos.',
+      'Vuelve despacio hasta estirar los brazos, sin dejar que el peso caiga de golpe.'
+    ],
+    bien:'Notas que se juntan las paletillas y trabaja el centro de la espalda.',
+    mal:'Si te balanceas adelante y atrás para tirar, baja el peso.'
+  },
+  {
+    nombre:'Press de hombros',
+    alias:'En la máquina pone "Shoulder Press"',
+    series:'2 × 10',
+    musculo:'Los hombros.',
+    maquina:'Te sientas y empujas dos asas hacia arriba, por encima de la cabeza.',
+    ajuste:'El asiento a una altura donde las asas te queden más o menos a la altura de los hombros al empezar.',
+    pasos:[
+      'Siéntate con la espalda pegada al respaldo.',
+      'Agarra las asas a la altura de los hombros.',
+      'Empuja hacia arriba hasta casi estirar los brazos, sin bloquear el codo.',
+      'Baja despacio hasta la altura de los hombros.'
+    ],
+    bien:'Notas los hombros. Y notas que aquí mueves mucho menos peso que en los demás.',
+    mal:'Nada: que muevas poco peso aquí es completamente normal, incluso en gente que lleva años. El hombro es un músculo pequeño.'
+  },
+  {
+    nombre:'Plancha',
+    alias:'Sin máquina, en la colchoneta',
+    series:'2 × 20 segundos',
+    musculo:'Toda la zona del abdomen y la espalda baja: lo que llaman "core", que solo quiere decir el centro del cuerpo.',
+    maquina:'Ninguna. En el suelo, en la zona de colchonetas.',
+    ajuste:'Ninguno.',
+    pasos:[
+      'Túmbate boca abajo y apóyate en los antebrazos y en las puntas de los pies.',
+      'Levanta el cuerpo del suelo y mantenlo recto, como una tabla, desde la cabeza hasta los talones.',
+      'Aguanta 20 segundos respirando normal. Descansa y repite.',
+      'Si 20 segundos es mucho, apoya las rodillas en el suelo. Cuenta exactamente igual.'
+    ],
+    bien:'Notas la barriga apretada y el cuerpo en línea recta.',
+    mal:'Si se te hunde la cadera hacia el suelo o subes el culo, mejor apoya las rodillas y haz menos segundos.'
+  }
+];
+
+/* ===== Ejercicios: casa, sin material ===== */
+const EJERCICIOS_CASA = [
+  {
+    nombre:'Sentadilla a la silla',
+    alias:'Necesitas una silla',
+    series:'2 × 10',
+    musculo:'Muslos y glúteo.',
+    maquina:'Una silla normal detrás de ti.',
+    ajuste:'Ninguno.',
+    pasos:[
+      'Ponte de pie delante de una silla, de espaldas a ella, pies separados como tus hombros.',
+      'Baja despacio como si fueras a sentarte, sacando el culo hacia atrás.',
+      'Toca el asiento con el culo y súbete otra vez sin llegar a sentarte del todo.',
+      'Si te cuesta, siéntate del todo y levántate. Cuenta igual.'
+    ],
+    bien:'Notas los muslos. Las rodillas apuntan en la misma dirección que los pies.',
+    mal:'Si te vas mucho hacia delante y levantas los talones, baja menos.'
+  },
+  {
+    nombre:'Flexiones en la encimera',
+    alias:'Flexiones, pero inclinadas',
+    series:'2 × 8',
+    musculo:'Pecho, hombro y brazo.',
+    maquina:'La encimera de la cocina, o una mesa firme, o la pared.',
+    ajuste:'Cuanto más alto te apoyes, más fácil. La pared es lo más fácil de todo, y está perfecto empezar ahí.',
+    pasos:[
+      'Apoya las manos en la encimera, separadas como tus hombros.',
+      'Aléjate con los pies hasta que el cuerpo quede inclinado y recto.',
+      'Baja el pecho hacia la encimera doblando los codos.',
+      'Empuja para volver arriba.'
+    ],
+    bien:'El cuerpo va recto, sin doblarse por la cadera.',
+    mal:'Si no puedes hacer 8, apóyate más alto (la pared) en vez de forzar.'
+  },
+  {
+    nombre:'Puente de glúteos',
+    alias:'Tumbado en el suelo',
+    series:'2 × 12',
+    musculo:'Glúteo y parte de atrás del muslo.',
+    maquina:'Nada, el suelo.',
+    ajuste:'Ninguno.',
+    pasos:[
+      'Túmbate boca arriba con las rodillas dobladas y los pies apoyados en el suelo.',
+      'Aprieta el culo y levanta la cadera hasta que el cuerpo haga una línea recta de rodillas a hombros.',
+      'Aguanta un segundo arriba.',
+      'Baja despacio sin llegar a apoyar del todo, y repite.'
+    ],
+    bien:'Notas el glúteo, no la espalda baja.',
+    mal:'Si lo notas en la zona lumbar, sube menos.'
+  },
+  {
+    nombre:'Zancada con apoyo',
+    alias:'Con una mano en la pared',
+    series:'2 × 8 por pierna',
+    musculo:'Muslos y glúteo, una pierna cada vez.',
+    maquina:'Una pared o el respaldo de una silla para apoyar la mano.',
+    ajuste:'Apóyate sin vergüenza: apoyarse no es hacer trampa, es lo que te permite hacerlo bien.',
+    pasos:[
+      'De pie, una mano en la pared para no perder el equilibrio.',
+      'Da un paso largo hacia delante con una pierna.',
+      'Baja la rodilla de atrás hacia el suelo, sin llegar a tocarlo.',
+      'Empuja con la pierna de delante para volver. Haz 8 y cambia de pierna.'
+    ],
+    bien:'La rodilla de delante queda encima del pie, no más allá de la punta.',
+    mal:'Si pierdes el equilibrio, acorta el paso y apóyate más.'
+  },
+  {
+    nombre:'Superman',
+    alias:'Tumbado boca abajo',
+    series:'2 × 10',
+    musculo:'La espalda entera, sobre todo la baja.',
+    maquina:'Nada, el suelo.',
+    ajuste:'Ninguno.',
+    pasos:[
+      'Túmbate boca abajo con los brazos estirados hacia delante.',
+      'Levanta a la vez los brazos y las piernas unos centímetros del suelo.',
+      'Aguanta dos segundos.',
+      'Baja despacio y repite.'
+    ],
+    bien:'Notas la espalda trabajando, sin dolor.',
+    mal:'Si te molesta la zona lumbar, levanta solo los brazos, sin las piernas.'
+  },
+  {
+    nombre:'Plancha',
+    alias:'Igual que en el gimnasio',
+    series:'2 × 20 segundos',
+    musculo:'El centro del cuerpo: abdomen y espalda baja.',
+    maquina:'Nada, el suelo.',
+    ajuste:'Ninguno.',
+    pasos:[
+      'Apóyate en los antebrazos y en las puntas de los pies.',
+      'Cuerpo recto como una tabla, de la cabeza a los talones.',
+      'Aguanta 20 segundos respirando normal.',
+      'Si es mucho, apoya las rodillas. Cuenta exactamente igual.'
+    ],
+    bien:'Barriga apretada, cuerpo en línea.',
+    mal:'Si se hunde la cadera, apoya rodillas y haz menos tiempo.'
+  }
+];
+
+/* ===== Estado ===== */
+const K = {
+  theme:'planEjercicioTheme', color:'planEjercicioColor', dias:'planEjercicioDias',
+  log:'planEjercicioLog', check:'planEjercicioCheckins', lugar:'planEjercicioLugar'
+};
+const DIAS_CORTOS = ['D','L','M','X','J','V','S'];
+const DIAS_LARGOS  = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+/* Por defecto: martes y jueves fijos, viernes flexible. Editable en Ajustes. */
+const DIAS_DEFECTO = { fijos:[2,4], flex:[5] };
+
+function loadJSON(key, fallback){
+  try{
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  }catch(e){ return fallback; }
+}
+function saveJSON(key, value){
+  try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){}
+  pushSync();
+}
+
+function getDias(){
+  const d = loadJSON(K.dias, null);
+  if(!d || !Array.isArray(d.fijos) || !Array.isArray(d.flex)) return JSON.parse(JSON.stringify(DIAS_DEFECTO));
+  return d;
+}
+function getLog(){ return loadJSON(K.log, {}); }
+function getChecks(){ return loadJSON(K.check, {}); }
+function getLugar(){ try{ return localStorage.getItem(K.lugar) || 'gym'; }catch(e){ return 'gym'; } }
+
+/* ===== Fechas ===== */
+function dateKey(d){
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function hoyKey(){ return dateKey(new Date()); }
+
+/* Semana ISO: el lunes manda, igual que en el calendario español. */
+function isoWeekKey(d){
+  const t = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const dow = (t.getDay() + 6) % 7;          // lunes = 0
+  t.setDate(t.getDate() - dow + 3);          // jueves de esa semana
+  const year = t.getFullYear();
+  const primerJueves = new Date(year, 0, 4);
+  primerJueves.setDate(primerJueves.getDate() - ((primerJueves.getDay() + 6) % 7) + 3);
+  const semana = 1 + Math.round((t - primerJueves) / 604800000);
+  return year + '-W' + String(semana).padStart(2,'0');
+}
+function lunesDe(d){
+  const t = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  t.setDate(t.getDate() - ((t.getDay() + 6) % 7));
+  return t;
+}
+
+/* ===== Qué toca hoy ===== */
+function tipoDeDia(d){
+  const dias = getDias();
+  const dow = d.getDay();
+  if(dias.fijos.indexOf(dow) !== -1) return 'fijo';
+  if(dias.flex.indexOf(dow) !== -1) return 'flex';
+  return 'libre';
+}
+
+/* Cuenta como sesión todo menos el descanso. El descanso se guarda para poder
+   verlo, pero no resta ni aparece nunca como algo negativo. */
+const CUENTA = ['fuerza','minima','caminar','reconocimiento'];
+function esSesion(tipo){ return CUENTA.indexOf(tipo) !== -1; }
+
+function totalSesiones(){
+  const log = getLog();
+  return Object.keys(log).filter(k => esSesion(log[k])).length;
+}
+function sesionesEnSemana(weekKey){
+  const log = getLog();
+  return Object.keys(log).filter(k => {
+    if(!esSesion(log[k])) return false;
+    const p = k.split('-');
+    return isoWeekKey(new Date(+p[0], +p[1]-1, +p[2])) === weekKey;
+  }).length;
+}
+function ultimaSesion(){
+  const log = getLog();
+  const claves = Object.keys(log).filter(k => esSesion(log[k])).sort();
+  return claves.length ? claves[claves.length-1] : null;
+}
+/* Modo reentrada: sin sesiones en 10 días, o si nunca ha habido ninguna.
+   OJO: esto cambia lo que se PROPONE, nunca se le enseña al usuario el número
+   de días que lleva parado. Eso es justo lo que no queremos que sienta. */
+function enReentrada(){
+  const ultima = ultimaSesion();
+  if(!ultima) return true;
+  const p = ultima.split('-');
+  const dias = Math.floor((new Date() - new Date(+p[0], +p[1]-1, +p[2])) / 86400000);
+  return dias >= 10;
+}
+
+const ETIQUETAS = {
+  fuerza:{ txt:'Sesión de fuerza hecha', icon:'💪' },
+  minima:{ txt:'Sesión mínima hecha', icon:'💪' },
+  caminar:{ txt:'Has caminado', icon:'🚶' },
+  reconocimiento:{ txt:'Reconocimiento hecho', icon:'🧭' },
+  descanso:{ txt:'Día de descanso', icon:'🛋️' }
+};
+
+/* ===== Render: HOY ===== */
+function renderHoy(){
+  const hoy = new Date();
+  const key = hoyKey();
+  const log = getLog();
+  const marcado = log[key];
+  const tipo = tipoDeDia(hoy);
+  const primeraVez = totalSesiones() === 0;
+  const reentrada = enReentrada();
+
+  const fechaTxt = DIAS_LARGOS[hoy.getDay()] + ', ' + hoy.getDate() + ' de ' + MESES[hoy.getMonth()];
+
+  let titulo, sub;
+  if(tipo === 'fijo'){
+    const nFijos = getDias().fijos.length;
+    titulo = 'Hoy toca fuerza';
+    sub = nFijos === 1
+      ? 'Es tu día fijo de la semana.'
+      : 'Es uno de tus ' + (nFijos === 2 ? 'dos' : nFijos) + ' días fijos.';
+  } else if(tipo === 'flex'){
+    titulo = 'Hoy es el día flexible';
+    sub = 'Si te apetece, fuerza. Si no, no pasa nada — para eso es flexible.';
+  } else {
+    titulo = 'Hoy no toca nada';
+    sub = 'Día libre. Si te apetece caminar, genial; si no, también.';
+  }
+
+  if(primeraVez){
+    titulo = 'Empezamos cuando quieras';
+    sub = 'No hace falta que hoy sea un entrenamiento. Puede ser solo ir a ver dónde está cada máquina.';
+  } else if(reentrada && tipo !== 'libre'){
+    titulo = 'Qué bien verte';
+    sub = 'Empezamos por la sesión mínima: los 3 primeros ejercicios, peso bajo, 15 minutos. Sin más.';
+  }
+
+  document.getElementById('hoyHero').innerHTML =
+    '<div class="hoy-hero">' +
+      '<div class="hoy-fecha">' + fechaTxt + '</div>' +
+      '<div class="hoy-que">' + titulo + '</div>' +
+      '<p class="hoy-sub">' + sub + '</p>' +
+      (marcado ? (
+        '<div class="hoy-hecho">' +
+          '<b>' + ETIQUETAS[marcado].icon + ' ' + ETIQUETAS[marcado].txt + '</b>' +
+          '<span>' + (marcado === 'descanso'
+            ? 'Descansar también forma parte del plan. Nos vemos en la siguiente.'
+            : 'Guardado. Ya está, no hay que hacer nada más.') + '</span>' +
+        '</div>'
+      ) : '') +
+    '</div>';
+
+  const acciones = document.getElementById('hoyActions');
+  if(marcado){
+    acciones.innerHTML = '<button class="btn-undo" onclick="desmarcar()">Deshacer</button>';
+    document.getElementById('escapeCard').classList.remove('show');
+  } else if(primeraVez){
+    acciones.innerHTML =
+      '<div class="actions">' +
+        '<button class="btn-main" onclick="marcar(\'reconocimiento\')">🧭 He ido a ver las máquinas</button>' +
+        '<button class="btn-second" onclick="marcar(\'minima\')">💪 He hecho la sesión mínima (3 ejercicios)</button>' +
+        '<button class="btn-second" onclick="marcar(\'fuerza\')">💪 He hecho la sesión completa</button>' +
+        '<button class="btn-second" onclick="marcar(\'caminar\')">🚶 He caminado</button>' +
+      '</div>' +
+      '<button class="btn-escape" onclick="toggleEscape()">😮‍💨 Hoy no tengo fuerzas para esto</button>';
+  } else if(tipo === 'libre'){
+    acciones.innerHTML =
+      '<div class="actions">' +
+        '<button class="btn-main" onclick="marcar(\'caminar\')">🚶 He caminado</button>' +
+        '<button class="btn-second" onclick="marcar(\'fuerza\')">💪 He hecho fuerza igualmente</button>' +
+      '</div>';
+  } else {
+    const principal = reentrada
+      ? '<button class="btn-main" onclick="marcar(\'minima\')">💪 Hecho — sesión mínima</button>' +
+        '<button class="btn-second" onclick="marcar(\'fuerza\')">💪 Hecho — sesión completa</button>'
+      : '<button class="btn-main" onclick="marcar(\'fuerza\')">💪 Hecho — sesión completa</button>' +
+        '<button class="btn-second" onclick="marcar(\'minima\')">💪 Hecho — sesión mínima</button>';
+    acciones.innerHTML =
+      '<div class="actions">' + principal +
+        '<button class="btn-second" onclick="marcar(\'caminar\')">🚶 He caminado en vez de eso</button>' +
+      '</div>' +
+      '<button class="btn-escape" onclick="toggleEscape()">😮‍💨 Hoy no tengo fuerzas para esto</button>';
+  }
+
+  renderHorario();
+}
+
+function renderHorario(){
+  const ahora = new Date();
+  const dow = ahora.getDay();
+  const hora = ahora.getHours();
+  const entreSemana = dow >= 1 && dow <= 5;
+  const enPunta = entreSemana && hora >= 18 && hora < 21;
+
+  let filas = '';
+  if(enPunta){
+    filas += '<div class="horario-row bad"><span><b>Ahora mismo está a reventar. Mejor no.</b></span><span>hasta 22:30</span></div>';
+  }
+  if(dow === 5){
+    filas += '<div class="horario-row"><span><b>Hoy es viernes: sales a las 15h y está vacío</b></span><span>15:30-17:00</span></div>';
+  }
+  if(dow === 0 || dow === 6){
+    filas += '<div class="horario-row"><span><b>Fin de semana por la mañana, tranquilo</b></span><span>9:00-11:30</span></div>';
+  }
+  if(entreSemana && dow !== 5){
+    filas += '<div class="horario-row"><span>Antes de entrar a trabajar, si te da la vida</span><span>7:30-8:30</span></div>';
+    filas += '<div class="horario-row"><span>El viernes sales a las 15h: ese es tu mejor hueco</span><span>vie 15:30</span></div>';
+  }
+  filas += '<div class="horario-row bad"><span>Entre semana por la tarde no hay nada que hacer</span><span>18:00-22:30</span></div>';
+
+  document.getElementById('horarioBox').innerHTML =
+    '<div class="horario-title">Cuándo ir hoy</div>' + filas;
+}
+
+function marcar(tipo){
+  const log = getLog();
+  log[hoyKey()] = tipo;
+  saveJSON(K.log, log);
+  document.getElementById('escapeCard').classList.remove('show');
+  renderHoy();
+  renderSemana();
+  window.scrollTo({top:0, behavior:scrollBehavior()});
+}
+function desmarcar(){
+  const log = getLog();
+  delete log[hoyKey()];
+  saveJSON(K.log, log);
+  renderHoy();
+  renderSemana();
+}
+function marcarDia(key, tipo){
+  const log = getLog();
+  if(tipo === '') delete log[key]; else log[key] = tipo;
+  saveJSON(K.log, log);
+  renderHoy();
+  renderSemana();
+}
+function toggleEscape(){
+  document.getElementById('escapeCard').classList.toggle('show');
+}
+
+/* ===== Render: RUTINA ===== */
+function ejercicioHTML(ej, i){
+  return '<details>' +
+    '<summary><span class="ex-head"><span class="ex-num">' + (i+1) + '</span>' + ej.nombre +
+      '</span><span class="ex-series">' + ej.series + '</span></summary>' +
+    '<div class="content">' +
+      '<div class="ex-alias">' + ej.alias + '</div>' +
+      '<div class="ex-field"><div>Para qué sirve</div>' + ej.musculo + '</div>' +
+      '<div class="ex-field"><div>Qué es la máquina</div>' + ej.maquina + '</div>' +
+      '<div class="ex-field"><div>Cómo se ajusta</div>' + ej.ajuste + '</div>' +
+      '<div class="ex-field"><div>Cómo se hace</div><ul>' +
+        ej.pasos.map(p => '<li>' + p + '</li>').join('') +
+      '</ul></div>' +
+      '<div class="ex-check"><b>Va bien si:</b> ' + ej.bien + '</div>' +
+      '<div class="ex-cross"><b>Ojo si:</b> ' + ej.mal + '</div>' +
+    '</div>' +
+  '</details>';
+}
+function renderRutina(){
+  document.getElementById('listaGym').innerHTML  = EJERCICIOS_GYM.map(ejercicioHTML).join('');
+  document.getElementById('listaCasa').innerHTML = EJERCICIOS_CASA.map(ejercicioHTML).join('');
+}
+function setVista(v){
+  document.getElementById('vistaGym').style.display  = v === 'gym'  ? 'block' : 'none';
+  document.getElementById('vistaCasa').style.display = v === 'casa' ? 'block' : 'none';
+  document.getElementById('btnVerGym').classList.toggle('active', v === 'gym');
+  document.getElementById('btnVerCasa').classList.toggle('active', v === 'casa');
+}
+
+/* ===== Render: SEMANA ===== */
+function renderSemana(){
+  const total = totalSesiones();
+  const semanaActual = isoWeekKey(new Date());
+  const estaSemana = sesionesEnSemana(semanaActual);
+  const dias = getDias();
+  const objetivo = dias.fijos.length + dias.flex.length;
+
+  document.getElementById('statGrid').innerHTML =
+    '<div class="stat"><b>' + total + '</b><span>sesiones en total<br>desde que empezaste</span></div>' +
+    '<div class="stat"><b>' + estaSemana + '</b><span>esta semana</span></div>' +
+    '<div class="stat"><b>' + objetivo + '</b><span>días de fuerza<br>que has puesto</span></div>';
+
+  /* Últimas 8 semanas, de más antigua a la actual. */
+  let html = '';
+  const lunesHoy = lunesDe(new Date());
+  for(let i = 7; i >= 0; i--){
+    const l = new Date(lunesHoy);
+    l.setDate(l.getDate() - i*7);
+    const wk = isoWeekKey(l);
+    const n = sesionesEnSemana(wk);
+    let cls = '';
+    if(n >= 3) cls = 'l3'; else if(n === 2) cls = 'l2'; else if(n === 1) cls = 'l1';
+    if(i === 0) cls += ' now';
+    html += '<div class="wcell"><div class="box ' + cls + '">' + n + '</div>' +
+            '<small>' + l.getDate() + '/' + (l.getMonth()+1) + '</small></div>';
+  }
+  document.getElementById('weeksGrid').innerHTML = html;
+
+  renderCheckin();
+  renderSemanaDias();
+}
+
+function renderSemanaDias(){
+  const log = getLog();
+  const lunes = lunesDe(new Date());
+  const hoy = hoyKey();
+  let html = '';
+  for(let i = 0; i < 7; i++){
+    const d = new Date(lunes);
+    d.setDate(d.getDate() + i);
+    const key = dateKey(d);
+    if(d > new Date() && key !== hoy) continue;
+    const actual = log[key] || '';
+    const etiqueta = DIAS_LARGOS[d.getDay()] + ' ' + d.getDate();
+    html += '<div class="settings-row" style="margin:14px 0;">' +
+      '<div style="font-size:var(--t-sm); font-weight:700; color:var(--muted); margin-bottom:6px;">' +
+        etiqueta + (key === hoy ? ' · hoy' : '') + '</div>' +
+      '<div class="opts">' +
+        ['','fuerza','minima','caminar','descanso'].map(t => {
+          const txt = t === '' ? '—' : ETIQUETAS[t].icon;
+          return '<button class="' + (actual === t ? 'active' : '') + '" ' +
+                 'onclick="marcarDia(\'' + key + '\',\'' + t + '\')" ' +
+                 'title="' + (t === '' ? 'Sin marcar' : ETIQUETAS[t].txt) + '">' + txt + '</button>';
+        }).join('') +
+      '</div></div>';
+  }
+  document.getElementById('semanaDias').innerHTML = html;
+}
+
+/* ===== Check-in semanal ===== */
+let notaTimer = null;
+function checkActual(){
+  const checks = getChecks();
+  return checks[isoWeekKey(new Date())] || {};
+}
+function setCheck(campo, valor, btn){
+  const checks = getChecks();
+  const wk = isoWeekKey(new Date());
+  if(!checks[wk]) checks[wk] = {};
+  checks[wk][campo] = checks[wk][campo] === valor ? null : valor;
+  saveJSON(K.check, checks);
+  renderCheckin();
+  avisoGuardado();
+}
+function guardarNota(){
+  clearTimeout(notaTimer);
+  notaTimer = setTimeout(() => {
+    const checks = getChecks();
+    const wk = isoWeekKey(new Date());
+    if(!checks[wk]) checks[wk] = {};
+    checks[wk].nota = document.getElementById('checkNota').value;
+    saveJSON(K.check, checks);
+    avisoGuardado();
+  }, 600);
+}
+function avisoGuardado(){
+  const el = document.getElementById('savedNote');
+  el.textContent = '✓ Guardado';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.textContent = ''; }, 2000);
+}
+function renderCheckin(){
+  const c = checkActual();
+  [['optEnergia','energia'],['optRopa','ropa']].forEach(([id, campo]) => {
+    const cont = document.getElementById(id);
+    Array.prototype.forEach.call(cont.querySelectorAll('button'), b => {
+      const v = b.getAttribute('onclick').split("'")[3];
+      b.classList.toggle('active', c[campo] === v);
+    });
+  });
+  const ta = document.getElementById('checkNota');
+  if(document.activeElement !== ta) ta.value = c.nota || '';
+}
+
+/* ===== Ajustes ===== */
+function openSettings(){ document.getElementById('settingsOverlay').classList.add('show'); }
+function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('show'); }
+
+function renderDayPicker(){
+  const dias = getDias();
+  const cont = document.getElementById('dayPicker');
+  let html = '';
+  /* Se muestra de lunes a domingo, como el calendario de aquí. */
+  [1,2,3,4,5,6,0].forEach(dow => {
+    let cls = '';
+    if(dias.fijos.indexOf(dow) !== -1) cls = 'fijo';
+    else if(dias.flex.indexOf(dow) !== -1) cls = 'flex';
+    html += '<button class="' + cls + '" onclick="ciclarDia(' + dow + ')">' + DIAS_CORTOS[dow] + '</button>';
+  });
+  cont.innerHTML = html;
+}
+function ciclarDia(dow){
+  const dias = getDias();
+  const enFijos = dias.fijos.indexOf(dow);
+  const enFlex  = dias.flex.indexOf(dow);
+  if(enFijos !== -1){                       // fijo → flexible
+    dias.fijos.splice(enFijos, 1);
+    dias.flex.push(dow);
+  } else if(enFlex !== -1){                 // flexible → libre
+    dias.flex.splice(enFlex, 1);
+  } else {                                  // libre → fijo
+    dias.fijos.push(dow);
+  }
+  saveJSON(K.dias, dias);
+  renderDayPicker();
+  renderHoy();
+  renderSemana();
+}
+function setLugar(l){
+  try{ localStorage.setItem(K.lugar, l); }catch(e){}
+  pushSync();
+  renderLugar();
+  setVista(l === 'casa' ? 'casa' : 'gym');
+}
+function renderLugar(){
+  const l = getLugar();
+  Array.prototype.forEach.call(document.querySelectorAll('#lugarOpts .style-opt'), b => {
+    b.classList.toggle('active', b.dataset.lugar === l);
+  });
+}
+function setColor(c){
+  try{ localStorage.setItem(K.color, c); }catch(e){}
+  pushSync();
+  aplicarColor();
+}
+function aplicarColor(){
+  let c = '';
+  try{ c = localStorage.getItem(K.color) || ''; }catch(e){}
+  document.documentElement.setAttribute('data-color', c);
+  Array.prototype.forEach.call(document.querySelectorAll('#colorSwatches .swatch'), s => {
+    s.classList.toggle('active', s.dataset.color === c);
+  });
+}
+
+function toggleTheme(){
+  const isDark = document.documentElement.classList.toggle('dark');
+  document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
+  try{ localStorage.setItem(K.theme, isDark ? 'dark' : 'light'); }catch(e){}
+}
+(function initTheme(){
+  let saved = null;
+  try{ saved = localStorage.getItem(K.theme); }catch(e){}
+  /* Sin preferencia guardada, seguimos al sistema (que en su iPhone suele ser oscuro). */
+  if(saved === 'dark' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)){
+    document.documentElement.classList.add('dark');
+  }
+})();
+
+/* ===== Navegación ===== */
+function scrollBehavior(){
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+}
+function showTab(name, btn){
+  Array.prototype.forEach.call(document.querySelectorAll('.tabpanel'), p => p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  Array.prototype.forEach.call(document.querySelectorAll('#tabnav button'), b => b.classList.remove('active'));
+  btn.classList.add('active');
+  window.scrollTo({top:0, behavior:scrollBehavior()});
+}
+
+/* ===== Sincronización entre dispositivos (Supabase) =====
+   Mismo patrón que el plan de alimentación: una fila con todo el estado en
+   JSON. Si no hay red, no pasa nada: se queda en local y sube la próxima vez. */
+const SUPABASE_URL = 'https://ibouktzmckphsvqabgig.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_8pdb7ItwgBzII8SMsdWjzA_kunVAiq5';
+const SYNC_KEYS = [K.color, K.dias, K.log, K.check, K.lugar];
+let syncPushTimer = null;
+
+function collectSyncState(){
+  const state = {};
+  SYNC_KEYS.forEach(k => {
+    const v = localStorage.getItem(k);
+    if(v !== null) state[k] = v;
+  });
+  return state;
+}
+function applySyncState(state){
+  if(!state) return;
+  SYNC_KEYS.forEach(k => {
+    if(Object.prototype.hasOwnProperty.call(state, k)){
+      try{ localStorage.setItem(k, state[k]); }catch(e){}
+    }
+  });
+}
+function pushSync(){
+  clearTimeout(syncPushTimer);
+  syncPushTimer = setTimeout(() => {
+    const body = { id: 1, data: JSON.stringify(collectSyncState()) };
+    fetch(SUPABASE_URL + '/rest/v1/ejercicio?on_conflict=id', {
+      method:'POST',
+      cache:'no-store',
+      headers:{
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify(body)
+    }).catch(() => { /* sin conexión: se queda solo en local, no pasa nada */ });
+  }, 500);
+}
+async function pullSync(){
+  try{
+    const res = await fetch(SUPABASE_URL + '/rest/v1/ejercicio?id=eq.1&select=data', {
+      cache:'no-store',
+      headers:{ 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Cache-Control':'no-cache' }
+    });
+    if(!res.ok) return;
+    const rows = await res.json();
+    if(!rows || !rows[0] || !rows[0].data) return;
+    applySyncState(JSON.parse(rows[0].data));
+    renderTodo();
+  }catch(e){ /* sin conexión o primera vez sin datos remotos: seguimos con lo local */ }
+}
+
+/* ===== Arranque ===== */
+function renderTodo(){
+  aplicarColor();
+  renderDayPicker();
+  renderLugar();
+  renderHoy();
+  renderRutina();
+  renderSemana();
+  setVista(getLugar() === 'casa' ? 'casa' : 'gym');
+}
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('themeBtn').textContent =
+    document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
+  renderTodo();
+  pullSync();
+});
+
+/* ===== PWA: registro de Service Worker + banners de offline / actualización ===== */
+let swRegistration = null;
+function showBanner(id){ document.getElementById(id).classList.add('show'); }
+function hideBanner(id){ document.getElementById(id).classList.remove('show'); }
+
+window.addEventListener('online', () => hideBanner('offlineBanner'));
+window.addEventListener('offline', () => showBanner('offlineBanner'));
+document.addEventListener('DOMContentLoaded', () => { if(!navigator.onLine) showBanner('offlineBanner'); });
+
+function applyUpdate(){
+  if(swRegistration && swRegistration.waiting){
+    swRegistration.waiting.postMessage({type:'SKIP_WAITING'});
+  }
+}
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').then(reg => {
+      swRegistration = reg;
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
+            showBanner('updateBanner');
+          }
+        });
+      });
+    }).catch(err => console.warn('SW registration failed:', err));
+  });
+
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if(refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
+}
+</script>
+
+</body>
+</html>
