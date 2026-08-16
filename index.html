@@ -372,6 +372,51 @@
   }
   #toast.show{opacity:1; visibility:visible;}
 
+  /* ===== Tamaño de letra: para leer en el gimnasio con mala luz ===== */
+  html.txt-g{
+    --t-2xs:.74rem; --t-xs:.85rem; --t-sm:.94rem; --t-base:1.04rem;
+    --t-md:1.18rem; --t-lg:1.38rem; --t-xl:1.62rem; --t-2xl:2.15rem; --t-3xl:3.4rem;
+  }
+  html.txt-xg{
+    --t-2xs:.82rem; --t-xs:.94rem; --t-sm:1.05rem; --t-base:1.16rem;
+    --t-md:1.32rem; --t-lg:1.52rem; --t-xl:1.78rem; --t-2xl:2.35rem; --t-3xl:3.6rem;
+  }
+  /* Alto contraste: sube el contraste del texto y de los bordes, sin tocar el acento */
+  html.contraste{ --muted:#3f3f39; --border:#8f8b80; --neutral-ink:#5c5952; }
+  html.contraste.dark{ --muted:#d2d8de; --border:#7c8891; --neutral-ink:#aab4bc; }
+  html.contraste .lead, html.contraste .cena-nota, html.contraste .settings-hint{ color:var(--muted); }
+
+  /* ===== Respiración (el botón "Antes de esto") ===== */
+  .respira{
+    display:none; position:fixed; inset:0; z-index:80; background:var(--bg);
+    flex-direction:column; align-items:center; justify-content:center; gap:0;
+    padding:calc(20px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));
+    text-align:center;
+  }
+  .respira.show{display:flex;}
+  .resp-circulo{
+    width:150px; height:150px; border-radius:50%; flex-shrink:0;
+    background:var(--accent-soft); border:3px solid var(--accent);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono); font-weight:700; font-size:var(--t-2xl); color:var(--accent);
+    transform:scale(.62); transition:transform 4s ease-in-out;
+  }
+  .resp-circulo.grande{transform:scale(1);}
+  .resp-fase{font-family:var(--font-display); font-size:var(--t-xl); margin:28px 0 4px; min-height:1.4em;}
+  .resp-sub{color:var(--muted); font-size:var(--t-sm); margin:0 0 30px; max-width:30ch;}
+  .resp-ciclos{font-family:var(--font-mono); font-size:var(--t-xs); color:var(--muted); margin-bottom:22px;}
+  .respira .btn-second{max-width:320px;}
+  @media (prefers-reduced-motion: reduce){ .resp-circulo{transition:none;} }
+
+  .sync-estado{font-size:var(--t-xs); color:var(--muted); text-align:center; margin-top:12px; line-height:1.5;}
+  .sync-estado b{color:var(--ink);}
+  .sync-estado.mal b{color:var(--warn);}
+  .aviso-nivel{border-left:3px solid var(--ok); background:var(--ok-soft); padding:12px 15px; font-size:var(--t-sm); margin:16px 0 0;}
+  .pesos-lista{width:100%; font-size:var(--t-sm);}
+  .pesos-lista td{padding:9px 4px;}
+  .pesos-lista td:last-child{text-align:right; font-family:var(--font-mono); font-weight:700; color:var(--accent); white-space:nowrap;}
+  .pesos-lista td.vacio:last-child{color:var(--muted); font-weight:400;}
+
   @media (min-width:620px){
     :root{ --t-2xl:2.3rem; }
     .weeks{gap:6px;}
@@ -405,6 +450,15 @@
   </div>
   <div class="ses-barra"><i id="sesBarra"></i></div>
   <div class="ses-body" id="sesBody"></div>
+</div>
+
+<!-- ===================== RESPIRACIÓN ===================== -->
+<div class="respira" id="respira" role="dialog" aria-modal="true" aria-label="Pausa de respiración">
+  <div class="resp-circulo" id="respCirculo">4</div>
+  <div class="resp-fase" id="respFase">Prepárate</div>
+  <p class="resp-sub" id="respSub">Sigue el círculo. Nada más que hacer.</p>
+  <div class="resp-ciclos" id="respCiclos"></div>
+  <button class="btn-second" onclick="cerrarRespira()">Ya estoy</button>
 </div>
 
 <!-- ===================== AJUSTES ===================== -->
@@ -456,8 +510,66 @@
       </div>
     </div>
 
+    <div class="settings-row">
+      <div class="lbl">Aviso de sonido</div>
+      <div class="style-options" id="sonidoOpts">
+        <button class="style-opt" data-sonido="si" onclick="setSonido('si')">🔊 Sonido</button>
+        <button class="style-opt" data-sonido="no" onclick="setSonido('no')">🔇 Silencio</button>
+      </div>
+      <div class="settings-hint">Con AirPods el pitido se oye por encima de la música y no molesta a nadie: déjalo en sonido. En silencio, el aviso es solo visual (la pantalla parpadea), así que tienes que estar mirando.</div>
+    </div>
+
+    <div class="settings-row">
+      <div class="lbl">Tamaño de letra</div>
+      <div class="style-options" id="tamOpts">
+        <button class="style-opt" data-tam="n" onclick="setTam('n')">Normal</button>
+        <button class="style-opt" data-tam="g" onclick="setTam('g')">Grande</button>
+        <button class="style-opt" data-tam="xg" onclick="setTam('xg')">Enorme</button>
+      </div>
+      <div class="settings-hint">Para leer los pasos de un vistazo en medio de la sesión.</div>
+    </div>
+
+    <div class="settings-row">
+      <div class="lbl">Contraste</div>
+      <div class="style-options" id="contrasteOpts">
+        <button class="style-opt" data-contraste="no" onclick="setContraste('no')">Normal</button>
+        <button class="style-opt" data-contraste="si" onclick="setContraste('si')">Alto</button>
+      </div>
+    </div>
+
+    <div class="settings-row">
+      <div class="lbl">Cómo te habla la app</div>
+      <div class="style-options" id="tonoOpts">
+        <button class="style-opt" data-tono="normal" onclick="setTono('normal')">Normal</button>
+        <button class="style-opt" data-tono="seco" onclick="setTono('seco')">Seco</button>
+      </div>
+      <div class="settings-hint">En seco desaparecen los ánimos y las explicaciones largas: solo lo que toca hacer. Ni un mensaje menos amable, simplemente menos texto.</div>
+    </div>
+
+    <div class="settings-row">
+      <div class="lbl">Modo oscuro</div>
+      <div class="style-options" id="temaOpts">
+        <button class="style-opt" data-tema="auto" onclick="setTema('auto')">🕐 Por hora</button>
+        <button class="style-opt" data-tema="light" onclick="setTema('light')">☀️ Claro</button>
+        <button class="style-opt" data-tema="dark" onclick="setTema('dark')">🌙 Oscuro</button>
+      </div>
+      <div class="settings-hint">Por hora: claro de 7:00 a 20:00, oscuro el resto. Útil si entrenas a las 6:45 o a las 23:00.</div>
+    </div>
+
+    <div class="settings-row">
+      <div class="lbl">Al abrir la app</div>
+      <div class="style-options" id="inicioOpts">
+        <button class="style-opt" data-inicio="ultima" onclick="setInicio('ultima')">Donde lo dejé</button>
+        <button class="style-opt" data-inicio="hoy" onclick="setInicio('hoy')">Siempre en Hoy</button>
+      </div>
+      <div class="settings-hint">Además puedes tener un segundo icono en el iPhone que abra directo a una pestaña: comparte esta web, añádele <b>#rutina</b> (o <b>#hoy</b>) al final de la dirección y añádela a la pantalla de inicio.</div>
+    </div>
+
     <button class="settings-close" onclick="closeSettings()">Listo</button>
+    <div class="sync-estado" id="syncEstado"></div>
     <button class="settings-danger" onclick="exportarDatos()">Descargar una copia de mis datos</button>
+    <button class="settings-danger" onclick="document.getElementById('inpImport').click()">Restaurar desde una copia</button>
+    <input type="file" id="inpImport" accept="application/json,.json" style="display:none" onchange="importarDatos(this)">
   </div>
 </div>
 
@@ -473,12 +585,15 @@
     <p>De verdad que no pasa nada. Elige lo que te encaje ahora mismo — las tres son respuestas correctas.</p>
     <div class="actions">
       <button class="btn-second" onclick="empezarSesion('minima')">💪 Voy, pero solo los 3 primeros (15 min)</button>
+      <button class="btn-second" onclick="empezarSesion('express')">⚡ Lo mínimo de lo mínimo (8 min)</button>
       <button class="btn-second" onclick="marcar('caminar')">🚶 Me da para caminar 10 minutos</button>
+      <button class="btn-second" onclick="marcar('activo')">🚶 Me he movido, pero no fue entreno</button>
       <button class="btn-second" onclick="marcar('descanso')">🛋️ Hoy descanso. Punto.</button>
     </div>
   </div>
 
   <div id="hoyManana"></div>
+  <div id="hoyPesos"></div>
   <div class="horario" id="horarioBox"></div>
 </div>
 
@@ -547,6 +662,13 @@
   <div id="vistaCasa" style="display:none;">
     <p class="lead">Sin material, sin salir de casa, unos 20 minutos. Esto no es "la versión mala": los días que el gimnasio no va a pasar, esto es lo que evita que la semana entera se vaya a cero.</p>
     <div id="listaCasa"></div>
+
+    <h3 style="margin-top:32px;">Versión viaje — 10 minutos</h3>
+    <p style="font-size:var(--t-base);">Para cuando estés fuera de Barcelona: hotel, casa de tu padre, donde sea. Los <b>cuatro primeros</b> de la lista de arriba, una sola serie de cada, sin descanso largo entre medias. Caben en el hueco entre la ducha y salir por la puerta, y no necesitas ni zapatillas.</p>
+    <button class="btn-main" onclick="empezarSesion('viaje')">▶️ Empezar la versión viaje</button>
+    <div class="quiet" style="margin-top:16px;">
+      Si estás de viaje y el sitio tiene gimnasio, mejor eso: <b>cinta en cuesta 15 minutos</b> y listo. Y si no hay nada de nada, andar rápido 30 minutos por donde estés cuenta igual — de hecho es lo que mejor se te da.
+    </div>
   </div>
 </div>
 
@@ -612,6 +734,17 @@
     <b>Ojo con agosto.</b> Ahora mismo el gimnasio está medio vacío porque media Barcelona está fuera — es el mejor mes del año para reengancharse, aprovéchalo. Pero eso significa que <b>no puedes juzgar los horarios hasta septiembre</b>, cuando vuelve todo el mundo. Si estás pensando en dejar el gimnasio, esa decisión tómala a finales de septiembre con datos reales, no ahora.
   </div>
 
+  <h2 style="margin-top:36px;"><span class="h2-badge">🔔</span>Que te avise el iPhone</h2>
+  <p class="lead">Esta app no puede mandarte notificaciones: una web necesita un servidor propio para eso, y montarlo no compensa para lo poco que aporta. Pero el iPhone ya sabe hacerlo, y mejor:</p>
+  <ul style="font-size:var(--t-base);">
+    <li><b>Una alarma normal, repetida.</b> Reloj → Alarma → repetir los días que entrenas, con la etiqueta que quieras. Es lo más simple y lo que menos falla.</li>
+    <li><b>Un evento en el calendario</b>, semanal, con aviso 30 minutos antes. Tiene la ventaja de que ocupa el hueco y ves que ese rato ya está pillado.</li>
+    <li><b>Un Atajo con automatización</b> (app Atajos → Automatización → Hora del día): puede abrirte esta app directamente a la hora que le digas.</li>
+  </ul>
+  <div class="quiet">
+    Consejo sobre la hora del aviso: <b>ponlo cuando aún puedes decidir</b>, no cuando ya llegas tarde. Si el plan es el viernes al salir de trabajar, la alarma a las 14:45, no a las 15:30.
+  </div>
+
   <h3>Lo que llevas encima</h3>
   <p style="font-size:var(--t-base);">Toalla, botella de agua y zapatillas. Ya está — no necesitas ropa especial ni nada más. Hay vestuarios, duchas y taquillas; pregunta el primer día si las taquillas necesitan candado propio, que eso cambia de un sitio a otro. Hay fuente de agua dentro, así que la botella puedes llenarla allí.</p>
 </div>
@@ -660,6 +793,8 @@
   <p class="lead" style="margin-bottom:10px;">Sesiones por semana. Las semanas en cero salen en gris, no en rojo: son información, no una falta.</p>
   <div class="weeks" id="weeksGrid"></div>
   <p style="font-size:var(--t-xs); color:var(--muted); margin-top:12px;">Aquí no hay rachas que romper. Los números de arriba solo suben, nunca bajan, pase lo que pase.</p>
+  <button class="btn-second" style="margin-top:10px;" onclick="compartirProgreso()">📤 Compartir mis números como imagen</button>
+  <p style="font-size:var(--t-xs); color:var(--muted); margin-top:8px;">Genera una imagen con los tres números de arriba y nada más. No sale ninguna fecha, ninguna semana en cero ni nada que no quieras enseñar.</p>
 
   <h2 style="margin-top:36px;"><span class="h2-badge">📝</span>Check-in de la semana</h2>
   <p class="lead">Opcional y una vez por semana como mucho. Si lo saltas no pasa nada, no hay nada que rellenar ni recuperar.</p>
@@ -935,7 +1070,9 @@ const EJERCICIOS_CASA = [
 const K = {
   theme:'planEjercicioTheme', color:'planEjercicioColor', dias:'planEjercicioDias',
   log:'planEjercicioLog', check:'planEjercicioCheckins', lugar:'planEjercicioLugar',
-  pesos:'planEjercicioPesos', descanso:'planEjercicioDescanso', tab:'planEjercicioTab'
+  pesos:'planEjercicioPesos', descanso:'planEjercicioDescanso', tab:'planEjercicioTab',
+  sonido:'planEjercicioSonido', tam:'planEjercicioTam', contraste:'planEjercicioContraste',
+  tono:'planEjercicioTono', inicio:'planEjercicioInicio', sync:'planEjercicioUltimoSync'
 };
 const DIAS_CORTOS = ['D','L','M','X','J','V','S'];
 const DIAS_LARGOS = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
@@ -976,6 +1113,21 @@ function getDescanso(){
 }
 function ejerciciosActuales(){ return getLugar() === 'casa' ? EJERCICIOS_CASA : EJERCICIOS_GYM; }
 
+function getPref(key, validos, defecto){
+  try{ const v = localStorage.getItem(key); return validos.indexOf(v) !== -1 ? v : defecto; }
+  catch(e){ return defecto; }
+}
+function getSonido(){    return getPref(K.sonido,    ['si','no'],            'si'); }
+function getTam(){       return getPref(K.tam,       ['n','g','xg'],         'n'); }
+function getContraste(){ return getPref(K.contraste, ['si','no'],            'no'); }
+function getTono(){      return getPref(K.tono,      ['normal','seco'],      'normal'); }
+function getInicio(){    return getPref(K.inicio,    ['ultima','hoy'],       'ultima'); }
+function getTema(){      return getPref(K.theme,     ['light','dark','auto'],'auto'); }
+
+/* Modo seco: mismo contenido, menos palabras. No cambia lo que la app permite
+   hacer, solo cuánto texto hay que leer para hacerlo. */
+function T(normal, seco){ return getTono() === 'seco' ? seco : normal; }
+
 /* Cuántas sesiones de fuerza y de cinta lleva hechas. La progresión va contra
    esto y no contra el calendario: si para un mes, al volver no se le exige el
    nivel de donde lo dejó. */
@@ -989,6 +1141,7 @@ function sesionesCinta(){ return contarTipo(['cinta']); }
 /* Series: 2 al principio, 3 en los tres ejercicios grandes a partir de la 5ª
    sesión. El salto de intensidad de verdad no está aquí, está en el peso. */
 function seriesDe(ej, idx){
+  if(S.activa && serieUnica()) return 1;
   if(ej.sinPeso) return ej.series;
   return (sesionesFuerza() >= 4 && idx < 3) ? 3 : ej.series;
 }
@@ -1090,6 +1243,7 @@ const ETIQUETAS = {
   cinta:         { txt:'Cinta hecha',            icon:'🏃', corto:'Cinta' },
   caminar:       { txt:'Has caminado',           icon:'🚶', corto:'Caminar' },
   reconocimiento:{ txt:'Reconocimiento hecho',   icon:'🧭', corto:'Ver' },
+  activo:        { txt:'Día activo',             icon:'🌤️', corto:'Activo' },
   descanso:      { txt:'Día de descanso',        icon:'🛋️', corto:'Descanso' }
 };
 function etiqueta(tipo){ return ETIQUETAS[tipo] || { txt:'Día marcado', icon:'✅', corto:'—' }; }
@@ -1147,10 +1301,13 @@ function renderHoy(){
         '<div class="hoy-hecho">' +
           '<b>' + etiqueta(marcado).icon + ' ' + etiqueta(marcado).txt + '</b>' +
           '<span>' + (marcado === 'descanso'
-            ? 'Descansar también forma parte del plan. Nos vemos en la siguiente.'
-            : 'Guardado. Ya está, no hay que hacer nada más.') + '</span>' +
+            ? T('Descansar también forma parte del plan. Nos vemos en la siguiente.', 'Guardado.')
+            : marcado === 'activo'
+              ? T('Moverse cuenta aunque no sea un entreno. No suma en las estadísticas, pero está guardado.', 'Guardado. No cuenta como sesión.')
+              : T('Guardado. Ya está, no hay que hacer nada más.', 'Guardado.')) + '</span>' +
         '</div>'
       ) : '') +
+      avisosHTML(tipo, marcado) +
     '</div>';
 
   const acciones = document.getElementById('hoyActions');
@@ -1160,6 +1317,9 @@ function renderHoy(){
   const bCompleta = '<button class="btn-second" onclick="empezarSesion(\'fuerza\')">Hacer la sesión completa</button>';
   const bCaminar  = '<button class="btn-second" onclick="marcar(\'caminar\')">🚶 He caminado</button>';
   const bEscape   = '<button class="btn-escape" onclick="toggleEscape()">😮‍💨 Hoy no tengo fuerzas para esto</button>';
+  /* Un minuto de respiración, en el momento en que aparece el agobio. No es
+     terapia ni pretende serlo: es bajar el pico lo justo para poder salir. */
+  const bRespira  = '<button class="btn-second" onclick="abrirRespira()">🫁 Antes de esto, un minuto de respiración</button>';
   const bYaEsta   = '<button class="btn-second" onclick="marcar(\'fuerza\')">Ya la he hecho, márcala sin más</button>';
 
   if(marcado){
@@ -1172,30 +1332,32 @@ function renderHoy(){
       '<div class="actions">' +
         (enCasa ? bEmpezarM : '<button class="btn-main" onclick="marcar(\'reconocimiento\')">🧭 He ido a ver las máquinas</button>') +
         (enCasa ? bCompleta : bEmpezarM) +
-        bCaminar +
+        bCaminar + bRespira +
       '</div>' + bEscape;
   } else if(tipo === 'cinta'){
     acciones.innerHTML =
       '<div class="actions">' +
         '<button class="btn-main" onclick="empezarCinta()">▶️ Empezar la cinta</button>' +
         '<button class="btn-second" onclick="marcar(\'cinta\')">Ya la he hecho, márcala sin más</button>' +
-        bCaminar +
+        bCaminar + bRespira +
       '</div>' + bEscape;
   } else if(tipo === 'libre'){
     acciones.innerHTML =
       '<div class="actions">' + bCaminar +
         '<button class="btn-second" onclick="empezarCinta()">🏃 Hacer cinta</button>' +
         '<button class="btn-second" onclick="empezarSesion(\'fuerza\')">💪 Hacer fuerza</button>' +
+        bRespira +
       '</div>';
   } else {
     acciones.innerHTML =
       '<div class="actions">' +
         (reentrada ? bEmpezarM + bCompleta : bEmpezar + bMinima) +
-        bYaEsta +
+        bYaEsta + bRespira +
       '</div>' + bEscape;
   }
 
   renderManana();
+  renderPesosRapido();
   renderHorario();
 }
 
@@ -1210,28 +1372,102 @@ function renderManana(){
     ' · ' + (NOMBRE_TIPO[prox.tipo] || 'fuerza') + '</b></div>' + cenaHTML();
 }
 
+/* Avisos de lo que va a cambiar HOY, antes de salir de casa: que no se
+   encuentre la sorpresa delante de la máquina. Nunca hablan de días parado. */
+function avisosHTML(tipo, marcado){
+  let html = '';
+  const nF = sesionesFuerza();
+  const nC = sesionesCinta();
+  const esFuerza = tipo === 'fijo' || tipo === 'flex';
+
+  /* Justo al cruzar el umbral de la 3ª serie. Solo en la transición. */
+  if(esFuerza && !marcado && (nF === 4 || nF === 5)){
+    html += '<div class="aviso-nivel"><b>Hoy son 3 series</b> en los tres primeros ejercicios, no 2. ' +
+            'Llevas ' + nF + ' sesiones de fuerza. Los tres últimos siguen igual.</div>';
+  }
+  /* Cinta: aviso solo cuando el nivel acaba de subir respecto a la sesión anterior. */
+  if(tipo === 'cinta' && !marcado && nC > 0 && !enReentrada()){
+    const ahora = nivelCinta();
+    let antes = 0;
+    while(antes < CINTA_NIVELES.length - 1 && (nC-1) >= CINTA_NIVELES[antes].hasta) antes++;
+    if(CINTA_NIVELES[antes].n < ahora.n){
+      html += '<div class="aviso-nivel"><b>Hoy subes a nivel ' + ahora.n + ':</b> ' +
+              ahora.vel + ' km/h y ' + ahora.inc + '% de cuesta. Si te agarras a las barras, baja la cuesta.</div>';
+    }
+  }
+  /* Máquinas ocupadas: solo cuando de verdad va a estar lleno. */
+  const ahora = new Date();
+  const dow = ahora.getDay(), h = ahora.getHours();
+  if(esFuerza && !marcado && getLugar() === 'gym' && dow >= 1 && dow <= 5 && h >= 17 && h < 22){
+    html += '<div class="quiet" style="margin-top:14px;"><b>A esta hora vas a encontrar máquinas ocupadas.</b> ' +
+            'Cada ejercicio tiene su plan B dentro de la sesión guiada, en "¿Está ocupada?". ' +
+            'El orden da igual: sáltala y vuelve luego.</div>';
+  }
+  return html;
+}
+
+/* Recordatorio de qué peso puso la última vez en cada máquina, todo junto y
+   antes de entrar, para no ir abriendo ficha por ficha delante de la gente. */
+function renderPesosRapido(){
+  const el = document.getElementById('hoyPesos');
+  if(!el) return;
+  const pesos = getPesos();
+  const lista = EJERCICIOS_GYM.filter(e => !e.sinPeso);
+  if(getLugar() !== 'gym' || !lista.some(e => pesos[e.id])){ el.innerHTML = ''; return; }
+  const filas = lista.map(e =>
+    '<tr' + (pesos[e.id] ? '' : ' class="vacio"') + '><td>' + esc(e.nombre) + '</td>' +
+    '<td>' + (pesos[e.id] ? pesos[e.id] + ' kg' : '—') + '</td></tr>'
+  ).join('');
+  el.innerHTML =
+    '<details style="margin-top:20px;"><summary><span class="ex-head">Qué peso pusiste la última vez</span></summary>' +
+    '<div class="content"><table class="pesos-lista">' + filas + '</table>' +
+    '<p style="font-size:var(--t-xs); color:var(--muted); margin:6px 0 0;">Se cambia dentro de la sesión guiada, en cada ejercicio.</p>' +
+    '</div></details>';
+}
+
 /* A qué hora cenar según lo que toque hoy. Está atado a su jornada real
    (L-J 9-18h, V 9-15h) y al plan de alimentación, que es de 5 comidas. */
 function cenaHTML(){
   const hoy = new Date();
   const dow = hoy.getDay();
-  const tipo = tipoDeDia(hoy);
-  let hora = '21:00', porque = 'Dos o tres horas antes de acostarte. Con la merienda de por medio para no llegar con hambre.';
+  const h = hoy.getHours();
+  const hecho = getLog()[hoyKey()];
+  const entrenoHecho = esSesion(hecho);
+  const tocaEntrenar = tipoDeDia(hoy) !== 'libre';
+  let hora = '21:00';
+  let porque = 'Dos o tres horas antes de acostarte, con la merienda de por medio para no llegar con hambre.';
 
-  if(tipo !== 'libre'){
+  if(entrenoHecho){
+    /* Ya ha entrenado: lo que importa ahora es cuánto falta de aquí a la cena. */
+    if(h >= 19){
+      hora = 'ya';
+      porque = 'Acabas de entrenar y es tarde: cena algo sencillo ya, sin esperar. Si te acuestas en menos de dos horas, que sea ligero.';
+    } else if(h <= 12){
+      porque = 'Has entrenado por la mañana, así que la cena no se mueve. Lo que sí importa hoy: no te saltes la merienda.';
+    } else {
+      porque = 'Entreno hecho. Si de aquí a la cena pasan más de tres horas, algo a media tarde — un yogur o fruta con frutos secos.';
+    }
+  } else if(tocaEntrenar){
     if(dow === 5){
-      hora = '21:00';
       porque = 'Sales del gimnasio sobre las 17h: merienda al salir y cena tranquila. Hoy además tu plan te deja cena libre.';
     } else if(dow === 0 || dow === 6){
-      hora = '21:00';
       porque = 'Entrenas por la mañana, así que la cena no se mueve de su hora.';
     } else {
       hora = '20:45';
-      porque = 'Si entrenas por la mañana temprano, la cena va a su hora normal. Si acabas entrenando de noche, cena antes de ir y toma algo ligero al volver.';
+      porque = 'Si entrenas temprano, la cena va a su hora. Si acabas yendo de noche, cena antes de salir y algo ligero al volver — cenar a la 1:00 te descoloca el sueño, que ya lo tienes movido.';
     }
   }
+
+  /* Snack: la merienda saltada es su disparador documentado de picoteo nocturno. */
+  let snack = '';
+  if(tocaEntrenar && !entrenoHecho && h >= 15 && h < 20){
+    snack = '<p class="cena-nota"><b>Antes de ir:</b> si hace más de tres horas que comiste, algo pequeño 30-60 min antes — una pieza de fruta o un yogur. No entrenes con el estómago vacío del todo, pero tampoco recién comido.</p>';
+  } else if(entrenoHecho && h < 20 && hora !== 'ya'){
+    snack = '<p class="cena-nota"><b>Al salir:</b> si la cena queda a más de dos horas, un yogur o un vaso de leche. Llegar a la cena con hambre acumulada es lo que dispara el picoteo de después.</p>';
+  }
+
   return '<div class="hoy-manana"><span>Cena hoy sobre las</span><b>' + hora + '</b></div>' +
-         '<p class="cena-nota">' + porque + '</p>';
+         '<p class="cena-nota">' + porque + '</p>' + snack;
 }
 
 function renderHorario(){
@@ -1290,6 +1526,64 @@ function marcarDia(key, tipo){
 }
 function toggleEscape(){ document.getElementById('escapeCard').classList.toggle('show'); }
 
+/* ===================== RESPIRACIÓN =====================
+   Respiración en caja, 4-4-4-4, seis ciclos ≈ 96 segundos. Se eligió esta y no
+   la 4-7-8 porque con el pulso ya acelerado aguantar 7 segundos cuesta y sale
+   mal, que es justo lo contrario de lo que hace falta en ese momento.
+   No pregunta nada, no guarda nada y no cuenta como sesión: solo respirar. */
+const RESP = { fase:0, ciclo:0, t:null, activa:false };
+const RESP_FASES = [
+  { txt:'Coge aire',  sub:'Por la nariz, sin forzar.',        grande:true  },
+  { txt:'Mantén',     sub:'Sin apretar. Hombros sueltos.',    grande:true  },
+  { txt:'Suelta',     sub:'Por la boca, despacio.',           grande:false },
+  { txt:'Mantén',     sub:'Vacío. Un momento y volvemos.',    grande:false }
+];
+const RESP_CICLOS = 6;
+
+function abrirRespira(){
+  RESP.fase = 0; RESP.ciclo = 0; RESP.activa = true;
+  document.getElementById('respira').classList.add('show');
+  document.body.classList.add('sesion-abierta');
+  pasoRespira();
+}
+function pasoRespira(){
+  if(!RESP.activa) return;
+  if(RESP.ciclo >= RESP_CICLOS){
+    document.getElementById('respFase').textContent = 'Ya está';
+    document.getElementById('respSub').textContent = 'Un minuto y medio. Ahora sí, cuando quieras.';
+    document.getElementById('respCiclos').textContent = '';
+    document.getElementById('respCirculo').classList.remove('grande');
+    return;
+  }
+  const f = RESP_FASES[RESP.fase];
+  document.getElementById('respFase').textContent = f.txt;
+  document.getElementById('respSub').textContent = f.sub;
+  document.getElementById('respCiclos').textContent = 'Ciclo ' + (RESP.ciclo+1) + ' de ' + RESP_CICLOS;
+  document.getElementById('respCirculo').classList.toggle('grande', f.grande);
+
+  /* La cuenta atrás dentro del círculo va contra un timestamp, igual que los
+     cronómetros de la sesión: si bloquea la pantalla no se desfasa. */
+  const fin = Date.now() + 4000;
+  clearInterval(RESP.t);
+  RESP.t = setInterval(() => {
+    const quedan = Math.ceil((fin - Date.now()) / 1000);
+    const c = document.getElementById('respCirculo');
+    if(c) c.textContent = String(Math.max(1, quedan));
+    if(quedan <= 0){
+      clearInterval(RESP.t);
+      RESP.fase++;
+      if(RESP.fase >= RESP_FASES.length){ RESP.fase = 0; RESP.ciclo++; }
+      pasoRespira();
+    }
+  }, 120);
+}
+function cerrarRespira(){
+  RESP.activa = false;
+  clearInterval(RESP.t);
+  document.getElementById('respira').classList.remove('show');
+  if(!S.activa) document.body.classList.remove('sesion-abierta');
+}
+
 /* ===================== SESIÓN GUIADA =====================
    Lleva de la mano ejercicio por ejercicio y serie por serie (o tanda por tanda
    en la cinta), con los tiempos cronometrados. Se puede salir en cualquier
@@ -1302,13 +1596,20 @@ const S = {
 const TANDA_MIN = 15;
 const DESCANSO_TANDAS = 120;   // 2 min entre las dos tandas de cinta
 
+/* modo: 'fuerza' (todo) · 'minima' (3 primeros) · 'express' (3 primeros, 1 serie,
+   ~8 min, para los días de verdad malos) · 'viaje' (4 en casa, 1 serie). */
 function empezarSesion(modo){
-  const todos = ejerciciosActuales();
+  const todos = modo === 'viaje' ? EJERCICIOS_CASA : ejerciciosActuales();
   S.tipo = 'fuerza';
-  S.lista = modo === 'minima' ? todos.slice(0,3) : todos.slice();
+  if(modo === 'minima' || modo === 'express') S.lista = todos.slice(0,3);
+  else if(modo === 'viaje') S.lista = todos.slice(0,4);
+  else S.lista = todos.slice();
   S.modo = modo; S.iEj = 0; S.serie = 0; S.activa = true; S.descansando = false; S.hechos = 0;
   abrirSesion();
 }
+/* En express y viaje, una sola serie por ejercicio: el objetivo es haber ido,
+   no el estímulo. Es la diferencia entre una semana en cero y una que no lo está. */
+function serieUnica(){ return S.modo === 'express' || S.modo === 'viaje'; }
 
 function empezarCinta(){
   S.tipo = 'cinta'; S.modo = 'cinta'; S.activa = true; S.hechos = 0;
@@ -1330,7 +1631,8 @@ function salirSesion(){
   pararTick();
   if(S.hechos > 0 && !getLog()[hoyKey()]){
     /* Salió a medias pero hizo algo: cuenta, y cuenta sin preguntar nada. */
-    const tipo = S.tipo === 'cinta' ? 'cinta' : (S.hechos >= S.lista.length ? S.modo : 'minima');
+    const tipo = S.tipo === 'cinta' ? 'cinta'
+               : (S.hechos >= S.lista.length ? tipoDeModo() : 'minima');
     marcar(tipo, true);
     toast('Guardado. Lo que has hecho cuenta.');
   }
@@ -1356,8 +1658,13 @@ function pintarSesion(){
     body.innerHTML =
       '<div class="ses-fin">' +
         '<span class="emo">💪</span>' +
-        '<h3>' + (S.modo === 'minima' ? 'Sesión mínima hecha' : 'Sesión completa') + '</h3>' +
-        '<p>Ya está. No hay nada más que rellenar ni que apuntar en ningún sitio.</p>' +
+        '<h3>' + (S.modo === 'fuerza' ? 'Sesión completa'
+                : S.modo === 'express' ? 'Hecho'
+                : S.modo === 'viaje'   ? 'Sesión de viaje hecha'
+                : 'Sesión mínima hecha') + '</h3>' +
+        '<p>' + (S.modo === 'express'
+          ? 'Ocho minutos en un día malo valen más que una sesión perfecta dentro de dos semanas. Cuenta igual que cualquier otra.'
+          : T('Ya está. No hay nada más que rellenar ni que apuntar en ningún sitio.', 'Guardado.')) + '</p>' +
         '<button class="btn-main" onclick="terminarSesion()">Guardar y salir</button>' +
       '</div>';
     return;
@@ -1402,7 +1709,18 @@ function pintarSesion(){
     '<div class="ses-foot">' +
       '<button class="btn-main" onclick="serieHecha()">✓ Serie hecha</button>' +
       '<button class="btn-second" onclick="saltarEjercicio()">Saltar este ejercicio</button>' +
+      (getLugar() === 'gym' ? '<button class="btn-second" onclick="noSeQueMaquina()">🤔 No sé cuál es esta máquina</button>' : '') +
     '</div>';
+}
+
+/* Salida de emergencia desde dentro de la sesión: cierra, lleva a la Guía de
+   máquinas y deja marcado lo que ya llevaba hecho. Es el momento de más apuro
+   posible, así que no pregunta nada ni pierde el progreso. */
+function noSeQueMaquina(){
+  const ej = S.lista[S.iEj];
+  salirSesion();
+  showTabByName('guia');
+  if(ej) toast('Busca: ' + ej.alias);
 }
 
 function pintarDescanso(ej, nSeries){
@@ -1411,7 +1729,7 @@ function pintarDescanso(ej, nSeries){
     ? (S.lista[S.iEj+1] ? S.lista[S.iEj+1].nombre : 'terminar')
     : ej.nombre + ' · serie ' + (S.serie+1);
   body.innerHTML =
-    '<div class="ses-descanso">' + anilloHTML(getDescanso()) +
+    '<div class="ses-descanso">' + anilloHTML(descansoActual()) +
       '<p>Descansa. Respira. No hay prisa.</p>' +
       '<div style="display:flex; gap:8px;">' +
         '<button class="btn-timer" onclick="masDescanso()">+15s</button>' +
@@ -1524,11 +1842,12 @@ function serieHecha(){
   if(S.serie >= nSeries) S.hechos++;
   if(S.serie >= nSeries && S.iEj + 1 >= S.lista.length){
     S.iEj++; S.serie = 0;
+    pito('fin');
     pintarSesion();
     return;
   }
   S.descansando = true;
-  S.finDescanso = Date.now() + getDescanso() * 1000;
+  S.finDescanso = Date.now() + descansoActual() * 1000;
   arrancarTick();
   pintarSesion();
 }
@@ -1538,6 +1857,10 @@ function saltarEjercicio(){
   pararTick();
   pintarSesion();
 }
+
+/* En express/viaje el descanso baja a 30s: si dura lo mismo que una sesión
+   normal deja de ser la salida rápida que pretende ser. */
+function descansoActual(){ return serieUnica() ? 30 : getDescanso(); }
 
 function masDescanso(){ S.finDescanso += 15000; actualizarRing(); }
 
@@ -1562,8 +1885,14 @@ function arrancarTick(){
   S.tick = setInterval(() => {
     const objetivo = (S.tipo === 'cinta' && !S.descansando) ? S.finTanda : S.finDescanso;
     if(Math.ceil((objetivo - Date.now()) / 1000) <= 0){
-      pito();
-      if(S.tipo === 'cinta' && !S.descansando) finTanda(); else finDescanso();
+      if(S.tipo === 'cinta' && !S.descansando){
+        /* Última tanda: es el fin de la sesión, no un cambio de tanda. */
+        pito(S.tanda + 1 >= 2 ? 'fin' : 'tanda');
+        finTanda();
+      } else {
+        pito('seguir');
+        finDescanso();
+      }
       return;
     }
     actualizarRing();
@@ -1577,7 +1906,7 @@ function actualizarRing(){
   if(!txt || !anillo) return;
   const enTanda = S.tipo === 'cinta' && !S.descansando;
   const objetivo = enTanda ? S.finTanda : S.finDescanso;
-  const total = enTanda ? TANDA_MIN * 60 : (S.tipo === 'cinta' ? DESCANSO_TANDAS : getDescanso());
+  const total = enTanda ? TANDA_MIN * 60 : (S.tipo === 'cinta' ? DESCANSO_TANDAS : descansoActual());
   const quedan = S.pausada
     ? Math.ceil(S.restante / 1000)
     : Math.max(0, Math.ceil((objetivo - Date.now()) / 1000));
@@ -1594,8 +1923,12 @@ function cerrarSesion(){
   document.body.classList.remove('sesion-abierta');
 }
 
+/* express y viaje se guardan como 'minima': son sesiones reales y cuentan, pero
+   no hace falta un tipo nuevo en el historial para distinguirlas. */
+function tipoDeModo(){ return S.modo === 'fuerza' ? 'fuerza' : 'minima'; }
+
 function terminarSesion(){
-  const tipo = S.modo === 'minima' ? 'minima' : 'fuerza';
+  const tipo = tipoDeModo();
   S.hechos = S.lista.length;
   marcar(tipo, true);
   cerrarSesion();
@@ -1630,21 +1963,43 @@ function prepararSonido(){
     if(audioCtx.state === 'suspended') audioCtx.resume();
   }catch(e){ audioCtx = null; }
 }
-function pito(){
+/* Tres avisos distinguibles sin mirar la pantalla, que es de lo que se trata
+   cuando vas con AirPods puestos y música de fondo:
+     seguir  → dos pitidos cortos e iguales
+     tanda   → tres notas subiendo (cambia algo, mira la cinta)
+     fin     → tres notas bajando y más largas (se acabó)
+   Con AirPods el sonido entra por encima de la música y no molesta a nadie del
+   gimnasio, así que el modo silencioso es la excepción, no lo normal. */
+const PITOS = {
+  seguir: [{f:880, t:0, d:0.14}, {f:880, t:0.18, d:0.14}],
+  tanda:  [{f:660, t:0, d:0.13}, {f:880, t:0.16, d:0.13}, {f:1100, t:0.32, d:0.20}],
+  fin:    [{f:1100, t:0, d:0.18}, {f:880, t:0.22, d:0.18}, {f:587, t:0.46, d:0.42}]
+};
+function pito(cual){
+  const notas = PITOS[cual] || PITOS.seguir;
+  /* Si no hay sonido, el aviso tiene que ser visible: la pantalla parpadea. */
+  if(getSonido() === 'no'){ destello(); return; }
   try{ if(navigator.vibrate) navigator.vibrate([120,60,120]); }catch(e){}
-  if(!audioCtx) return;
+  if(!audioCtx){ destello(); return; }
   try{
-    const t = audioCtx.currentTime;
-    [0, 0.18].forEach(off => {
+    const t0 = audioCtx.currentTime;
+    notas.forEach(n => {
       const osc = audioCtx.createOscillator(), gan = audioCtx.createGain();
-      osc.frequency.value = 880; osc.type = 'sine';
-      gan.gain.setValueAtTime(0.0001, t + off);
-      gan.gain.exponentialRampToValueAtTime(0.25, t + off + 0.02);
-      gan.gain.exponentialRampToValueAtTime(0.0001, t + off + 0.14);
+      osc.frequency.value = n.f; osc.type = 'sine';
+      gan.gain.setValueAtTime(0.0001, t0 + n.t);
+      gan.gain.exponentialRampToValueAtTime(0.25, t0 + n.t + 0.02);
+      gan.gain.exponentialRampToValueAtTime(0.0001, t0 + n.t + n.d);
       osc.connect(gan); gan.connect(audioCtx.destination);
-      osc.start(t + off); osc.stop(t + off + 0.16);
+      osc.start(t0 + n.t); osc.stop(t0 + n.t + n.d + 0.02);
     });
-  }catch(e){}
+  }catch(e){ destello(); }
+}
+function destello(){
+  const el = document.getElementById('sesion');
+  if(!el) return;
+  el.style.transition = 'none';
+  el.style.background = 'var(--accent)';
+  setTimeout(() => { el.style.transition = 'background .5s'; el.style.background = ''; }, 130);
 }
 
 /* ===================== RUTINA ===================== */
@@ -1737,7 +2092,7 @@ function renderSemanaDias(){
     const actual = log[key] || '';
     /* Cada opción lleva texto visible: en el móvil no hay hover, así que un
        emoji suelto no se entiende. */
-    const opciones = ['','fuerza','minima','cinta','caminar','descanso'].map(t => {
+    const opciones = ['','fuerza','minima','cinta','caminar','activo','descanso'].map(t => {
       const e = t === '' ? { icon:'—', corto:'Nada' } : etiqueta(t);
       return '<button class="' + (actual === t ? 'active' : '') + '" role="radio" ' +
              'aria-checked="' + (actual === t) + '" ' +
@@ -1847,6 +2202,157 @@ function aplicarColor(){
   });
 }
 
+/* Ajustes nuevos. Todos siguen el mismo patrón: guardar, aplicar, repintar. */
+function marcarOpts(sel, attr, valor){
+  Array.prototype.forEach.call(document.querySelectorAll(sel), b => {
+    b.classList.toggle('active', b.dataset[attr] === valor);
+  });
+}
+function setSonido(v){ setLS(K.sonido, v); pushSync(); renderAjustes(); if(v === 'si') prepararSonido(); }
+function setTam(v){ setLS(K.tam, v); pushSync(); aplicarTam(); renderAjustes(); }
+function setContraste(v){ setLS(K.contraste, v); pushSync(); aplicarContraste(); renderAjustes(); }
+function setTono(v){ setLS(K.tono, v); pushSync(); renderAjustes(); renderHoy(); }
+function setInicio(v){ setLS(K.inicio, v); pushSync(); renderAjustes(); }
+function setTema(v){ setLS(K.theme, v); aplicarTema(); renderAjustes(); }
+
+function aplicarTam(){
+  const t = getTam();
+  document.documentElement.classList.toggle('txt-g',  t === 'g');
+  document.documentElement.classList.toggle('txt-xg', t === 'xg');
+}
+function aplicarContraste(){
+  document.documentElement.classList.toggle('contraste', getContraste() === 'si');
+}
+/* 'auto' = claro de 7:00 a 20:00, oscuro el resto. Pensado para las dos franjas
+   en que de verdad entrena: 6:45 y 22:45. */
+function oscuroTocaAhora(){
+  const h = new Date().getHours();
+  return h < 7 || h >= 20;
+}
+function aplicarTema(){
+  const modo = getTema();
+  const oscuro = modo === 'dark' || (modo === 'auto' && oscuroTocaAhora());
+  document.documentElement.classList.toggle('dark', oscuro);
+  const b = document.getElementById('themeBtn');
+  if(b) b.textContent = oscuro ? '☀️' : '🌙';
+}
+/* El botón de la cabecera sigue siendo un interruptor directo: al usarlo se
+   sale del modo automático, que es lo que uno espera al pulsarlo. */
+function toggleThemeManual(){
+  setTema(document.documentElement.classList.contains('dark') ? 'light' : 'dark');
+}
+
+function renderAjustes(){
+  marcarOpts('#sonidoOpts .style-opt',    'sonido',    getSonido());
+  marcarOpts('#tamOpts .style-opt',       'tam',       getTam());
+  marcarOpts('#contrasteOpts .style-opt', 'contraste', getContraste());
+  marcarOpts('#tonoOpts .style-opt',      'tono',      getTono());
+  marcarOpts('#inicioOpts .style-opt',    'inicio',    getInicio());
+  marcarOpts('#temaOpts .style-opt',      'tema',      getTema());
+  renderSyncEstado();
+}
+
+/* Estado del sync, visible y en cristiano. Antes fallaba en silencio: si la
+   tabla no existía o no había red, no había forma de enterarse. */
+function renderSyncEstado(){
+  const el = document.getElementById('syncEstado');
+  if(!el) return;
+  let ts = null;
+  try{ ts = parseInt(localStorage.getItem(K.sync), 10); }catch(e){}
+  if(!ts || isNaN(ts)){
+    el.className = 'sync-estado mal';
+    el.innerHTML = '<b>Sin sincronizar todavía.</b> Tus datos están guardados en este dispositivo y no se pierden, pero aún no viajan entre el iPhone y el PC.';
+    return;
+  }
+  const dias = Math.floor((Date.now() - ts) / 86400000);
+  const cuando = dias === 0 ? 'hoy' : dias === 1 ? 'ayer' : 'hace ' + dias + ' días';
+  el.className = 'sync-estado' + (dias >= 7 ? ' mal' : '');
+  el.innerHTML = dias >= 7
+    ? '<b>Última sincronización ' + cuando + '.</b> Llevas tiempo sin conectar: si usas dos dispositivos, conviene abrir la app con datos para que se pongan al día.'
+    : 'Sincronizado <b>' + cuando + '</b>.';
+}
+
+function importarDatos(input){
+  const f = input.files && input.files[0];
+  input.value = '';
+  if(!f) return;
+  const lector = new FileReader();
+  lector.onload = () => {
+    let datos;
+    try{ datos = JSON.parse(lector.result); }catch(e){ toast('Ese archivo no se puede leer'); return; }
+    if(!datos || typeof datos !== 'object'){ toast('Ese archivo no vale'); return; }
+    const validas = Object.keys(K).map(k => K[k]);
+    let n = 0;
+    /* Se fusiona igual que el sync: restaurar una copia no borra lo de ahora. */
+    Object.keys(datos).forEach(clave => {
+      if(validas.indexOf(clave) === -1) return;
+      if(FUSIONABLES.indexOf(clave) !== -1 || clave === K.check){
+        setLS(clave, fusionarObjetos(localStorage.getItem(clave), datos[clave]));
+      } else {
+        setLS(clave, datos[clave]);
+      }
+      n++;
+    });
+    if(!n){ toast('Ese archivo no es de esta app'); return; }
+    aplicarTema(); aplicarTam(); aplicarContraste();
+    renderTodo(); renderAjustes(); pushSync();
+    toast('Copia restaurada');
+  };
+  lector.readAsText(f);
+}
+
+/* Compartir el progreso como imagen. Solo números que suben: total, mejor
+   semana y sesiones de esta. Nada de rachas ni de días parado. */
+function compartirProgreso(){
+  const c = document.createElement('canvas');
+  c.width = 1080; c.height = 1080;
+  const g = c.getContext('2d');
+  const css = getComputedStyle(document.documentElement);
+  const acc = (css.getPropertyValue('--accent') || '#2b6cb0').trim();
+  const bg  = (css.getPropertyValue('--bg') || '#faf9f5').trim();
+  const ink = (css.getPropertyValue('--ink') || '#2b2b28').trim();
+  const mut = (css.getPropertyValue('--muted') || '#6b6b63').trim();
+
+  g.fillStyle = bg; g.fillRect(0, 0, 1080, 1080);
+  g.fillStyle = acc; g.fillRect(0, 0, 1080, 16);
+
+  g.textAlign = 'center';
+  g.fillStyle = mut; g.font = 'bold 34px -apple-system, sans-serif';
+  g.fillText('PLAN DE EJERCICIO', 540, 130);
+
+  const datos = [
+    { n: totalSesiones(), t: 'sesiones en total' },
+    { n: mejorSemana(),   t: 'tu mejor semana' },
+    { n: sesionesEnSemana(isoWeekKey(new Date())), t: 'esta semana' }
+  ];
+  datos.forEach((d, i) => {
+    const y = 300 + i * 250;
+    g.fillStyle = acc; g.font = 'bold 150px -apple-system, sans-serif';
+    g.fillText(String(d.n), 540, y);
+    g.fillStyle = ink; g.font = '44px -apple-system, sans-serif';
+    g.fillText(d.t, 540, y + 66);
+  });
+
+  g.fillStyle = mut; g.font = '32px -apple-system, sans-serif';
+  g.fillText('Sin rachas. Estos números solo suben.', 540, 1010);
+
+  c.toBlob(blob => {
+    if(!blob){ toast('No se ha podido crear la imagen'); return; }
+    const file = new File([blob], 'progreso.png', { type:'image/png' });
+    /* Compartir nativo si el navegador lo permite (iPhone sí); si no, descarga. */
+    if(navigator.canShare && navigator.canShare({ files:[file] })){
+      navigator.share({ files:[file] }).catch(() => {});
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'progreso-' + hoyKey() + '.png';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast('Imagen descargada');
+  }, 'image/png');
+}
+
 function exportarDatos(){
   const datos = {};
   Object.keys(K).forEach(k => { const v = localStorage.getItem(K[k]); if(v !== null) datos[K[k]] = v; });
@@ -1859,18 +2365,22 @@ function exportarDatos(){
   toast('Copia descargada');
 }
 
-function toggleTheme(){
-  const isDark = document.documentElement.classList.toggle('dark');
-  document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
-  setLS(K.theme, isDark ? 'dark' : 'light');
-}
+function toggleTheme(){ toggleThemeManual(); }
+
+/* Se aplica antes de pintar nada para que no haya un fogonazo blanco al abrir
+   la app de noche. Aquí todavía no existe el botón de la cabecera. */
 (function initTheme(){
   let saved = null;
   try{ saved = localStorage.getItem(K.theme); }catch(e){}
-  /* Sin preferencia guardada, seguimos al sistema. */
-  if(saved === 'dark' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)){
-    document.documentElement.classList.add('dark');
-  }
+  const auto = (saved !== 'dark' && saved !== 'light');
+  const oscuro = saved === 'dark'
+    || (auto && (new Date().getHours() < 7 || new Date().getHours() >= 20));
+  if(oscuro) document.documentElement.classList.add('dark');
+  try{
+    const t = localStorage.getItem(K.tam);
+    if(t === 'g' || t === 'xg') document.documentElement.classList.add('txt-' + t);
+    if(localStorage.getItem(K.contraste) === 'si') document.documentElement.classList.add('contraste');
+  }catch(e){}
 })();
 
 /* ===================== NAVEGACIÓN ===================== */
@@ -1911,7 +2421,8 @@ function toast(msg){
    iPhone sin cobertura y luego tocas algo en el PC, no se pisa lo del otro. */
 const SUPABASE_URL = 'https://ibouktzmckphsvqabgig.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_8pdb7ItwgBzII8SMsdWjzA_kunVAiq5';
-const SYNC_KEYS = [K.color, K.dias, K.log, K.check, K.lugar, K.pesos, K.descanso];
+const SYNC_KEYS = [K.color, K.dias, K.log, K.check, K.lugar, K.pesos, K.descanso,
+                   K.sonido, K.tam, K.contraste, K.tono, K.inicio];
 const FUSIONABLES = [K.log, K.pesos];
 let syncPushTimer = null;
 
@@ -1957,8 +2468,15 @@ function pushSync(){
         'Prefer': 'resolution=merge-duplicates'
       },
       body: JSON.stringify({ id:1, data: JSON.stringify(collectSyncState()) })
-    }).catch(() => { /* sin conexión: se queda en local y sube la próxima vez */ });
+    }).then(res => { if(res.ok) marcarSyncOK(); })
+      .catch(() => { /* sin conexión: se queda en local y sube la próxima vez */ });
   }, 600);
+}
+/* La fecha del último sync correcto va aparte y NO se sincroniza: es un dato de
+   este dispositivo, no del plan. */
+function marcarSyncOK(){
+  setLS(K.sync, String(Date.now()));
+  renderSyncEstado();
 }
 async function pullSync(){
   try{
@@ -1967,9 +2485,11 @@ async function pullSync(){
       headers:{ 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Cache-Control':'no-cache' }
     });
     if(!res.ok) return;
+    marcarSyncOK();
     const rows = await res.json();
     if(!rows || !rows[0] || !rows[0].data) return;
     applySyncState(JSON.parse(rows[0].data));
+    aplicarTam(); aplicarContraste();
     renderTodo();
   }catch(e){ /* sin conexión o primera vez sin datos remotos: seguimos con lo local */ }
 }
@@ -1980,14 +2500,14 @@ function renderTodo(){
   renderDayPicker();
   renderLugar();
   renderDescanso();
+  renderAjustes();
   renderRutina();
   renderHoy();
   renderSemana();
   setVista(getLugar());
 }
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('themeBtn').textContent =
-    document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
+  aplicarTema();
 
   document.querySelectorAll('#optEnergia button, #optRopa button').forEach(b => {
     b.addEventListener('click', () => setCheck(b.dataset.campo, b.dataset.valor));
@@ -1995,17 +2515,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderTodo();
 
-  let tab = 'hoy';
-  try{ tab = localStorage.getItem(K.tab) || 'hoy'; }catch(e){}
-  if(TABS.indexOf(tab) !== -1 && tab !== 'hoy') showTabByName(tab);
+  /* Prioridad al abrir: lo que diga la dirección (#rutina) por encima de todo,
+     porque es lo que permite tener un segundo icono en la pantalla de inicio. */
+  const hash = (location.hash || '').replace('#','');
+  if(TABS.indexOf(hash) !== -1){
+    showTabByName(hash);
+  } else if(getInicio() === 'ultima'){
+    let tab = 'hoy';
+    try{ tab = localStorage.getItem(K.tab) || 'hoy'; }catch(e){}
+    if(TABS.indexOf(tab) !== -1 && tab !== 'hoy') showTabByName(tab);
+  }
 
   if(!navigator.onLine) showBanner('offlineBanner');
   pullSync();
 });
+window.addEventListener('hashchange', () => {
+  const h = (location.hash || '').replace('#','');
+  if(TABS.indexOf(h) !== -1) showTabByName(h);
+});
 
-/* Al volver a la app tras un rato fuera, recalcula por si ha cambiado el día. */
+/* Al volver a la app tras un rato fuera, recalcula por si ha cambiado el día
+   (o la franja horaria del modo automático). */
 document.addEventListener('visibilitychange', () => {
-  if(document.visibilityState === 'visible' && !S.activa){ renderHoy(); renderSemana(); pullSync(); }
+  if(document.visibilityState === 'visible' && !S.activa){
+    aplicarTema(); renderHoy(); renderSemana(); pullSync();
+  }
 });
 
 /* ===================== PWA ===================== */
