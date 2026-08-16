@@ -51,6 +51,20 @@
   html.dark[data-color="turquesa"]{ --accent:#5eead4; --accent2:#14b8a6; --accent-soft:#142e2b; }
   html[data-color="rosa"]{ --accent:#be185d; --accent2:#ec4899; --accent-soft:#fbe7f0; }
   html.dark[data-color="rosa"]{ --accent:#f472b6; --accent2:#ec4899; --accent-soft:#3a1f2c; }
+  html[data-color="indigo"]{ --accent:#4338ca; --accent2:#6d6ae8; --accent-soft:#e8e8fb; }
+  html.dark[data-color="indigo"]{ --accent:#a5b4fc; --accent2:#6d6ae8; --accent-soft:#232447; }
+  html[data-color="granate"]{ --accent:#9b2c2c; --accent2:#c85454; --accent-soft:#fbeaea; }
+  html.dark[data-color="granate"]{ --accent:#f08a8a; --accent2:#c85454; --accent-soft:#3a2020; }
+  html[data-color="oliva"]{ --accent:#5b6f2a; --accent2:#8aa544; --accent-soft:#eef3e0; }
+  html.dark[data-color="oliva"]{ --accent:#c3d97a; --accent2:#8aa544; --accent-soft:#2a3018; }
+  html[data-color="cian"]{ --accent:#0e7490; --accent2:#22a5c4; --accent-soft:#e0f4f9; }
+  html.dark[data-color="cian"]{ --accent:#67d9f0; --accent2:#22a5c4; --accent-soft:#122e38; }
+  html[data-color="pizarra"]{ --accent:#44546a; --accent2:#6b8199; --accent-soft:#eaeef3; }
+  html.dark[data-color="pizarra"]{ --accent:#a8bcd4; --accent2:#6b8199; --accent-soft:#242c36; }
+  html[data-color="mostaza"]{ --accent:#9a6b06; --accent2:#d4a017; --accent-soft:#fcf2dc; }
+  html.dark[data-color="mostaza"]{ --accent:#f0c860; --accent2:#d4a017; --accent-soft:#332a12; }
+  html[data-color="ciruela"]{ --accent:#7c2d6b; --accent2:#ad5b9b; --accent-soft:#f8eaf5; }
+  html.dark[data-color="ciruela"]{ --accent:#e29ad2; --accent2:#ad5b9b; --accent-soft:#341f30; }
 
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html{ overscroll-behavior-y:contain; }
@@ -268,6 +282,17 @@
     background:var(--bg); border:1px solid var(--border); color:var(--ink); border-radius:3px;
     padding:12px; font-family:inherit; font-size:var(--t-base); font-weight:600; cursor:pointer; flex:1;
   }
+  .ses-siguiente{margin-top:22px; font-size:var(--t-sm); color:var(--muted);}
+  .ses-siguiente b{color:var(--ink);}
+  .ses-alt{border:none; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin:0 0 20px;}
+  .ses-alt summary{padding:12px 2px; font-size:var(--t-sm); font-family:var(--font-body); color:var(--accent); font-weight:700;}
+  .ses-alt .content{padding:0 2px 14px; font-size:var(--t-sm); color:var(--muted);}
+  .cinta-nums{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border); border:1px solid var(--border); margin:0 0 18px;}
+  .cinta-num{background:var(--card); padding:18px 6px; text-align:center;}
+  .cinta-num b{display:block; font-family:var(--font-mono); font-weight:700; font-size:var(--t-2xl); color:var(--accent); line-height:1.1;}
+  .cinta-num span{font-size:var(--t-2xs); color:var(--muted); text-transform:uppercase; letter-spacing:.7px; font-weight:700;}
+  .cena-nota{font-size:var(--t-xs); color:var(--muted); margin:8px 0 0; line-height:1.45;}
+  .daypicker button.cinta{border-color:var(--accent2); background:var(--accent2); color:#fff;}
   .ses-fin{text-align:center; padding:34px 0;}
   .ses-fin .emo{font-size:56px; line-height:1; display:block; margin-bottom:14px;}
   .ses-fin h3{font-family:var(--font-display); font-size:var(--t-2xl); margin:0 0 8px; letter-spacing:-.4px;}
@@ -418,6 +443,13 @@
         <div class="swatch" data-color="morado"   style="background:#6b46c1" onclick="setColor('morado')"></div>
         <div class="swatch" data-color="naranja"  style="background:#c2660a" onclick="setColor('naranja')"></div>
         <div class="swatch" data-color="rosa"     style="background:#be185d" onclick="setColor('rosa')"></div>
+        <div class="swatch" data-color="indigo"   style="background:#4338ca" onclick="setColor('indigo')"></div>
+        <div class="swatch" data-color="cian"     style="background:#0e7490" onclick="setColor('cian')"></div>
+        <div class="swatch" data-color="granate"  style="background:#9b2c2c" onclick="setColor('granate')"></div>
+        <div class="swatch" data-color="oliva"    style="background:#5b6f2a" onclick="setColor('oliva')"></div>
+        <div class="swatch" data-color="mostaza"  style="background:#9a6b06" onclick="setColor('mostaza')"></div>
+        <div class="swatch" data-color="ciruela"  style="background:#7c2d6b" onclick="setColor('ciruela')"></div>
+        <div class="swatch" data-color="pizarra"  style="background:#44546a" onclick="setColor('pizarra')"></div>
       </div>
     </div>
 
@@ -458,8 +490,40 @@
   </div>
 
   <div class="style-options" style="margin:20px 0 8px;">
-    <button class="style-opt" id="btnVerGym" onclick="setVista('gym')">🏋️ En el gimnasio</button>
-    <button class="style-opt" id="btnVerCasa" onclick="setVista('casa')">🏠 En casa, sin nada</button>
+    <button class="style-opt" id="btnVerGym" onclick="setVista('gym')">🏋️ Fuerza</button>
+    <button class="style-opt" id="btnVerCinta" onclick="setVista('cinta')">🏃 Cinta</button>
+    <button class="style-opt" id="btnVerCasa" onclick="setVista('casa')">🏠 En casa</button>
+  </div>
+
+  <div id="vistaCinta" style="display:none;">
+    <p class="lead">30 minutos andando en cuesta, en dos tandas de 15. Sin correr. Esto es lo que más le conviene ahora mismo a tu colesterol, y es lo que tu propio historial dice que sí sostienes: 106 de tus 140 entrenos registrados eran caminar.</p>
+
+    <div id="cintaNivel"></div>
+
+    <div class="warn">
+      <b>La única regla que no se salta:</b> si te tienes que agarrar a las barras, hay demasiada cuesta o demasiada velocidad. Agarrarse descarga el peso en los brazos, te descoloca la postura y reduce mucho el trabajo real. Tienes que poder andar sin tocarlas — si no puedes, baja hasta que puedas.
+    </div>
+
+    <h3>Cómo saber si vas a la intensidad correcta</h3>
+    <p style="font-size:var(--t-base);">Sin pulsómetro ni nada: <b>el test del habla</b>. Tienes que poder decir una frase entera, pero no mantener una conversación larga ni cantar. Si podrías cantar, súbele. Si no te salen cinco palabras seguidas, bájale.</p>
+
+    <h3>Cómo subir de nivel</h3>
+    <p style="font-size:var(--t-base);">La app sube sola según las sesiones que llevas hechas — <b>no según las semanas que pasan</b>. Si paras un mes y vuelves, no te va a exigir el nivel de donde lo dejaste, te baja uno. Volver siempre es más suave.</p>
+    <p style="font-size:var(--t-base);">Y una cosa técnica que importa: <b>sube una sola variable cada vez</b>. Primero la cuesta, y cuando llegues arriba, la velocidad. Si subes las dos a la vez llegas en dos semanas a un punto que no aguantas.</p>
+
+    <table>
+      <tr><th>Sesiones</th><th>Velocidad</th><th>Cuesta</th></tr>
+      <tr><td>1 a 3</td><td>5,0 km/h</td><td>6%</td></tr>
+      <tr><td>4 a 8</td><td>5,5 km/h</td><td>9%</td></tr>
+      <tr><td>9 a 14</td><td>6,0 km/h</td><td>12%</td></tr>
+      <tr><td>15 a 22</td><td>6,2 km/h</td><td>14%</td></tr>
+      <tr><td>23 en adelante</td><td>6,5 km/h</td><td>15%</td></tr>
+    </table>
+    <p style="font-size:var(--t-xs); color:var(--muted);">A 6,5 km/h ya estás en el límite de andar: más rápido sería correr. Y con un 15% de cuesta, eso es un entreno duro de verdad. De ahí en adelante manda tu criterio.</p>
+
+    <div class="tip">
+      <b>Cinta y fuerza, en días distintos.</b> Si haces 30 minutos de cuesta y luego te vas a las máquinas, llegas con las piernas muertas y la fuerza no sirve de nada. Y una sesión de 65 minutos no la vas a sostener muchas semanas. Si algún día quieres las dos: <b>fuerza primero</b> y la cinta bájala a 10 minutos.
+    </div>
   </div>
 
   <div id="vistaGym">
@@ -663,7 +727,8 @@ const EJERCICIOS_GYM = [
     ],
     bien:'Notas el esfuerzo en la parte de delante del muslo y en el glúteo.',
     mal:'Si se te levanta el culo del asiento o la espalda baja se despega, estás bajando demasiado. Baja menos.',
-    clave:'Espalda pegada al respaldo y no bloquees la rodilla al estirar.'
+    clave:'Espalda pegada al respaldo y no bloquees la rodilla al estirar.',
+    alternativa:'Si está ocupada: <b>extensión de cuádriceps</b> ("Leg Extension") y, si puedes, también <b>curl femoral</b> ("Leg Curl"). Casi nunca están las dos pilladas a la vez y entre ambas cubren lo mismo.'
   },
   {
     id:'jalon', nombre:'Jalón al pecho',
@@ -680,7 +745,8 @@ const EJERCICIOS_GYM = [
     ],
     bien:'Notas que trabajan los laterales de la espalda, debajo de las axilas.',
     mal:'Si te echas muy hacia atrás o das tirones con todo el cuerpo, el peso es demasiado. Bájalo, en serio, no pasa nada.',
-    clave:'Tira hacia el pecho, no hacia la nuca. Y sin dar tirones.'
+    clave:'Tira hacia el pecho, no hacia la nuca. Y sin dar tirones.',
+    alternativa:'Si está ocupado: haz el <b>remo sentado</b> (el número 4) y vuelve al jalón después. Trabajan la misma zona desde otro ángulo, así que no pierdes nada por cambiar el orden.'
   },
   {
     id:'pecho', nombre:'Press de pecho',
@@ -697,7 +763,8 @@ const EJERCICIOS_GYM = [
     ],
     bien:'Notas el pecho trabajando y quizá algo el brazo.',
     mal:'Si tienes que arquear la espalda o despegarla del respaldo para empujar, hay demasiado peso.',
-    clave:'Las asas a la altura del pecho, no del cuello. Ajusta el asiento antes de empezar.'
+    clave:'Las asas a la altura del pecho, no del cuello. Ajusta el asiento antes de empezar.',
+    alternativa:'Si está ocupada: <b>contractor de pecho</b> ("Pec Deck" o "Butterfly"), la máquina donde juntas los brazos por delante. Es aún más fácil de usar que esta.'
   },
   {
     id:'remo', nombre:'Remo sentado',
@@ -714,7 +781,8 @@ const EJERCICIOS_GYM = [
     ],
     bien:'Notas que se juntan las paletillas y trabaja el centro de la espalda.',
     mal:'Si te balanceas adelante y atrás para tirar, baja el peso.',
-    clave:'Junta las paletillas. Sin balancearte.'
+    clave:'Junta las paletillas. Sin balancearte.',
+    alternativa:'Si está ocupado: haz el <b>jalón al pecho</b> (el número 2) y vuelve luego. Si también está pillado, cualquier polea donde puedas tirar hacia ti sentado vale.'
   },
   {
     id:'hombros', nombre:'Press de hombros',
@@ -731,7 +799,8 @@ const EJERCICIOS_GYM = [
     ],
     bien:'Notas los hombros. Y notas que aquí mueves mucho menos peso que en los demás.',
     mal:'Nada: que muevas poco peso aquí es completamente normal, incluso en gente que lleva años. El hombro es un músculo pequeño.',
-    clave:'Aquí vas a mover poco peso. Es normal, no es que lo estés haciendo mal.'
+    clave:'Aquí vas a mover poco peso. Es normal, no es que lo estés haciendo mal.',
+    alternativa:'Si está ocupada: <b>sáltatelo sin más</b>. Es el ejercicio menos importante de los seis y el hombro ya trabaja bastante en el press de pecho. Saltárselo no rompe nada.'
   },
   {
     id:'plancha', nombre:'Plancha',
@@ -748,8 +817,20 @@ const EJERCICIOS_GYM = [
     ],
     bien:'Notas la barriga apretada y el cuerpo en línea recta.',
     mal:'Si se te hunde la cadera hacia el suelo o subes el culo, mejor apoya las rodillas y haz menos segundos.',
-    clave:'Cuerpo recto como una tabla. Si es mucho, rodillas al suelo.'
+    clave:'Cuerpo recto como una tabla. Si es mucho, rodillas al suelo.',
+    alternativa:'Esta no se ocupa nunca: siempre hay hueco en la zona de colchonetas.'
   }
+];
+
+/* ===== Cinta: progresión por SESIONES HECHAS, no por semanas =====
+   Deliberado: si para un mes y vuelve, la app no le exige el nivel de donde lo
+   dejó. El nivel sube con el trabajo hecho, no con el tiempo que pasa. */
+const CINTA_NIVELES = [
+  { n:1, hasta:3,        vel:'5,0',     inc:'6',     nota:'Estas tres son para coger el gesto y ver cómo va la máquina. No es el entreno de verdad todavía.' },
+  { n:2, hasta:8,        vel:'5,5',     inc:'9',     nota:'Aquí ya empieza a apretar. Si te sobra al acabar, sube la inclinación un punto la próxima.' },
+  { n:3, hasta:14,       vel:'6,0',     inc:'12',    nota:'Esto ya es un entreno serio. A este ritmo mucha gente del gimnasio pasaría a correr.' },
+  { n:4, hasta:22,       vel:'6,2',     inc:'14',    nota:'Nivel alto de verdad. Caminar a esta velocidad con esta cuesta es duro y lo estás haciendo.' },
+  { n:5, hasta:Infinity, vel:'6,5',     inc:'15',    nota:'Techo de caminar: más rápido que esto ya sería correr. A partir de aquí manda tu criterio — sube lo que te pida el cuerpo.' }
 ];
 
 const EJERCICIOS_CASA = [
@@ -857,8 +938,8 @@ const DIAS_CORTOS = ['D','L','M','X','J','V','S'];
 const DIAS_LARGOS = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
 const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
-/* Por defecto: martes y jueves fijos, viernes flexible. Editable en Ajustes. */
-const DIAS_DEFECTO = { fijos:[2,4], flex:[5] };
+/* Por defecto: martes y jueves fuerza, viernes flexible, sábado cinta. Editable. */
+const DIAS_DEFECTO = { fijos:[2,4], flex:[5], cinta:[6] };
 const DESCANSO_DEFECTO = 75;
 
 function loadJSON(key, fallback){
@@ -875,7 +956,11 @@ function saveJSON(key, value){
 
 function getDias(){
   const d = loadJSON(K.dias, null);
-  if(!d || !Array.isArray(d.fijos) || !Array.isArray(d.flex)) return { fijos:DIAS_DEFECTO.fijos.slice(), flex:DIAS_DEFECTO.flex.slice() };
+  if(!d || !Array.isArray(d.fijos) || !Array.isArray(d.flex)){
+    return { fijos:DIAS_DEFECTO.fijos.slice(), flex:DIAS_DEFECTO.flex.slice(), cinta:DIAS_DEFECTO.cinta.slice() };
+  }
+  /* Config guardada antes de que existiera la cinta: se le añade su día. */
+  if(!Array.isArray(d.cinta)) d.cinta = DIAS_DEFECTO.cinta.slice();
   return d;
 }
 function getLog(){ const l = loadJSON(K.log, {}); return (l && typeof l === 'object') ? l : {}; }
@@ -887,6 +972,32 @@ function getDescanso(){
   return (n === 60 || n === 75 || n === 90) ? n : DESCANSO_DEFECTO;
 }
 function ejerciciosActuales(){ return getLugar() === 'casa' ? EJERCICIOS_CASA : EJERCICIOS_GYM; }
+
+/* Cuántas sesiones de fuerza y de cinta lleva hechas. La progresión va contra
+   esto y no contra el calendario: si para un mes, al volver no se le exige el
+   nivel de donde lo dejó. */
+function contarTipo(tipos){
+  const log = getLog();
+  return Object.keys(log).filter(k => tipos.indexOf(log[k]) !== -1).length;
+}
+function sesionesFuerza(){ return contarTipo(['fuerza','minima']); }
+function sesionesCinta(){ return contarTipo(['cinta']); }
+
+/* Series: 2 al principio, 3 en los tres ejercicios grandes a partir de la 5ª
+   sesión. El salto de intensidad de verdad no está aquí, está en el peso. */
+function seriesDe(ej, idx){
+  if(ej.sinPeso) return ej.series;
+  return (sesionesFuerza() >= 4 && idx < 3) ? 3 : ej.series;
+}
+
+function nivelCinta(){
+  const hechas = sesionesCinta();
+  /* Tras un parón largo se baja un nivel: volver siempre es más suave. */
+  let i = 0;
+  while(i < CINTA_NIVELES.length - 1 && hechas >= CINTA_NIVELES[i].hasta) i++;
+  if(enReentrada() && i > 0) i--;
+  return CINTA_NIVELES[i];
+}
 
 /* ===================== FECHAS ===================== */
 function dateKey(d){
@@ -917,22 +1028,24 @@ function tipoDeDia(d){
   const dow = d.getDay();
   if(dias.fijos.indexOf(dow) !== -1) return 'fijo';
   if(dias.flex.indexOf(dow) !== -1) return 'flex';
+  if(dias.cinta.indexOf(dow) !== -1) return 'cinta';
   return 'libre';
 }
-/* Próximo día de fuerza a partir de mañana (mira 8 días por si no hay ninguno). */
+/* Próximo día con algo programado (mira 8 días por si no hay ninguno). */
 function proximoDiaFuerza(){
   for(let i = 1; i <= 8; i++){
     const d = new Date();
     d.setDate(d.getDate() + i);
     const t = tipoDeDia(d);
-    if(t === 'fijo' || t === 'flex') return { fecha:d, tipo:t, enDias:i };
+    if(t !== 'libre') return { fecha:d, tipo:t, enDias:i };
   }
   return null;
 }
+const NOMBRE_TIPO = { fijo:'fuerza', flex:'flexible', cinta:'cinta' };
 
 /* Cuenta como sesión todo menos el descanso. El descanso se guarda para poder
    verlo, pero no resta ni aparece nunca como algo negativo. */
-const CUENTA = ['fuerza','minima','caminar','reconocimiento'];
+const CUENTA = ['fuerza','minima','caminar','reconocimiento','cinta'];
 function esSesion(tipo){ return CUENTA.indexOf(tipo) !== -1; }
 
 function totalSesiones(){
@@ -971,6 +1084,7 @@ function enReentrada(){
 const ETIQUETAS = {
   fuerza:        { txt:'Sesión de fuerza hecha', icon:'💪', corto:'Fuerza' },
   minima:        { txt:'Sesión mínima hecha',    icon:'💪', corto:'Mínima' },
+  cinta:         { txt:'Cinta hecha',            icon:'🏃', corto:'Cinta' },
   caminar:       { txt:'Has caminado',           icon:'🚶', corto:'Caminar' },
   reconocimiento:{ txt:'Reconocimiento hecho',   icon:'🧭', corto:'Ver' },
   descanso:      { txt:'Día de descanso',        icon:'🛋️', corto:'Descanso' }
@@ -1003,6 +1117,10 @@ function renderHoy(){
   } else if(tipo === 'flex'){
     titulo = 'Hoy es el día flexible';
     sub = 'Si te apetece, fuerza. Si no, no pasa nada — para eso es flexible.';
+  } else if(tipo === 'cinta'){
+    const niv = nivelCinta();
+    titulo = 'Hoy toca cinta';
+    sub = '30 minutos en dos tandas de 15, a ' + niv.vel + ' km/h y ' + niv.inc + '% de cuesta.';
   } else {
     titulo = 'Hoy no toca nada';
     sub = 'Día libre. Si te apetece caminar, genial; si no, también.';
@@ -1053,10 +1171,18 @@ function renderHoy(){
         (enCasa ? bCompleta : bEmpezarM) +
         bCaminar +
       '</div>' + bEscape;
+  } else if(tipo === 'cinta'){
+    acciones.innerHTML =
+      '<div class="actions">' +
+        '<button class="btn-main" onclick="empezarCinta()">▶️ Empezar la cinta</button>' +
+        '<button class="btn-second" onclick="marcar(\'cinta\')">Ya la he hecho, márcala sin más</button>' +
+        bCaminar +
+      '</div>' + bEscape;
   } else if(tipo === 'libre'){
     acciones.innerHTML =
       '<div class="actions">' + bCaminar +
-        '<button class="btn-second" onclick="empezarSesion(\'fuerza\')">💪 Hacer fuerza igualmente</button>' +
+        '<button class="btn-second" onclick="empezarCinta()">🏃 Hacer cinta</button>' +
+        '<button class="btn-second" onclick="empezarSesion(\'fuerza\')">💪 Hacer fuerza</button>' +
       '</div>';
   } else {
     acciones.innerHTML =
@@ -1078,7 +1204,31 @@ function renderManana(){
   el.innerHTML =
     '<div class="hoy-manana"><span>' + cuando + '</span>' +
     '<b>' + DIAS_LARGOS[prox.fecha.getDay()] + ' ' + prox.fecha.getDate() +
-    (prox.tipo === 'flex' ? ' · flexible' : ' · fuerza') + '</b></div>';
+    ' · ' + (NOMBRE_TIPO[prox.tipo] || 'fuerza') + '</b></div>' + cenaHTML();
+}
+
+/* A qué hora cenar según lo que toque hoy. Está atado a su jornada real
+   (L-J 9-18h, V 9-15h) y al plan de alimentación, que es de 5 comidas. */
+function cenaHTML(){
+  const hoy = new Date();
+  const dow = hoy.getDay();
+  const tipo = tipoDeDia(hoy);
+  let hora = '21:00', porque = 'Dos o tres horas antes de acostarte. Con la merienda de por medio para no llegar con hambre.';
+
+  if(tipo !== 'libre'){
+    if(dow === 5){
+      hora = '21:00';
+      porque = 'Sales del gimnasio sobre las 17h: merienda al salir y cena tranquila. Hoy además tu plan te deja cena libre.';
+    } else if(dow === 0 || dow === 6){
+      hora = '21:00';
+      porque = 'Entrenas por la mañana, así que la cena no se mueve de su hora.';
+    } else {
+      hora = '20:45';
+      porque = 'Si entrenas por la mañana temprano, la cena va a su hora normal. Si acabas entrenando de noche, cena antes de ir y toma algo ligero al volver.';
+    }
+  }
+  return '<div class="hoy-manana"><span>Cena hoy sobre las</span><b>' + hora + '</b></div>' +
+         '<p class="cena-nota">' + porque + '</p>';
 }
 
 function renderHorario(){
@@ -1138,14 +1288,34 @@ function marcarDia(key, tipo){
 function toggleEscape(){ document.getElementById('escapeCard').classList.toggle('show'); }
 
 /* ===================== SESIÓN GUIADA =====================
-   Lleva de la mano ejercicio por ejercicio y serie por serie, con el descanso
-   cronometrado. Se puede salir en cualquier momento y lo hecho cuenta. */
-const S = { activa:false, lista:[], iEj:0, serie:0, modo:'fuerza', descansando:false, finDescanso:0, tick:null, hechos:0 };
+   Lleva de la mano ejercicio por ejercicio y serie por serie (o tanda por tanda
+   en la cinta), con los tiempos cronometrados. Se puede salir en cualquier
+   momento y lo hecho cuenta: nunca hay una pantalla de "¿seguro que abandonas?" */
+const S = {
+  activa:false, tipo:'fuerza', modo:'fuerza', lista:[], iEj:0, serie:0,
+  descansando:false, finDescanso:0, tick:null, hechos:0,
+  tanda:0, finTanda:0, pausada:false, restante:0
+};
+const TANDA_MIN = 15;
+const DESCANSO_TANDAS = 120;   // 2 min entre las dos tandas de cinta
 
 function empezarSesion(modo){
   const todos = ejerciciosActuales();
+  S.tipo = 'fuerza';
   S.lista = modo === 'minima' ? todos.slice(0,3) : todos.slice();
   S.modo = modo; S.iEj = 0; S.serie = 0; S.activa = true; S.descansando = false; S.hechos = 0;
+  abrirSesion();
+}
+
+function empezarCinta(){
+  S.tipo = 'cinta'; S.modo = 'cinta'; S.activa = true; S.hechos = 0;
+  S.tanda = 0; S.descansando = false; S.pausada = false;
+  S.finTanda = Date.now() + TANDA_MIN * 60000;
+  abrirSesion();
+  arrancarTick();
+}
+
+function abrirSesion(){
   document.getElementById('escapeCard').classList.remove('show');
   document.getElementById('sesion').classList.add('show');
   document.body.classList.add('sesion-abierta');
@@ -1156,8 +1326,9 @@ function empezarSesion(modo){
 function salirSesion(){
   pararTick();
   if(S.hechos > 0 && !getLog()[hoyKey()]){
-    // Salió a medias pero hizo algo: eso cuenta, y cuenta sin preguntar nada.
-    marcar(S.hechos >= S.lista.length ? S.modo : 'minima', true);
+    /* Salió a medias pero hizo algo: cuenta, y cuenta sin preguntar nada. */
+    const tipo = S.tipo === 'cinta' ? 'cinta' : (S.hechos >= S.lista.length ? S.modo : 'minima');
+    marcar(tipo, true);
     toast('Guardado. Lo que has hecho cuenta.');
   }
   S.activa = false;
@@ -1167,12 +1338,13 @@ function salirSesion(){
 }
 
 function pintarSesion(){
-  const body = document.getElementById('sesBody');
-  const totalSeries = S.lista.reduce((a,e) => a + e.series, 0);
-  let seriesHechas = 0;
-  for(let i = 0; i < S.iEj; i++) seriesHechas += S.lista[i].series;
-  seriesHechas += S.serie;
+  if(S.tipo === 'cinta') return pintarCinta();
 
+  const body = document.getElementById('sesBody');
+  const totalSeries = S.lista.reduce((a,e,i) => a + seriesDe(e,i), 0);
+  let seriesHechas = 0;
+  for(let i = 0; i < S.iEj; i++) seriesHechas += seriesDe(S.lista[i], i);
+  seriesHechas += S.serie;
   document.getElementById('sesBarra').style.width = Math.round(seriesHechas / totalSeries * 100) + '%';
 
   if(S.iEj >= S.lista.length){
@@ -1189,12 +1361,12 @@ function pintarSesion(){
   }
 
   const ej = S.lista[S.iEj];
+  const nSeries = seriesDe(ej, S.iEj);
   document.getElementById('sesCuenta').textContent = 'Ejercicio ' + (S.iEj+1) + ' de ' + S.lista.length;
-
-  if(S.descansando){ pintarDescanso(ej); return; }
+  if(S.descansando) return pintarDescanso(ej, nSeries);
 
   let series = '';
-  for(let i = 0; i < ej.series; i++){
+  for(let i = 0; i < nSeries; i++){
     const cls = i < S.serie ? 'hecha' : (i === S.serie ? 'actual' : '');
     series += '<div class="ses-serie ' + cls + '">' + (i < S.serie ? '✓' : 'Serie ' + (i+1)) + '</div>';
   }
@@ -1207,19 +1379,22 @@ function pintarSesion(){
         '<div style="font-size:var(--t-xs); color:var(--muted);">' +
           (pesoGuardado ? 'La última vez pusiste esto' : 'Empieza por el más bajo') + '</div></div>' +
       '<div class="ses-peso-ctrl">' +
-        '<button onclick="cambiarPeso(\'' + ej.id + '\',-1)" aria-label="Bajar">−</button>' +
-        '<input type="number" inputmode="numeric" id="inpPeso" value="' + (pesoGuardado || '') + '" ' +
-          'placeholder="—" onchange="fijarPeso(\'' + ej.id + '\', this.value)">' +
-        '<button onclick="cambiarPeso(\'' + ej.id + '\',1)" aria-label="Subir">+</button>' +
+        '<button onclick="cambiarPeso(\'' + ej.id + '\',-1)" aria-label="Bajar peso">−</button>' +
+        '<input type="number" inputmode="decimal" id="inpPeso" value="' + (pesoGuardado || '') + '" ' +
+          'placeholder="—" onchange="fijarPeso(\'' + ej.id + '\', this.value)" aria-label="Peso">' +
+        '<button onclick="cambiarPeso(\'' + ej.id + '\',1)" aria-label="Subir peso">+</button>' +
       '</div>' +
     '</div>';
 
+  const alt = ej.alternativa ?
+    '<details class="ses-alt"><summary>¿Está ocupada?</summary><div class="content">' + ej.alternativa + '</div></details>' : '';
+
   body.innerHTML =
-    '<h2 class="ses-nombre" style="margin:0 0 4px;">' + esc(ej.nombre) + '</h2>' +
+    '<h2 class="ses-nombre">' + esc(ej.nombre) + '</h2>' +
     '<p class="ses-alias">' + esc(ej.alias) + ' · ' + esc(ej.reps) + '</p>' +
     '<div class="ses-recuerda"><b>Lo único que importa:</b> ' + esc(ej.clave) + '</div>' +
     '<ol class="ses-pasos">' + ej.pasos.map(p => '<li>' + esc(p) + '</li>').join('') + '</ol>' +
-    bloquePeso +
+    alt + bloquePeso +
     '<div class="ses-series">' + series + '</div>' +
     '<div class="ses-foot">' +
       '<button class="btn-main" onclick="serieHecha()">✓ Serie hecha</button>' +
@@ -1227,35 +1402,124 @@ function pintarSesion(){
     '</div>';
 }
 
-function pintarDescanso(ej){
+function pintarDescanso(ej, nSeries){
   const body = document.getElementById('sesBody');
-  const total = getDescanso();
+  const siguiente = S.serie >= nSeries
+    ? (S.lista[S.iEj+1] ? S.lista[S.iEj+1].nombre : 'terminar')
+    : ej.nombre + ' · serie ' + (S.serie+1);
   body.innerHTML =
-    '<div class="ses-descanso">' +
-      '<svg class="ring" viewBox="0 0 200 200" aria-hidden="true">' +
-        '<circle class="pista" cx="100" cy="100" r="88"></circle>' +
-        '<circle class="avance" id="ringAvance" cx="100" cy="100" r="88" ' +
-          'transform="rotate(-90 100 100)" stroke-dasharray="552.9" stroke-dashoffset="0"></circle>' +
-        '<text class="ring-txt" x="100" y="100" text-anchor="middle" dominant-baseline="central" id="ringTxt">' + total + '</text>' +
-      '</svg>' +
+    '<div class="ses-descanso">' + anilloHTML(getDescanso()) +
       '<p>Descansa. Respira. No hay prisa.</p>' +
       '<div style="display:flex; gap:8px;">' +
         '<button class="btn-timer" onclick="masDescanso()">+15s</button>' +
         '<button class="btn-timer" onclick="finDescanso()">Seguir ya</button>' +
       '</div>' +
-      '<div style="margin-top:22px; font-size:var(--t-sm); color:var(--muted);">Siguiente: <b style="color:var(--ink);">' +
-        esc(S.serie >= ej.series ? (S.lista[S.iEj+1] ? S.lista[S.iEj+1].nombre : 'terminar') : ej.nombre + ' · serie ' + (S.serie+1)) +
-      '</b></div>' +
+      '<div class="ses-siguiente">Siguiente: <b>' + esc(siguiente) + '</b></div>' +
     '</div>';
   actualizarRing();
 }
 
+function anilloHTML(valor){
+  return '<svg class="ring" viewBox="0 0 200 200" aria-hidden="true">' +
+    '<circle class="pista" cx="100" cy="100" r="88"></circle>' +
+    '<circle class="avance" id="ringAvance" cx="100" cy="100" r="88" ' +
+      'transform="rotate(-90 100 100)" stroke-dasharray="552.9" stroke-dashoffset="0"></circle>' +
+    '<text class="ring-txt" x="100" y="100" text-anchor="middle" dominant-baseline="central" id="ringTxt">' + valor + '</text>' +
+  '</svg>';
+}
+
+/* ---------- Cinta ---------- */
+function pintarCinta(){
+  const body = document.getElementById('sesBody');
+  const niv = nivelCinta();
+
+  if(S.tanda >= 2){
+    document.getElementById('sesCuenta').textContent = '';
+    document.getElementById('sesBarra').style.width = '100%';
+    body.innerHTML =
+      '<div class="ses-fin">' +
+        '<span class="emo">🏃</span><h3>30 minutos de cinta</h3>' +
+        '<p>Media hora andando en cuesta. Eso es exactamente lo que más le conviene ahora mismo a tu colesterol.</p>' +
+        '<button class="btn-main" onclick="terminarCinta()">Guardar y salir</button>' +
+      '</div>';
+    return;
+  }
+
+  document.getElementById('sesCuenta').textContent = 'Tanda ' + (S.tanda+1) + ' de 2 · nivel ' + niv.n;
+  const hechoAntes = S.tanda * 50;
+  document.getElementById('sesBarra').style.width = hechoAntes + '%';
+
+  if(S.descansando){
+    body.innerHTML =
+      '<div class="ses-descanso">' + anilloHTML(DESCANSO_TANDAS) +
+        '<p>Descanso entre tandas. Bebe agua y estira si te apetece.</p>' +
+        '<div style="display:flex; gap:8px;">' +
+          '<button class="btn-timer" onclick="finDescanso()">Empezar la 2ª tanda</button>' +
+        '</div>' +
+        '<div class="ses-siguiente">Siguiente: <b>15 minutos a ' + niv.vel + ' km/h y ' + niv.inc + '% de cuesta</b></div>' +
+      '</div>';
+    actualizarRing();
+    return;
+  }
+
+  body.innerHTML =
+    '<div class="cinta-nums">' +
+      '<div class="cinta-num"><b>' + niv.vel + '</b><span>km/h</span></div>' +
+      '<div class="cinta-num"><b>' + niv.inc + '%</b><span>de cuesta</span></div>' +
+    '</div>' +
+    '<div class="ses-recuerda"><b>La regla que no se salta:</b> si te tienes que agarrar a las barras, baja la cuesta o la velocidad. Tienes que poder andar sin tocarlas.</div>' +
+    '<div class="ses-descanso" style="padding-top:6px;">' + anilloHTML('15:00') +
+      '<p>' + esc(niv.nota) + '</p>' +
+      '<div style="display:flex; gap:8px;">' +
+        '<button class="btn-timer" onclick="pausarCinta()" id="btnPausa">' + (S.pausada ? '▶ Seguir' : '⏸ Pausa') + '</button>' +
+        '<button class="btn-timer" onclick="finTanda()">Acabar tanda</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="ses-foot"><button class="btn-second" onclick="salirSesion()">Dejarlo aquí</button></div>';
+  actualizarRing();
+}
+
+function pausarCinta(){
+  if(S.pausada){
+    S.finTanda = Date.now() + S.restante;
+    S.pausada = false;
+    arrancarTick();
+  } else {
+    S.restante = Math.max(0, S.finTanda - Date.now());
+    S.pausada = true;
+    pararTick();
+  }
+  const b = document.getElementById('btnPausa');
+  if(b) b.textContent = S.pausada ? '▶ Seguir' : '⏸ Pausa';
+}
+
+function finTanda(){
+  pararTick();
+  S.pausada = false;
+  S.tanda++;
+  S.hechos++;
+  if(S.tanda >= 2){ pintarCinta(); return; }
+  S.descansando = true;
+  S.finDescanso = Date.now() + DESCANSO_TANDAS * 1000;
+  arrancarTick();
+  pintarCinta();
+}
+
+function terminarCinta(){
+  S.hechos = 2;
+  marcar('cinta', true);
+  cerrarSesion();
+  toast('🏃 Cinta hecha');
+  showTabByName('hoy');
+}
+
+/* ---------- Fuerza: series ---------- */
 function serieHecha(){
   const ej = S.lista[S.iEj];
+  const nSeries = seriesDe(ej, S.iEj);
   S.serie++;
-  if(S.serie >= ej.series) S.hechos++;
-  const esUltimaSerieDelUltimo = (S.serie >= ej.series) && (S.iEj + 1 >= S.lista.length);
-  if(esUltimaSerieDelUltimo){
+  if(S.serie >= nSeries) S.hechos++;
+  if(S.serie >= nSeries && S.iEj + 1 >= S.lista.length){
     S.iEj++; S.serie = 0;
     pintarSesion();
     return;
@@ -1277,8 +1541,14 @@ function masDescanso(){ S.finDescanso += 15000; actualizarRing(); }
 function finDescanso(){
   pararTick();
   S.descansando = false;
+  if(S.tipo === 'cinta'){
+    S.finTanda = Date.now() + TANDA_MIN * 60000;
+    arrancarTick();
+    pintarCinta();
+    return;
+  }
   const ej = S.lista[S.iEj];
-  if(S.serie >= ej.series){ S.iEj++; S.serie = 0; }
+  if(S.serie >= seriesDe(ej, S.iEj)){ S.iEj++; S.serie = 0; }
   pintarSesion();
 }
 
@@ -1287,30 +1557,45 @@ function finDescanso(){
 function arrancarTick(){
   pararTick();
   S.tick = setInterval(() => {
-    const quedan = Math.ceil((S.finDescanso - Date.now()) / 1000);
-    if(quedan <= 0){ pito(); finDescanso(); return; }
+    const objetivo = (S.tipo === 'cinta' && !S.descansando) ? S.finTanda : S.finDescanso;
+    if(Math.ceil((objetivo - Date.now()) / 1000) <= 0){
+      pito();
+      if(S.tipo === 'cinta' && !S.descansando) finTanda(); else finDescanso();
+      return;
+    }
     actualizarRing();
   }, 250);
 }
 function pararTick(){ if(S.tick){ clearInterval(S.tick); S.tick = null; } }
+
 function actualizarRing(){
   const txt = document.getElementById('ringTxt');
   const anillo = document.getElementById('ringAvance');
   if(!txt || !anillo) return;
-  const quedan = Math.max(0, Math.ceil((S.finDescanso - Date.now()) / 1000));
-  const total = Math.max(1, getDescanso());
-  txt.textContent = quedan;
-  anillo.setAttribute('stroke-dashoffset', String(552.9 * (1 - Math.min(1, quedan / total))));
+  const enTanda = S.tipo === 'cinta' && !S.descansando;
+  const objetivo = enTanda ? S.finTanda : S.finDescanso;
+  const total = enTanda ? TANDA_MIN * 60 : (S.tipo === 'cinta' ? DESCANSO_TANDAS : getDescanso());
+  const quedan = S.pausada
+    ? Math.ceil(S.restante / 1000)
+    : Math.max(0, Math.ceil((objetivo - Date.now()) / 1000));
+  txt.textContent = quedan >= 60
+    ? Math.floor(quedan/60) + ':' + String(quedan % 60).padStart(2,'0')
+    : String(quedan);
+  anillo.setAttribute('stroke-dashoffset', String(552.9 * (1 - Math.min(1, quedan / Math.max(1,total)))));
+}
+
+function cerrarSesion(){
+  S.activa = false;
+  pararTick();
+  document.getElementById('sesion').classList.remove('show');
+  document.body.classList.remove('sesion-abierta');
 }
 
 function terminarSesion(){
   const tipo = S.modo === 'minima' ? 'minima' : 'fuerza';
   S.hechos = S.lista.length;
   marcar(tipo, true);
-  S.activa = false;
-  pararTick();
-  document.getElementById('sesion').classList.remove('show');
-  document.body.classList.remove('sesion-abierta');
+  cerrarSesion();
   toast('💪 ' + etiqueta(tipo).txt);
   showTabByName('hoy');
 }
@@ -1325,17 +1610,16 @@ function fijarPeso(id, valor){
 }
 function cambiarPeso(id, delta){
   const pesos = getPesos();
-  const actual = pesos[id] || 0;
-  const nuevo = Math.max(0, actual + delta * 5);
+  const nuevo = Math.max(0, (pesos[id] || 0) + delta * 5);
   if(nuevo === 0) delete pesos[id]; else pesos[id] = nuevo;
   saveJSON(K.pesos, pesos);
   const inp = document.getElementById('inpPeso');
   if(inp) inp.value = pesos[id] || '';
 }
 
-/* Pitido al acabar el descanso. En iPhone la vibración no existe desde la web,
-   así que el aviso tiene que ser sonoro; el AudioContext se prepara al tocar
-   "Empezar la sesión", que es el gesto que iOS exige. */
+/* Pitido al acabar. En iPhone la vibración no existe desde la web, así que el
+   aviso tiene que ser sonoro; el AudioContext se prepara al tocar "Empezar",
+   que es el gesto que iOS exige para permitir sonido. */
 let audioCtx = null;
 function prepararSonido(){
   try{
@@ -1375,6 +1659,7 @@ function ejercicioHTML(ej, i){
       '</ol></div>' +
       '<div class="ex-check"><b>Va bien si:</b> ' + esc(ej.bien) + '</div>' +
       '<div class="ex-cross"><b>Ojo si:</b> ' + esc(ej.mal) + '</div>' +
+      (ej.alternativa ? '<div class="quiet" style="margin:0;">' + ej.alternativa + '</div>' : '') +
     '</div>' +
   '</details>';
 }
@@ -1383,10 +1668,25 @@ function renderRutina(){
   document.getElementById('listaCasa').innerHTML = EJERCICIOS_CASA.map(ejercicioHTML).join('');
 }
 function setVista(v){
-  document.getElementById('vistaGym').style.display  = v === 'gym'  ? 'block' : 'none';
-  document.getElementById('vistaCasa').style.display = v === 'casa' ? 'block' : 'none';
+  ['gym','cinta','casa'].forEach(k => {
+    document.getElementById('vista' + k.charAt(0).toUpperCase() + k.slice(1)).style.display = (v === k) ? 'block' : 'none';
+  });
   document.getElementById('btnVerGym').classList.toggle('active', v === 'gym');
+  document.getElementById('btnVerCinta').classList.toggle('active', v === 'cinta');
   document.getElementById('btnVerCasa').classList.toggle('active', v === 'casa');
+  if(v === 'cinta') renderCintaNivel();
+}
+function renderCintaNivel(){
+  const niv = nivelCinta();
+  const hechas = sesionesCinta();
+  document.getElementById('cintaNivel').innerHTML =
+    '<div class="cinta-nums">' +
+      '<div class="cinta-num"><b>' + niv.vel + '</b><span>km/h</span></div>' +
+      '<div class="cinta-num"><b>' + niv.inc + '%</b><span>de cuesta</span></div>' +
+    '</div>' +
+    '<p class="lead" style="margin-bottom:14px;"><b>Nivel ' + niv.n + '</b> · ' + esc(niv.nota) +
+      (hechas ? ' <span style="white-space:nowrap;">(' + hechas + ' ' + (hechas === 1 ? 'sesión hecha' : 'sesiones hechas') + ')</span>' : '') + '</p>' +
+    '<button class="btn-main" onclick="empezarCinta()">▶️ Empezar la cinta</button>';
 }
 
 /* ===================== SEMANA ===================== */
@@ -1433,7 +1733,7 @@ function renderSemanaDias(){
     const actual = log[key] || '';
     /* Cada opción lleva texto visible: en el móvil no hay hover, así que un
        emoji suelto no se entiende. */
-    const opciones = ['','fuerza','minima','caminar','descanso'].map(t => {
+    const opciones = ['','fuerza','minima','cinta','caminar','descanso'].map(t => {
       const e = t === '' ? { icon:'—', corto:'Nada' } : etiqueta(t);
       return '<button class="' + (actual === t ? 'active' : '') + '" role="radio" ' +
              'aria-checked="' + (actual === t) + '" ' +
@@ -1495,22 +1795,24 @@ function renderDayPicker(){
   const dias = getDias();
   let html = '';
   [1,2,3,4,5,6,0].forEach(dow => {          // lunes a domingo
-    let cls = '', et = '';
-    if(dias.fijos.indexOf(dow) !== -1){ cls = 'fijo'; et = 'fijo'; }
+    let cls = '', et = '·';
+    if(dias.fijos.indexOf(dow) !== -1){ cls = 'fijo'; et = 'fuerza'; }
     else if(dias.flex.indexOf(dow) !== -1){ cls = 'flex'; et = 'flex'; }
+    else if(dias.cinta.indexOf(dow) !== -1){ cls = 'cinta'; et = 'cinta'; }
     html += '<button class="' + cls + '" onclick="ciclarDia(' + dow + ')" ' +
-            'aria-label="' + DIAS_LARGOS[dow] + (et ? ', ' + et : ', libre') + '">' +
-            DIAS_CORTOS[dow] + '<i>' + (et || '·') + '</i></button>';
+            'aria-label="' + DIAS_LARGOS[dow] + ', ' + (et === '·' ? 'libre' : et) + '">' +
+            DIAS_CORTOS[dow] + '<i>' + et + '</i></button>';
   });
   document.getElementById('dayPicker').innerHTML = html;
 }
+/* Ciclo: libre → fuerza → flexible → cinta → libre */
 function ciclarDia(dow){
   const dias = getDias();
-  const enFijos = dias.fijos.indexOf(dow);
-  const enFlex  = dias.flex.indexOf(dow);
-  if(enFijos !== -1){ dias.fijos.splice(enFijos, 1); dias.flex.push(dow); }      // fijo → flexible
-  else if(enFlex !== -1){ dias.flex.splice(enFlex, 1); }                          // flexible → libre
-  else { dias.fijos.push(dow); }                                                  // libre → fijo
+  const quitar = arr => { const i = arr.indexOf(dow); if(i !== -1) arr.splice(i,1); };
+  if(dias.fijos.indexOf(dow) !== -1){ quitar(dias.fijos); dias.flex.push(dow); }
+  else if(dias.flex.indexOf(dow) !== -1){ quitar(dias.flex); dias.cinta.push(dow); }
+  else if(dias.cinta.indexOf(dow) !== -1){ quitar(dias.cinta); }
+  else { dias.fijos.push(dow); }
   saveJSON(K.dias, dias);
   renderDayPicker(); renderHoy(); renderSemana();
 }
