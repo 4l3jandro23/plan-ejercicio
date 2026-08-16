@@ -30,6 +30,7 @@
     --t-md:1.05rem; --t-lg:1.25rem; --t-xl:1.5rem; --t-2xl:2rem; --t-3xl:3.2rem;
     --bg:#faf9f5; --card:#ffffff; --ink:#2b2b28; --muted:#6b6b63;
     --accent:#2b6cb0; --accent2:#4a8fd1; --accent-soft:#e5eef8; --warn:#b5651d; --warn-soft:#fbeee2;
+    --ok:#3f7d4a; --ok-soft:#e6f0e5;
     --border:#dcd9d0; --radius:3px;
     /* Gris deliberadamente neutro para los días sin nada: nunca rojo, nunca alarma */
     --neutral:#e8e5dd; --neutral-ink:#9b978c;
@@ -37,6 +38,7 @@
   html.dark{
     --bg:#12161a; --card:#1b2126; --ink:#eceef0; --muted:#98a1aa;
     --accent:#6fb3f0; --accent2:#4a8fd1; --accent-soft:#1b2c3d; --warn:#e0955a; --warn-soft:#3a2a1c;
+    --ok:#7ec98a; --ok-soft:#1c2e1e;
     --border:#2f383f;
     --neutral:#232b30; --neutral-ink:#68727a;
   }
@@ -228,6 +230,7 @@
   .ex-field > div:first-child{font-size:var(--t-2xs); color:var(--muted); text-transform:uppercase; letter-spacing:.8px; font-weight:700; margin-bottom:3px;}
   .ex-check{border-left:3px solid var(--accent); padding:11px 14px; margin:0 0 10px; font-size:var(--t-sm); background:var(--accent-soft);}
   .ex-cross{border-left:3px solid var(--warn); padding:11px 14px; margin:0 0 14px; font-size:var(--t-sm); background:var(--warn-soft);}
+  .ex-sube{border-left:3px solid var(--ok); padding:11px 14px; margin:0 0 14px; font-size:var(--t-sm); background:var(--ok-soft);}
 
   /* ===== Sesión guiada (pantalla completa) ===== */
   .sesion{
@@ -1659,6 +1662,7 @@ function ejercicioHTML(ej, i){
       '</ol></div>' +
       '<div class="ex-check"><b>Va bien si:</b> ' + esc(ej.bien) + '</div>' +
       '<div class="ex-cross"><b>Ojo si:</b> ' + esc(ej.mal) + '</div>' +
+      (!ej.sinPeso ? '<div class="ex-sube"><b>Sube de peso cuando:</b> si en la serie 2 las últimas repeticiones ya no te cuestan, dos sesiones seguidas, pon la siguiente placa o pin la próxima vez. No te quedes parado en el mismo peso solo por costumbre.</div>' : '') +
       (ej.alternativa ? '<div class="quiet" style="margin:0;">' + ej.alternativa + '</div>' : '') +
     '</div>' +
   '</details>';
