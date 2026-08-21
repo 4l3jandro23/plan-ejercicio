@@ -31,7 +31,13 @@
     --bg:#faf9f5; --card:#ffffff; --ink:#2b2b28; --muted:#6b6b63;
     --accent:#2b6cb0; --accent2:#4a8fd1; --accent-soft:#e5eef8; --warn:#b5651d; --warn-soft:#fbeee2;
     --ok:#3f7d4a; --ok-soft:#e6f0e5;
-    --border:#dcd9d0; --radius:3px;
+    --border:#dcd9d0; --radius:3px; --radius-lg:5px;
+    /* Una sola escala de sombra para todo: suaves y anchas, nunca duras. */
+    --sh-1:0 1px 2px rgba(38,36,30,.05), 0 3px 10px rgba(38,36,30,.045);
+    --sh-2:0 2px 5px rgba(38,36,30,.06), 0 10px 28px rgba(38,36,30,.075);
+    --sh-3:0 6px 14px rgba(38,36,30,.08), 0 22px 50px rgba(38,36,30,.12);
+    /* Curva de iOS: sale rápido y frena al final. Todo se mueve con esta. */
+    --ease:cubic-bezier(.32,.72,0,1);
     /* Gris deliberadamente neutro para los días sin nada: nunca rojo, nunca alarma */
     --neutral:#e8e5dd; --neutral-ink:#9b978c;
   }
@@ -40,6 +46,9 @@
     --accent:#6fb3f0; --accent2:#4a8fd1; --accent-soft:#1b2c3d; --warn:#e0955a; --warn-soft:#3a2a1c;
     --ok:#7ec98a; --ok-soft:#1c2e1e;
     --border:#2f383f;
+    --sh-1:0 1px 2px rgba(0,0,0,.3), 0 3px 10px rgba(0,0,0,.24);
+    --sh-2:0 2px 5px rgba(0,0,0,.34), 0 10px 28px rgba(0,0,0,.3);
+    --sh-3:0 6px 14px rgba(0,0,0,.4), 0 22px 50px rgba(0,0,0,.42);
     --neutral:#232b30; --neutral-ink:#68727a;
   }
 
@@ -84,12 +93,19 @@
     color:#fff;
     padding:calc(18px + env(safe-area-inset-top)) 18px 20px;
     position:sticky; top:0; z-index:20; border-bottom:1px solid rgba(0,0,0,.08);
+    box-shadow:var(--sh-1);
   }
   .headtop{display:flex; justify-content:space-between; align-items:center;}
   header h1{margin:0 0 4px; font-size:var(--t-xl); font-family:var(--font-display); font-weight:600; letter-spacing:-.2px;}
   header p{margin:0; opacity:.92; font-size:var(--t-sm);}
   .headbtns{display:flex; gap:8px; flex-shrink:0;}
-  .headbtns button{background:rgba(255,255,255,.22); border:none; color:#fff; font-size:var(--t-lg); width:38px; height:38px; border-radius:50%; cursor:pointer; flex-shrink:0;}
+  .headbtns button{
+    background:rgba(255,255,255,.2); border:none; color:#fff; font-size:var(--t-lg);
+    width:38px; height:38px; border-radius:50%; cursor:pointer; flex-shrink:0;
+    transition:background .2s var(--ease), transform .2s var(--ease);
+  }
+  .headbtns button:active{transform:scale(.9);}
+  @media (hover:hover) and (pointer:fine){ .headbtns button:hover{background:rgba(255,255,255,.34);} }
 
   /* ===== Panel de Ajustes ===== */
   .settings-overlay{
@@ -98,15 +114,29 @@
   }
   .settings-overlay.show{display:flex;}
   .settings-panel{
-    background:var(--card); width:100%; max-width:520px; border-radius:4px 4px 0 0;
+    background:var(--card); width:100%; max-width:520px; border-radius:12px 12px 0 0;
     padding:18px 18px calc(20px + env(safe-area-inset-bottom)); max-height:82vh; overflow-y:auto;
+    box-shadow:var(--sh-3); animation:subir .32s var(--ease);
   }
+  .settings-overlay{animation:aparecer .25s ease;}
+  /* Tirador tipo hoja de iOS: indica que se cierra tirando hacia abajo. */
+  .settings-panel h3::before{
+    content:""; display:block; width:38px; height:4px; border-radius:2px;
+    background:var(--border); margin:0 auto 16px;
+  }
+  @keyframes subir{from{transform:translateY(24px);} to{transform:translateY(0);}}
+  @keyframes aparecer{from{opacity:0;} to{opacity:1;}}
   .settings-panel h3{margin:0 0 4px; font-size:var(--t-lg); font-family:var(--font-display); font-weight:600; color:var(--ink);}
   .settings-row{margin:18px 0;}
   .settings-row > .lbl{font-size:var(--t-sm); font-weight:700; color:var(--muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:.3px;}
   .settings-hint{font-size:var(--t-xs); color:var(--muted); margin-top:7px; line-height:1.45;}
   .swatches{display:flex; gap:10px; flex-wrap:wrap;}
-  .swatch{width:38px; height:38px; border-radius:50%; cursor:pointer; border:2px solid transparent; position:relative; flex-shrink:0;}
+  .swatch{
+    width:38px; height:38px; border-radius:50%; cursor:pointer; border:2px solid transparent;
+    position:relative; flex-shrink:0; box-shadow:var(--sh-1);
+    transition:transform .2s var(--ease), border-color .2s var(--ease);
+  }
+  .swatch:active{transform:scale(.94);}
   .swatch.active{border-color:var(--ink);}
   .swatch.active::after{content:"✓"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:var(--t-base); text-shadow:0 1px 2px rgba(0,0,0,.4);}
   .style-options{display:flex; gap:8px;}
@@ -114,7 +144,8 @@
     flex:1; border:1px solid var(--border); border-radius:3px; padding:12px 6px; text-align:center;
     cursor:pointer; font-family:inherit; font-size:var(--t-sm); font-weight:600; color:var(--ink); background:var(--bg);
   }
-  .style-opt.active{border-color:var(--accent); background:var(--accent-soft); color:var(--accent);}
+  .style-opt{transition:border-color .18s var(--ease), background .18s var(--ease), color .18s var(--ease);}
+  .style-opt.active{border-color:var(--accent); background:var(--accent-soft); color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent);}
   .daypicker{display:flex; gap:5px;}
   .daypicker button{
     flex:1; border:1px solid var(--border); background:var(--bg); color:var(--ink);
@@ -122,6 +153,7 @@
     display:flex; flex-direction:column; align-items:center; gap:3px; line-height:1;
   }
   .daypicker button i{font-style:normal; font-size:8px; opacity:.85;}
+  .daypicker button{transition:background .18s var(--ease), border-color .18s var(--ease), color .18s var(--ease);}
   .daypicker button.fijo{border-color:var(--accent); background:var(--accent); color:#fff;}
   .daypicker button.flex{border-color:var(--accent); background:var(--accent-soft); color:var(--accent);}
   .settings-close{
@@ -134,11 +166,11 @@
   }
 
   main{max-width:760px; margin:0 auto; padding:18px 16px 6px;}
-  .tabpanel{display:none; animation:fade .25s ease;}
-  .tabpanel.active{display:block;}
-  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+  .tabpanel{display:none;}
+  .tabpanel.active{display:block; animation:fade .3s var(--ease);}
+  @keyframes fade{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
 
-  :focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:2px;}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:var(--radius);}
   .headbtns button:focus-visible{outline-color:#fff;}
   @media (prefers-reduced-motion: reduce){
     *, *::before, *::after{
@@ -167,7 +199,8 @@
   ul{padding-left:20px; margin:8px 0;}
   li{margin-bottom:6px;}
   footer{text-align:center; font-size:var(--t-xs); color:var(--muted); padding:22px 20px 8px; border-top:1px solid var(--border); margin-top:12px;}
-  button:active{transform:scale(.97); transition:transform .1s;}
+  button{transition:transform .12s var(--ease);}
+  button:active{transform:scale(.975);}
   .bottomnav button:active, .btn-timer:active{transform:none;}
 
   /* ===== HOY ===== */
@@ -175,7 +208,10 @@
   .hoy-fecha{font-size:var(--t-xs); color:var(--muted); text-transform:uppercase; letter-spacing:.9px; font-weight:700;}
   .hoy-que{font-family:var(--font-display); font-weight:600; font-size:var(--t-2xl); margin:8px 0 6px; letter-spacing:-.5px; line-height:1.15;}
   .hoy-sub{font-size:var(--t-base); color:var(--muted); margin:0;}
-  .hoy-hecho{background:var(--accent-soft); border-left:3px solid var(--accent); padding:16px; margin:18px 0 0;}
+  .hoy-hecho{
+    background:var(--accent-soft); border-left:3px solid var(--accent); padding:16px; margin:18px 0 0;
+    border-radius:0 var(--radius-lg) var(--radius-lg) 0; animation:fade .35s var(--ease);
+  }
   .hoy-hecho b{font-family:var(--font-display); font-size:var(--t-md); color:var(--accent); display:block; margin-bottom:2px;}
   .hoy-hecho span{font-size:var(--t-sm); color:var(--muted);}
   .hoy-manana{
@@ -186,12 +222,32 @@
 
   .actions{display:flex; flex-direction:column; gap:8px; margin:20px 0 0;}
   .btn-main{
-    width:100%; background:var(--accent); color:#fff; border:none; border-radius:3px;
+    width:100%; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff;
+    border:none; border-radius:var(--radius); box-shadow:var(--sh-2);
     padding:17px 14px; font-family:inherit; font-size:var(--t-md); font-weight:700; cursor:pointer; text-align:center;
+    transition:box-shadow .22s var(--ease), transform .12s var(--ease), filter .22s var(--ease);
   }
+  .btn-main:active{box-shadow:var(--sh-1); filter:brightness(.96);}
   .btn-second{
-    width:100%; background:var(--bg); color:var(--ink); border:1px solid var(--border); border-radius:3px;
+    width:100%; background:var(--bg); color:var(--ink); border:1px solid var(--border); border-radius:var(--radius);
     padding:13px 14px; font-family:inherit; font-size:var(--t-base); font-weight:600; cursor:pointer; text-align:center;
+    transition:border-color .18s var(--ease), background .18s var(--ease), color .18s var(--ease);
+  }
+  .btn-escape{transition:background .18s var(--ease);}
+  /* Los estados de ratón se limitan a los dispositivos que tienen ratón: en el
+     iPhone un :hover se queda pegado después de tocar y parece un fallo. */
+  @media (hover:hover) and (pointer:fine){
+    .btn-main:hover{box-shadow:var(--sh-3); transform:translateY(-1px);}
+    .btn-second:hover{border-color:var(--accent); color:var(--accent); background:var(--accent-soft);}
+    .btn-escape:hover{background:var(--border);}
+    .style-opt:hover:not(.active){border-color:var(--accent); color:var(--accent);}
+    .opts button:hover:not(.active){border-color:var(--accent);}
+    .daypicker button:hover{border-color:var(--accent);}
+    .swatch:hover{transform:scale(1.12);}
+    .stat:hover, .cinta-num:hover{background:var(--accent-soft);}
+    .wcell .box:hover{transform:translateY(-2px);}
+    details summary:hover{color:var(--accent);}
+    .btn-timer:hover{border-color:var(--accent); color:var(--accent);}
   }
   /* La vía de escape no se esconde: mismo peso visual que lo demás, cero rojo, cero alarma */
   .btn-escape{
@@ -220,7 +276,9 @@
   details summary::-webkit-details-marker{display:none;}
   details summary::after{content:"⌄"; color:var(--accent); font-size:var(--t-lg); transition:transform .2s; flex-shrink:0; font-family:var(--font-body);}
   details[open] summary::after{transform:rotate(180deg);}
+  details summary{transition:color .18s var(--ease);}
   details summary:active{background:var(--accent-soft);}
+  details[open] summary{color:var(--accent);}
   details .content{padding:0 2px 22px; font-size:var(--t-base);}
   .ex-head{display:flex; align-items:baseline; gap:9px; flex:1; min-width:0;}
   .ex-num{font-family:var(--font-mono); font-size:var(--t-sm); color:var(--muted); font-weight:700; flex-shrink:0;}
@@ -238,12 +296,18 @@
     flex-direction:column; overflow-y:auto;
     padding:calc(14px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));
   }
-  .sesion.show{display:flex;}
+  .sesion.show{display:flex; animation:entrarSesion .3s var(--ease);}
+  @keyframes entrarSesion{from{opacity:0; transform:scale(.985);} to{opacity:1; transform:scale(1);}}
   .ses-top{display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:14px;}
   .ses-salir{background:none; border:none; color:var(--muted); font-family:inherit; font-size:var(--t-sm); font-weight:700; cursor:pointer; padding:6px 0;}
   .ses-cuenta{font-family:var(--font-mono); font-size:var(--t-xs); color:var(--muted); font-weight:700;}
   .ses-barra{height:3px; background:var(--neutral); margin-bottom:26px; overflow:hidden;}
-  .ses-barra i{display:block; height:100%; background:var(--accent); transition:width .3s ease; width:0;}
+  .ses-barra{border-radius:2px;}
+  .ses-barra i{
+    display:block; height:100%; width:0; border-radius:2px;
+    background:linear-gradient(90deg,var(--accent2),var(--accent));
+    transition:width .45s var(--ease);
+  }
   .ses-body{flex:1; display:flex; flex-direction:column;}
   .ses-nombre{font-family:var(--font-display); font-weight:600; font-size:var(--t-2xl); letter-spacing:-.5px; line-height:1.15; margin:0 0 4px;}
   .ses-alias{font-family:var(--font-mono); font-size:var(--t-xs); color:var(--muted); margin:0 0 20px;}
@@ -269,6 +333,7 @@
     flex:1; text-align:center; padding:12px 4px; border:1px solid var(--border); border-radius:3px;
     font-family:var(--font-mono); font-size:var(--t-sm); font-weight:700; color:var(--muted);
   }
+  .ses-serie{transition:background .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease);}
   .ses-serie.hecha{background:var(--accent); border-color:var(--accent); color:#fff;}
   .ses-serie.actual{border-color:var(--accent); color:var(--accent);}
   .ses-foot{margin-top:auto; padding-top:16px; display:flex; flex-direction:column; gap:8px;}
@@ -278,7 +343,8 @@
   .ring{width:190px; height:190px; margin:0 auto 6px; display:block;}
   .ring circle{fill:none; stroke-width:8; stroke-linecap:round;}
   .ring .pista{stroke:var(--neutral);}
-  .ring .avance{stroke:var(--accent); transition:stroke-dashoffset .95s linear;}
+  .ring .avance{stroke:var(--accent); transition:stroke-dashoffset 1s linear;}
+  .ring{filter:drop-shadow(0 2px 8px rgba(0,0,0,.06));}
   .ring-txt{font-family:var(--font-mono); font-weight:700; font-size:var(--t-3xl); fill:var(--ink);}
   .ses-descanso p{color:var(--muted); font-size:var(--t-base); margin:2px 0 20px;}
   .btn-timer{
@@ -290,8 +356,12 @@
   .ses-alt{border:none; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin:0 0 20px;}
   .ses-alt summary{padding:12px 2px; font-size:var(--t-sm); font-family:var(--font-body); color:var(--accent); font-weight:700;}
   .ses-alt .content{padding:0 2px 14px; font-size:var(--t-sm); color:var(--muted);}
-  .cinta-nums{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border); border:1px solid var(--border); margin:0 0 18px;}
-  .cinta-num{background:var(--card); padding:18px 6px; text-align:center;}
+  .cinta-nums{
+    display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border);
+    border:1px solid var(--border); margin:0 0 18px;
+    border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--sh-1);
+  }
+  .cinta-num{background:var(--card); padding:20px 6px; text-align:center; transition:background .2s var(--ease);}
   .cinta-num b{display:block; font-family:var(--font-mono); font-weight:700; font-size:var(--t-2xl); color:var(--accent); line-height:1.1;}
   .cinta-num span{font-size:var(--t-2xs); color:var(--muted); text-transform:uppercase; letter-spacing:.7px; font-weight:700;}
   .cena-nota{font-size:var(--t-xs); color:var(--muted); margin:8px 0 0; line-height:1.45;}
@@ -302,8 +372,12 @@
   .ses-fin p{color:var(--muted); font-size:var(--t-base); margin:0 auto 24px; max-width:34ch;}
 
   /* ===== Semana ===== */
-  .statgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; margin:4px 0 24px; background:var(--border); border:1px solid var(--border);}
-  .stat{background:var(--card); padding:17px 6px; text-align:center;}
+  .statgrid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:1px; margin:4px 0 24px;
+    background:var(--border); border:1px solid var(--border);
+    border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--sh-1);
+  }
+  .stat{background:var(--card); padding:19px 6px; text-align:center; transition:background .2s var(--ease);}
   .stat b{display:block; font-size:var(--t-xl); margin-bottom:3px; font-family:var(--font-mono); font-weight:700; color:var(--accent);}
   .stat span{font-size:var(--t-2xs); color:var(--muted); line-height:1.3; display:block;}
 
@@ -312,7 +386,8 @@
   .wcell .box{
     height:48px; display:flex; align-items:center; justify-content:center;
     font-family:var(--font-mono); font-weight:700; font-size:var(--t-base);
-    background:var(--neutral); color:var(--neutral-ink); border-radius:2px;
+    background:var(--neutral); color:var(--neutral-ink); border-radius:var(--radius);
+    transition:transform .2s var(--ease), background .3s var(--ease), color .3s var(--ease);
   }
   .wcell .box.l1{background:var(--accent-soft); color:var(--accent);}
   .wcell .box.l2{background:var(--accent2); color:#fff;}
@@ -326,6 +401,7 @@
     flex:1; min-width:72px; border:1px solid var(--border); background:var(--bg); color:var(--ink);
     border-radius:3px; padding:11px 4px; font-family:inherit; font-size:var(--t-sm); font-weight:600; cursor:pointer;
   }
+  .opts button{transition:border-color .18s var(--ease), background .18s var(--ease), color .18s var(--ease);}
   .opts button.active{border-color:var(--accent); background:var(--accent-soft); color:var(--accent);}
   .opts.dias button{display:flex; flex-direction:column; align-items:center; gap:3px; line-height:1.15; min-width:0; padding:9px 2px;}
   .opts.dias button .ic{font-size:var(--t-md);}
@@ -351,15 +427,26 @@
     flex:1; background:none; border:none; display:flex; flex-direction:column;
     align-items:center; gap:2px; font-size:var(--t-2xs); color:var(--muted);
     padding:6px 1px 4px; font-family:inherit; cursor:pointer; font-weight:600; min-width:0;
+    position:relative; transition:color .2s var(--ease);
   }
-  .bottomnav button .ic{font-size:var(--t-lg); line-height:1;}
+  .bottomnav button .ic{font-size:var(--t-lg); line-height:1; transition:transform .28s var(--ease);}
   .bottomnav button.active{color:var(--accent);}
+  .bottomnav button.active .ic{transform:translateY(-2px);}
+  /* Barrita bajo la pestaña activa: una referencia más, además del color, para
+     que se vea de un vistazo dónde estás sin fijarte en el tono del icono. */
+  .bottomnav button::after{
+    content:""; position:absolute; top:0; left:50%; width:22px; height:2px;
+    background:var(--accent); border-radius:0 0 2px 2px;
+    transform:translateX(-50%) scaleX(0); transform-origin:center;
+    transition:transform .3s var(--ease);
+  }
+  .bottomnav button.active::after{transform:translateX(-50%) scaleX(1);}
 
   /* ===== Banners ===== */
   .banner{
     position:fixed; left:12px; right:12px; z-index:70; padding:11px 14px; border-radius:3px;
-    font-size:var(--t-sm); font-weight:600; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,.15);
-    top:-200px; visibility:hidden; transition:top .25s ease, visibility .25s;
+    font-size:var(--t-sm); font-weight:600; text-align:center; box-shadow:var(--sh-2);
+    top:-200px; visibility:hidden; transition:top .3s var(--ease), visibility .3s;
   }
   .banner.show{top:calc(10px + env(safe-area-inset-top)); visibility:visible;}
   #offlineBanner{background:var(--warn-soft); color:var(--warn);}
@@ -368,9 +455,12 @@
   #toast{
     position:fixed; left:50%; transform:translateX(-50%); bottom:calc(92px + env(safe-area-inset-bottom));
     background:var(--ink); color:var(--bg); padding:11px 18px; border-radius:3px; font-size:var(--t-sm);
-    font-weight:600; z-index:65; opacity:0; visibility:hidden; transition:opacity .2s, visibility .2s; max-width:88vw; text-align:center;
+    font-weight:600; z-index:65; opacity:0; visibility:hidden; max-width:88vw; text-align:center;
+    box-shadow:var(--sh-3);
+    transform:translateX(-50%) translateY(10px);
+    transition:opacity .24s var(--ease), transform .24s var(--ease), visibility .24s;
   }
-  #toast.show{opacity:1; visibility:visible;}
+  #toast.show{opacity:1; visibility:visible; transform:translateX(-50%) translateY(0);}
 
   /* ===== Tamaño de letra: para leer en el gimnasio con mala luz ===== */
   html.txt-g{
@@ -393,15 +483,16 @@
     padding:calc(20px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));
     text-align:center;
   }
-  .respira.show{display:flex;}
+  .respira.show{display:flex; animation:aparecer .3s ease;}
   .resp-circulo{
     width:150px; height:150px; border-radius:50%; flex-shrink:0;
     background:var(--accent-soft); border:3px solid var(--accent);
     display:flex; align-items:center; justify-content:center;
     font-family:var(--font-mono); font-weight:700; font-size:var(--t-2xl); color:var(--accent);
-    transform:scale(.62); transition:transform 4s ease-in-out;
+    transform:scale(.62); transition:transform 4s ease-in-out, box-shadow 4s ease-in-out;
+    box-shadow:0 0 0 0 var(--accent-soft);
   }
-  .resp-circulo.grande{transform:scale(1);}
+  .resp-circulo.grande{transform:scale(1); box-shadow:0 0 0 26px var(--accent-soft);}
   .resp-fase{font-family:var(--font-display); font-size:var(--t-xl); margin:28px 0 4px; min-height:1.4em;}
   .resp-sub{color:var(--muted); font-size:var(--t-sm); margin:0 0 30px; max-width:30ch;}
   .resp-ciclos{font-family:var(--font-mono); font-size:var(--t-xs); color:var(--muted); margin-bottom:22px;}
@@ -1387,12 +1478,12 @@ function avisosHTML(tipo, marcado){
   }
   /* Cinta: aviso solo cuando el nivel acaba de subir respecto a la sesión anterior. */
   if(tipo === 'cinta' && !marcado && nC > 0 && !enReentrada()){
-    const ahora = nivelCinta();
+    const nivelHoy = nivelCinta();
     let antes = 0;
     while(antes < CINTA_NIVELES.length - 1 && (nC-1) >= CINTA_NIVELES[antes].hasta) antes++;
-    if(CINTA_NIVELES[antes].n < ahora.n){
-      html += '<div class="aviso-nivel"><b>Hoy subes a nivel ' + ahora.n + ':</b> ' +
-              ahora.vel + ' km/h y ' + ahora.inc + '% de cuesta. Si te agarras a las barras, baja la cuesta.</div>';
+    if(CINTA_NIVELES[antes].n < nivelHoy.n){
+      html += '<div class="aviso-nivel"><b>Hoy subes a nivel ' + nivelHoy.n + ':</b> ' +
+              nivelHoy.vel + ' km/h y ' + nivelHoy.inc + '% de cuesta. Si te agarras a las barras, baja la cuesta.</div>';
     }
   }
   /* Máquinas ocupadas: solo cuando de verdad va a estar lleno. */
@@ -1591,7 +1682,7 @@ function cerrarRespira(){
 const S = {
   activa:false, tipo:'fuerza', modo:'fuerza', lista:[], iEj:0, serie:0,
   descansando:false, finDescanso:0, tick:null, hechos:0,
-  tanda:0, finTanda:0, pausada:false, restante:0
+  tanda:0, finTanda:0, pausada:false, restante:0, ultimoSeg:-1
 };
 const TANDA_MIN = 15;
 const DESCANSO_TANDAS = 120;   // 2 min entre las dos tandas de cinta
@@ -1737,7 +1828,7 @@ function pintarDescanso(ej, nSeries){
       '</div>' +
       '<div class="ses-siguiente">Siguiente: <b>' + esc(siguiente) + '</b></div>' +
     '</div>';
-  actualizarRing();
+  actualizarRing(true);
 }
 
 function anilloHTML(valor){
@@ -1779,7 +1870,7 @@ function pintarCinta(){
         '</div>' +
         '<div class="ses-siguiente">Siguiente: <b>15 minutos a ' + niv.vel + ' km/h y ' + niv.inc + '% de cuesta</b></div>' +
       '</div>';
-    actualizarRing();
+    actualizarRing(true);
     return;
   }
 
@@ -1797,7 +1888,7 @@ function pintarCinta(){
       '</div>' +
     '</div>' +
     '<div class="ses-foot"><button class="btn-second" onclick="salirSesion()">Dejarlo aquí</button></div>';
-  actualizarRing();
+  actualizarRing(true);
 }
 
 function pausarCinta(){
@@ -1900,7 +1991,7 @@ function arrancarTick(){
 }
 function pararTick(){ if(S.tick){ clearInterval(S.tick); S.tick = null; } }
 
-function actualizarRing(){
+function actualizarRing(forzar){
   const txt = document.getElementById('ringTxt');
   const anillo = document.getElementById('ringAvance');
   if(!txt || !anillo) return;
@@ -1910,6 +2001,11 @@ function actualizarRing(){
   const quedan = S.pausada
     ? Math.ceil(S.restante / 1000)
     : Math.max(0, Math.ceil((objetivo - Date.now()) / 1000));
+  /* El tick corre a 250ms para no perder el final, pero el DOM solo se toca
+     cuando cambia el segundo visible: en una tanda de 15 minutos son 900
+     escrituras en vez de 3.600, y la transición del anillo deja de cortarse. */
+  if(!forzar && quedan === S.ultimoSeg) return;
+  S.ultimoSeg = quedan;
   txt.textContent = quedan >= 60
     ? Math.floor(quedan/60) + ':' + String(quedan % 60).padStart(2,'0')
     : String(quedan);
@@ -1995,7 +2091,7 @@ function pito(cual){
   }catch(e){ destello(); }
 }
 function destello(){
-  const el = document.getElementById('sesion');
+  const el = S.activa ? document.getElementById('sesion') : document.body;
   if(!el) return;
   el.style.transition = 'none';
   el.style.background = 'var(--accent)';
@@ -2022,9 +2118,14 @@ function ejercicioHTML(ej, i){
     '</div>' +
   '</details>';
 }
+let rutinaPintada = false;
 function renderRutina(){
+  /* El contenido no depende de ningún dato guardado, así que se construye una
+     vez. Repintarlo en cada sync cerraba las fichas que tuvieras abiertas. */
+  if(rutinaPintada) return;
   document.getElementById('listaGym').innerHTML  = EJERCICIOS_GYM.map(ejercicioHTML).join('');
   document.getElementById('listaCasa').innerHTML = EJERCICIOS_CASA.map(ejercicioHTML).join('');
+  rutinaPintada = true;
 }
 function setVista(v){
   ['gym','cinta','casa'].forEach(k => {
@@ -2478,7 +2579,12 @@ function marcarSyncOK(){
   setLS(K.sync, String(Date.now()));
   renderSyncEstado();
 }
-async function pullSync(){
+let ultimoPull = 0;
+async function pullSync(forzar){
+  /* Cambiar de app en el iPhone dispara visibilitychange constantemente: sin
+     este freno era una petición de red por cada vez que volvías. */
+  if(!forzar && Date.now() - ultimoPull < 20000) return;
+  ultimoPull = Date.now();
   try{
     const res = await fetch(SUPABASE_URL + '/rest/v1/ejercicio?id=eq.1&select=data', {
       cache:'no-store',
@@ -2527,7 +2633,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if(!navigator.onLine) showBanner('offlineBanner');
-  pullSync();
+  pullSync(true);
+});
+
+/* Escape cierra lo que esté abierto, de dentro a fuera. En el móvil no se usa,
+   pero en el PC es lo que uno espera y no costaba nada. */
+document.addEventListener('keydown', e => {
+  if(e.key !== 'Escape') return;
+  if(RESP.activa){ cerrarRespira(); return; }
+  if(document.getElementById('settingsOverlay').classList.contains('show')){ closeSettings(); return; }
+  if(S.activa) salirSesion();
 });
 window.addEventListener('hashchange', () => {
   const h = (location.hash || '').replace('#','');
