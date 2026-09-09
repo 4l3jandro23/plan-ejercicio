@@ -22,34 +22,81 @@
   @font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/jetbrains-mono-400.woff) format('woff');}
   @font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/jetbrains-mono-700.woff) format('woff');}
 
+  /* ==========================================================================
+     SISTEMA VISUAL — vidrio, igual que el plan de alimentación
+     --------------------------------------------------------------------------
+     Regla de rendimiento que gobierna todo lo de abajo: el desenfoque real
+     (backdrop-filter) solo se usa en elementos ÚNICOS en pantalla — cabecera,
+     barra inferior, hojas, hero de Hoy, los tres botones de rescate. Todo lo
+     que se repite muchas veces (las 8 semanas, las tarjetas, los acordeones)
+     usa .pane, que es translúcido pero SIN desenfoque. Cuarenta capas
+     desenfocadas a la vez se notan al hacer scroll en un iPhone.
+
+     Excepción deliberada: la sesión guiada y la pantalla de respiración van
+     OPACAS. Ahí estás leyendo pasos de pie en un gimnasio con mala luz y con
+     el móvil sudado; la legibilidad gana al efecto, sin discusión.
+     ========================================================================== */
   :root{
     --font-display:'Fraunces',Georgia,serif;
     --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     --font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
     --t-2xs:.66rem; --t-xs:.76rem; --t-sm:.84rem; --t-base:.92rem;
     --t-md:1.05rem; --t-lg:1.25rem; --t-xl:1.5rem; --t-2xl:2rem; --t-3xl:3.2rem;
-    --bg:#faf9f5; --card:#ffffff; --ink:#2b2b28; --muted:#6b6b63;
-    --accent:#2b6cb0; --accent2:#4a8fd1; --accent-soft:#e5eef8; --warn:#b5651d; --warn-soft:#fbeee2;
+
+    --bg:#eef1f6; --bg2:#f8fafc; --card:#ffffff;
+    --ink:#1e2329; --muted:#666f7a;
+    --accent:#2b6cb0; --accent2:#4a8fd1; --accent-soft:#e3ecf7;
+    --warn:#b5651d; --warn-soft:#fbeee2;
     --ok:#3f7d4a; --ok-soft:#e6f0e5;
-    --border:#dcd9d0; --radius:3px; --radius-lg:5px;
-    /* Una sola escala de sombra para todo: suaves y anchas, nunca duras. */
-    --sh-1:0 1px 2px rgba(38,36,30,.05), 0 3px 10px rgba(38,36,30,.045);
-    --sh-2:0 2px 5px rgba(38,36,30,.06), 0 10px 28px rgba(38,36,30,.075);
-    --sh-3:0 6px 14px rgba(38,36,30,.08), 0 22px 50px rgba(38,36,30,.12);
-    /* Curva de iOS: sale rápido y frena al final. Todo se mueve con esta. */
-    --ease:cubic-bezier(.32,.72,0,1);
+    --border:rgba(30,35,41,.10);
+
+    /* Vidrio */
+    --glass:rgba(255,255,255,.60);
+    --glass-2:rgba(255,255,255,.78);
+    --glass-3:rgba(255,255,255,.90);
+    --glass-brd:rgba(255,255,255,.72);
+    --glass-hl:rgba(255,255,255,.95);
+    --pane:rgba(255,255,255,.66);
+    --blur:blur(22px) saturate(170%);
+    --blur-sm:blur(14px) saturate(150%);
+
+    /* Elevación */
+    --sh-1:0 1px 2px rgba(24,30,40,.05), 0 2px 8px rgba(24,30,40,.04);
+    --sh-2:0 2px 6px rgba(24,30,40,.06), 0 12px 28px rgba(24,30,40,.07);
+    --sh-3:0 10px 26px rgba(24,30,40,.11), 0 28px 64px rgba(24,30,40,.13);
+
+    /* Radios */
+    --r-xs:8px; --r-sm:12px; --r-md:18px; --r-lg:24px; --r-xl:30px;
+    --radius:18px; --radius-lg:24px;
+
+    --ease:cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-out:cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-drawer:cubic-bezier(0.32, 0.72, 0, 1);
+    --ease-spring:cubic-bezier(0.34, 1.4, 0.64, 1);
+
     /* Gris deliberadamente neutro para los días sin nada: nunca rojo, nunca alarma */
-    --neutral:#e8e5dd; --neutral-ink:#9b978c;
+    --neutral:#dfe4ea; --neutral-ink:#98a1ab;
   }
   html.dark{
-    --bg:#12161a; --card:#1b2126; --ink:#eceef0; --muted:#98a1aa;
-    --accent:#6fb3f0; --accent2:#4a8fd1; --accent-soft:#1b2c3d; --warn:#e0955a; --warn-soft:#3a2a1c;
+    --bg:#0c1014; --bg2:#121820; --card:#1a2128;
+    --ink:#e8ebee; --muted:#95a0aa;
+    --accent:#6fb3f0; --accent2:#4a8fd1; --accent-soft:#16283a;
+    --warn:#e0955a; --warn-soft:#3a2a1c;
     --ok:#7ec98a; --ok-soft:#1c2e1e;
-    --border:#2f383f;
-    --sh-1:0 1px 2px rgba(0,0,0,.3), 0 3px 10px rgba(0,0,0,.24);
-    --sh-2:0 2px 5px rgba(0,0,0,.34), 0 10px 28px rgba(0,0,0,.3);
-    --sh-3:0 6px 14px rgba(0,0,0,.4), 0 22px 50px rgba(0,0,0,.42);
-    --neutral:#232b30; --neutral-ink:#68727a;
+    --border:rgba(255,255,255,.09);
+
+    --glass:rgba(27,35,44,.60);
+    --glass-2:rgba(29,37,46,.80);
+    --glass-3:rgba(23,30,38,.92);
+    --glass-brd:rgba(255,255,255,.10);
+    --glass-hl:rgba(255,255,255,.07);
+    --pane:rgba(30,38,47,.62);
+
+    --sh-1:0 1px 2px rgba(0,0,0,.30), 0 2px 8px rgba(0,0,0,.20);
+    --sh-2:0 2px 8px rgba(0,0,0,.34), 0 14px 32px rgba(0,0,0,.30);
+    --sh-3:0 12px 30px rgba(0,0,0,.44), 0 30px 70px rgba(0,0,0,.40);
+
+    --neutral:#222a32; --neutral-ink:#66707a;
   }
 
   html[data-color="verde"]{ --accent:#2f7a5f; --accent2:#57a686; --accent-soft:#e7f3ee; }
@@ -82,95 +129,164 @@
   body{
     margin:0; font-family:var(--font-body);
     background:var(--bg); color:var(--ink); line-height:1.6;
-    padding-bottom:calc(78px + env(safe-area-inset-bottom));
-    transition:background .25s, color .25s;
-    overscroll-behavior-y:contain;
+    padding-bottom:calc(84px + env(safe-area-inset-bottom));
+    overscroll-behavior-y:contain; position:relative; min-height:100vh;
   }
   body.sesion-abierta{overflow:hidden;}
 
-  header{
-    background:linear-gradient(115deg,var(--accent),var(--accent2));
-    color:#fff;
-    padding:calc(18px + env(safe-area-inset-top)) 18px 20px;
-    position:sticky; top:0; z-index:20; border-bottom:1px solid rgba(0,0,0,.08);
-    box-shadow:var(--sh-1);
+  /* El vidrio necesita algo que desenfocar. Sin esto no se ve nada:
+     desenfocar un color plano devuelve el mismo color plano. */
+  body::before{
+    content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background:
+      radial-gradient(70% 55% at 10% -6%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 62%),
+      radial-gradient(58% 48% at 96% 6%, color-mix(in srgb, var(--accent2) 22%, transparent), transparent 58%),
+      radial-gradient(80% 60% at 50% 108%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 65%),
+      var(--bg);
   }
-  .headtop{display:flex; justify-content:space-between; align-items:center;}
-  header h1{margin:0 0 4px; font-size:var(--t-xl); font-family:var(--font-display); font-weight:600; letter-spacing:-.2px;}
-  header p{margin:0; opacity:.92; font-size:var(--t-sm);}
+  html.dark body::before{
+    background:
+      radial-gradient(70% 55% at 10% -6%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 62%),
+      radial-gradient(58% 48% at 96% 6%, color-mix(in srgb, var(--accent2) 13%, transparent), transparent 58%),
+      radial-gradient(80% 60% at 50% 108%, color-mix(in srgb, var(--accent) 11%, transparent), transparent 65%),
+      var(--bg);
+  }
+
+  /* ===== Utilidades de superficie ===== */
+  .glass{
+    background:var(--glass);
+    -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
+    border:1px solid var(--glass-brd); border-radius:var(--r-lg);
+    box-shadow:inset 0 1px 0 var(--glass-hl), var(--sh-2);
+  }
+  /* Translúcido sin desenfoque: para lo que se repite muchas veces. */
+  .pane{
+    background:var(--pane);
+    border:1px solid var(--border); border-radius:var(--r-md);
+    box-shadow:inset 0 1px 0 var(--glass-hl), var(--sh-1);
+  }
+  /* Si el navegador no sabe desenfocar, opacamos para que siga siendo legible. */
+  @supports not ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){
+    .glass, .pane, header, .bottomnav, .sheet, .settings-panel, .sos-btn{
+      background:var(--card);
+    }
+  }
+  /* Quien pide menos transparencia en el sistema, la recibe. */
+  @media (prefers-reduced-transparency: reduce){
+    .glass, .pane, header, .bottomnav, .sheet, .settings-panel, .sos-btn{
+      background:var(--card); -webkit-backdrop-filter:none; backdrop-filter:none;
+    }
+    body::before{background:var(--bg);}
+  }
+
+  /* ===== Iconos vectoriales =====
+     Dibujados a mano como símbolos SVG dentro del propio HTML: sin librería y
+     sin CDN, porque la app tiene que funcionar entera sin conexión. */
+  .ic-v{
+    width:1.15em; height:1.15em; flex-shrink:0; vertical-align:-0.18em;
+    fill:none; stroke:currentColor; stroke-width:1.75;
+    stroke-linecap:round; stroke-linejoin:round;
+  }
+  .bottomnav .ic-v{width:22px; height:22px; vertical-align:0;}
+  .ic-lg{width:1.6em; height:1.6em;}
+
+  header{
+    background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 92%, transparent), color-mix(in srgb, var(--accent2) 88%, transparent));
+    -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
+    color:#fff; padding:calc(14px + env(safe-area-inset-top)) 16px 16px;
+    position:sticky; top:0; z-index:20;
+    border-bottom:1px solid rgba(255,255,255,.16);
+    box-shadow:0 6px 24px rgba(20,32,48,.14);
+  }
+  .headtop{display:flex; justify-content:space-between; align-items:center; gap:12px; max-width:760px; margin:0 auto;}
+  header h1{margin:0 0 2px; font-size:var(--t-lg); font-family:var(--font-display); font-weight:600; letter-spacing:-.3px; display:flex; align-items:center; gap:9px;}
+  header h1 .ic-v{width:1.05em; height:1.05em;}
+  header p{margin:0; opacity:.9; font-size:var(--t-xs);}
   .headbtns{display:flex; gap:8px; flex-shrink:0;}
   .headbtns button{
-    background:rgba(255,255,255,.2); border:none; color:#fff; font-size:var(--t-lg);
-    width:38px; height:38px; border-radius:50%; cursor:pointer; flex-shrink:0;
-    transition:background .2s var(--ease), transform .2s var(--ease);
+    background:rgba(255,255,255,.20); border:1px solid rgba(255,255,255,.26);
+    -webkit-backdrop-filter:var(--blur-sm); backdrop-filter:var(--blur-sm);
+    color:#fff; width:40px; height:40px; border-radius:50%; cursor:pointer; flex-shrink:0;
+    display:grid; place-items:center;
+    transition:background .18s var(--ease), transform .16s var(--ease);
   }
+  .headbtns button .ic-v{width:19px; height:19px;}
   .headbtns button:active{transform:scale(.9);}
-  @media (hover:hover) and (pointer:fine){ .headbtns button:hover{background:rgba(255,255,255,.34);} }
 
   /* ===== Panel de Ajustes ===== */
   .settings-overlay{
-    display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:50;
-    align-items:flex-end; justify-content:center;
+    position:fixed; inset:0; background:rgba(12,16,22,.44); z-index:50;
+    -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
+    display:flex; align-items:flex-end; justify-content:center;
+    opacity:0; visibility:hidden; pointer-events:none;
+    transition:opacity 240ms var(--ease), visibility 240ms;
   }
-  .settings-overlay.show{display:flex;}
+  .settings-overlay.show{opacity:1; visibility:visible; pointer-events:auto;}
   .settings-panel{
-    background:var(--card); width:100%; max-width:520px; border-radius:12px 12px 0 0;
-    padding:18px 18px calc(20px + env(safe-area-inset-bottom)); max-height:82vh; overflow-y:auto;
-    box-shadow:var(--sh-3); animation:subir .32s var(--ease);
+    background:var(--glass-3);
+    -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
+    border:1px solid var(--glass-brd); border-bottom:none;
+    width:100%; max-width:520px; border-radius:var(--r-xl) var(--r-xl) 0 0;
+    padding:10px 18px calc(20px + env(safe-area-inset-bottom)); max-height:86vh; overflow-y:auto;
+    transform:translateY(100%); box-shadow:var(--sh-3);
+    transition:transform 340ms var(--ease-drawer);
   }
-  .settings-overlay{animation:aparecer .25s ease;}
-  /* Tirador tipo hoja de iOS: indica que se cierra tirando hacia abajo. */
-  .settings-panel h3::before{
-    content:""; display:block; width:38px; height:4px; border-radius:2px;
-    background:var(--border); margin:0 auto 16px;
+  .settings-overlay.show .settings-panel{transform:translateY(0);}
+  .settings-panel::before{
+    content:""; display:block; width:38px; height:4px; border-radius:99px;
+    background:var(--border); margin:0 auto 14px;
   }
-  @keyframes subir{from{transform:translateY(24px);} to{transform:translateY(0);}}
-  @keyframes aparecer{from{opacity:0;} to{opacity:1;}}
   .settings-panel h3{margin:0 0 4px; font-size:var(--t-lg); font-family:var(--font-display); font-weight:600; color:var(--ink);}
-  .settings-row{margin:18px 0;}
-  .settings-row > .lbl{font-size:var(--t-sm); font-weight:700; color:var(--muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:.3px;}
+  .settings-row{margin:16px 0;}
+  .settings-row > .lbl{font-size:var(--t-xs); font-weight:700; color:var(--muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:.5px;}
   .settings-hint{font-size:var(--t-xs); color:var(--muted); margin-top:7px; line-height:1.45;}
   .swatches{display:flex; gap:10px; flex-wrap:wrap;}
   .swatch{
     width:38px; height:38px; border-radius:50%; cursor:pointer; border:2px solid transparent;
     position:relative; flex-shrink:0; box-shadow:var(--sh-1);
-    transition:transform .2s var(--ease), border-color .2s var(--ease);
+    transition:transform .18s var(--ease-spring), border-color .2s var(--ease);
   }
-  .swatch:active{transform:scale(.94);}
-  .swatch.active{border-color:var(--ink);}
+  .swatch:active{transform:scale(.88);}
+  .swatch.active{border-color:var(--ink); transform:scale(1.06);}
   .swatch.active::after{content:"✓"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:var(--t-base); text-shadow:0 1px 2px rgba(0,0,0,.4);}
-  .style-options{display:flex; gap:8px;}
+  .style-options{display:flex; gap:8px; flex-wrap:wrap;}
   .style-opt{
-    flex:1; border:1px solid var(--border); border-radius:3px; padding:12px 6px; text-align:center;
-    cursor:pointer; font-family:inherit; font-size:var(--t-sm); font-weight:600; color:var(--ink); background:var(--bg);
+    flex:1; min-width:0; border:1px solid var(--border); border-radius:var(--r-sm); padding:11px 8px; text-align:center;
+    cursor:pointer; font-family:inherit; font-size:var(--t-sm); font-weight:600; color:var(--ink);
+    background:var(--pane); display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    transition:all .18s var(--ease);
   }
-  .style-opt{transition:border-color .18s var(--ease), background .18s var(--ease), color .18s var(--ease);}
-  .style-opt.active{border-color:var(--accent); background:var(--accent-soft); color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent);}
+  .style-opt .ic-v{width:15px; height:15px;}
+  .style-opt.active{border-color:transparent; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; box-shadow:var(--sh-1);}
+  .style-opt:active{transform:scale(.96);}
   .daypicker{display:flex; gap:5px;}
   .daypicker button{
-    flex:1; border:1px solid var(--border); background:var(--bg); color:var(--ink);
-    border-radius:3px; padding:11px 0 8px; font-family:inherit; font-size:var(--t-sm); font-weight:700; cursor:pointer;
+    flex:1; border:1px solid var(--border); background:var(--pane); color:var(--ink);
+    border-radius:var(--r-sm); padding:11px 0 8px; font-family:inherit; font-size:var(--t-sm); font-weight:700; cursor:pointer;
     display:flex; flex-direction:column; align-items:center; gap:3px; line-height:1;
+    transition:all .18s var(--ease);
   }
   .daypicker button i{font-style:normal; font-size:8px; opacity:.85;}
-  .daypicker button{transition:background .18s var(--ease), border-color .18s var(--ease), color .18s var(--ease);}
-  .daypicker button.fijo{border-color:var(--accent); background:var(--accent); color:#fff;}
-  .daypicker button.flex{border-color:var(--accent); background:var(--accent-soft); color:var(--accent);}
+  .daypicker button.fijo{border-color:transparent; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff;}
+  .daypicker button.flex{border-color:color-mix(in srgb, var(--accent) 40%, transparent); background:var(--accent-soft); color:var(--accent);}
+  .daypicker button.cinta{border-color:transparent; background:var(--accent2); color:#fff;}
   .settings-close{
-    width:100%; margin-top:10px; background:var(--accent); color:#fff; border:none; border-radius:3px;
-    padding:13px; font-family:inherit; font-size:var(--t-base); font-weight:700; cursor:pointer;
+    width:100%; margin-top:8px; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; border:none; border-radius:var(--r-sm);
+    padding:14px; font-family:inherit; font-size:var(--t-base); font-weight:700; cursor:pointer; box-shadow:var(--sh-1);
   }
   .settings-danger{
-    width:100%; margin-top:8px; background:none; color:var(--muted); border:1px solid var(--border); border-radius:3px;
+    width:100%; margin-top:8px; background:none; color:var(--muted); border:1px solid var(--border); border-radius:var(--r-sm);
     padding:11px; font-family:inherit; font-size:var(--t-xs); font-weight:600; cursor:pointer;
   }
 
-  main{max-width:760px; margin:0 auto; padding:18px 16px 6px;}
+  main{max-width:760px; margin:0 auto; padding:16px 14px 6px;}
   .tabpanel{display:none;}
-  .tabpanel.active{display:block; animation:fade .3s var(--ease);}
+  .tabpanel.active{display:block; animation:fade .26s var(--ease);}
   @keyframes fade{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+  @keyframes sube{from{transform:translateY(30px);} to{transform:translateY(0);}}
+  @keyframes aparecer{from{opacity:0;} to{opacity:1;}}
 
-  :focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:var(--radius);}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px;}
   .headbtns button:focus-visible{outline-color:#fff;}
   @media (prefers-reduced-motion: reduce){
     *, *::before, *::after{
@@ -181,130 +297,332 @@
 
   h2{
     font-family:var(--font-display); font-weight:600; font-size:var(--t-lg); color:var(--ink);
-    margin:30px 0 14px; display:flex; align-items:center; gap:10px; letter-spacing:-.2px;
+    margin:28px 0 12px; display:flex; align-items:center; gap:10px; letter-spacing:-.3px;
   }
-  .tabpanel h2:first-of-type{margin-top:4px;}
+  .tabpanel h2:first-of-type{margin-top:2px;}
   .h2-badge{
     display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
-    width:32px; height:32px; border-radius:3px; background:var(--accent-soft); font-size:var(--t-md);
+    width:34px; height:34px; border-radius:11px; background:var(--accent-soft); color:var(--accent);
+    font-size:var(--t-md); box-shadow:inset 0 1px 0 var(--glass-hl);
   }
-  h3{font-family:var(--font-display); font-weight:600; font-size:var(--t-md); margin:22px 0 8px; letter-spacing:-.1px;}
-  .lead{font-size:var(--t-base); color:var(--muted); margin:0 0 18px;}
-  .tip{background:var(--accent-soft); border-left:3px solid var(--accent); border-radius:0 3px 3px 0; padding:13px 15px; font-size:var(--t-base); margin:14px 0;}
-  .warn{background:var(--warn-soft); border-left:3px solid var(--warn); border-radius:0 3px 3px 0; padding:13px 15px; font-size:var(--t-base); margin:14px 0;}
-  .quiet{border-left:3px solid var(--border); padding:13px 15px; font-size:var(--t-base); margin:14px 0; color:var(--muted);}
-  table{width:100%; border-collapse:collapse; font-size:var(--t-sm); margin:14px 0;}
+  .h2-badge .ic-v{width:18px; height:18px;}
+  h3{font-family:var(--font-display); font-weight:600; font-size:var(--t-md); margin:20px 0 8px; letter-spacing:-.2px;}
+  .lead{font-size:var(--t-base); color:var(--muted); margin:0 0 16px;}
+
+  .card{
+    background:var(--pane); border:1px solid var(--border); border-radius:var(--r-lg);
+    padding:16px; margin:0 0 12px;
+    box-shadow:inset 0 1px 0 var(--glass-hl), var(--sh-1);
+  }
+  .card > h3:first-child{margin-top:0;}
+  .card > p:last-child, .card > ul:last-child{margin-bottom:0;}
+
+  .tip{background:var(--accent-soft); border:1px solid color-mix(in srgb, var(--accent) 22%, transparent); border-left:3px solid var(--accent); border-radius:var(--r-sm); padding:12px 15px; font-size:var(--t-base); margin:13px 0;}
+  .warn{background:var(--warn-soft); border:1px solid color-mix(in srgb, var(--warn) 26%, transparent); border-left:3px solid var(--warn); border-radius:var(--r-sm); padding:12px 15px; font-size:var(--t-base); margin:13px 0;}
+  .quiet{background:var(--pane); border:1px solid var(--border); border-left:3px solid var(--neutral-ink); border-radius:var(--r-sm); padding:12px 15px; font-size:var(--t-base); margin:13px 0; color:var(--muted);}
+  .quiet b{color:var(--ink);}
+
+  table{width:100%; border-collapse:collapse; font-size:var(--t-sm); margin:12px 0;}
   th,td{border:none; border-bottom:1px solid var(--border); padding:10px 8px; text-align:left; vertical-align:top;}
-  th{background:transparent; font-family:var(--font-display); font-weight:600; border-bottom:2px solid var(--ink);}
+  th{font-family:var(--font-display); font-weight:600; border-bottom:2px solid color-mix(in srgb, var(--ink) 45%, transparent);}
+  tr:last-child td{border-bottom:none;}
+  .tabla-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch; margin:12px -4px; padding:0 4px;}
+
   ul{padding-left:20px; margin:8px 0;}
-  li{margin-bottom:6px;}
-  footer{text-align:center; font-size:var(--t-xs); color:var(--muted); padding:22px 20px 8px; border-top:1px solid var(--border); margin-top:12px;}
-  button{transition:transform .12s var(--ease);}
-  button:active{transform:scale(.975);}
+  li{margin-bottom:5px;}
+  .pill{display:inline-flex; align-items:center; gap:5px; background:var(--accent-soft); color:var(--accent); padding:5px 12px; border-radius:99px; font-size:var(--t-xs); margin:3px 5px 3px 0; font-weight:600; border:1px solid color-mix(in srgb, var(--accent) 18%, transparent);}
+  .pill .ic-v{width:13px; height:13px;}
+  footer{text-align:center; font-size:var(--t-xs); color:var(--muted); padding:22px 20px 8px; margin-top:14px;}
+
+  button{transition:transform .14s var(--ease);}
+  button:active{transform:scale(.97);}
   .bottomnav button:active, .btn-timer:active{transform:none;}
 
   /* ===== HOY ===== */
-  .hoy-hero{border-top:1px solid var(--border); padding:24px 0 20px;}
-  .hoy-fecha{font-size:var(--t-xs); color:var(--muted); text-transform:uppercase; letter-spacing:.9px; font-weight:700;}
-  .hoy-que{font-family:var(--font-display); font-weight:600; font-size:var(--t-2xl); margin:8px 0 6px; letter-spacing:-.5px; line-height:1.15;}
-  .hoy-sub{font-size:var(--t-base); color:var(--muted); margin:0;}
-  .hoy-hecho{
-    background:var(--accent-soft); border-left:3px solid var(--accent); padding:16px; margin:18px 0 0;
-    border-radius:0 var(--radius-lg) var(--radius-lg) 0; animation:fade .35s var(--ease);
+  .hoy-hero{
+    position:relative; overflow:hidden;
+    background:linear-gradient(140deg, color-mix(in srgb, var(--accent) 92%, transparent), color-mix(in srgb, var(--accent2) 84%, transparent));
+    color:#fff; border-radius:var(--r-xl); padding:18px 18px 17px; margin-bottom:12px;
+    box-shadow:var(--sh-2); border:1px solid rgba(255,255,255,.18);
   }
-  .hoy-hecho b{font-family:var(--font-display); font-size:var(--t-md); color:var(--accent); display:block; margin-bottom:2px;}
-  .hoy-hecho span{font-size:var(--t-sm); color:var(--muted);}
+  .hoy-hero::after{
+    content:""; position:absolute; right:-40px; top:-56px; width:190px; height:190px; border-radius:50%;
+    background:rgba(255,255,255,.12); pointer-events:none;
+  }
+  .hoy-fecha{position:relative; font-size:var(--t-2xs); text-transform:uppercase; letter-spacing:1px; font-weight:700; opacity:.82;}
+  .hoy-que{position:relative; font-family:var(--font-display); font-weight:600; font-size:var(--t-xl); margin:5px 0 4px; letter-spacing:-.5px; line-height:1.15;}
+  .hoy-sub{position:relative; font-size:var(--t-sm); margin:0; opacity:.92;}
+  .hoy-hecho{
+    position:relative;
+    background:rgba(255,255,255,.18);
+    -webkit-backdrop-filter:var(--blur-sm); backdrop-filter:var(--blur-sm);
+    border:1px solid rgba(255,255,255,.24); border-radius:var(--r-md);
+    padding:13px 15px; margin:15px 0 0; animation:fade .35s var(--ease);
+  }
+  .hoy-hecho b{font-family:var(--font-display); font-size:var(--t-md); display:flex; align-items:center; gap:8px; margin-bottom:2px;}
+  .hoy-hecho b .ic-v{width:18px; height:18px;}
+  .hoy-hecho span{font-size:var(--t-sm); opacity:.88;}
+  .aviso-nivel{
+    position:relative; background:rgba(255,255,255,.18);
+    border:1px solid rgba(255,255,255,.24); border-radius:var(--r-md);
+    padding:12px 15px; font-size:var(--t-sm); margin:14px 0 0;
+  }
   .hoy-manana{
     display:flex; justify-content:space-between; align-items:baseline; gap:10px;
-    font-size:var(--t-sm); color:var(--muted); border-top:1px solid var(--border); padding:14px 0 0; margin-top:20px;
+    font-size:var(--t-sm); color:var(--muted); margin-top:18px;
+    background:var(--pane); border:1px solid var(--border); border-radius:var(--r-md);
+    padding:13px 15px; box-shadow:inset 0 1px 0 var(--glass-hl);
   }
   .hoy-manana b{color:var(--ink); font-weight:600;}
 
-  .actions{display:flex; flex-direction:column; gap:8px; margin:20px 0 0;}
+  /* ===== Botonera de rescate: lo primero que se ve en Hoy ===== */
+  .sos-row{display:grid; grid-template-columns:1fr 1fr; gap:9px; margin:0 0 14px;}
+  .sos-btn{
+    background:var(--glass); -webkit-backdrop-filter:var(--blur-sm); backdrop-filter:var(--blur-sm);
+    border:1px solid var(--glass-brd); border-radius:var(--r-md);
+    box-shadow:inset 0 1px 0 var(--glass-hl), var(--sh-1);
+    padding:13px; cursor:pointer; font-family:inherit; text-align:left;
+    display:flex; align-items:center; gap:11px; color:var(--ink);
+    transition:transform .16s var(--ease), box-shadow .2s var(--ease);
+  }
+  .sos-btn:active{transform:scale(.96);}
+  .sos-btn .sos-ico{width:36px; height:36px; border-radius:11px; display:grid; place-items:center; flex-shrink:0; color:#fff;}
+  .sos-btn .sos-ico .ic-v{width:19px; height:19px;}
+  .sos-btn b{display:block; font-size:var(--t-sm); font-weight:700; line-height:1.25;}
+  .sos-btn span{display:block; font-size:var(--t-2xs); color:var(--muted); line-height:1.3; margin-top:1px;}
+  .sos-btn.ancho{grid-column:1 / -1;}
+
+  .actions{display:flex; flex-direction:column; gap:8px; margin:16px 0 0;}
   .btn-main{
     width:100%; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff;
-    border:none; border-radius:var(--radius); box-shadow:var(--sh-2);
-    padding:17px 14px; font-family:inherit; font-size:var(--t-md); font-weight:700; cursor:pointer; text-align:center;
+    border:none; border-radius:var(--r-md); box-shadow:var(--sh-2);
+    padding:16px 14px; font-family:inherit; font-size:var(--t-md); font-weight:700; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:9px;
     transition:box-shadow .22s var(--ease), transform .12s var(--ease), filter .22s var(--ease);
   }
   .btn-main:active{box-shadow:var(--sh-1); filter:brightness(.96);}
   .btn-second{
-    width:100%; background:var(--bg); color:var(--ink); border:1px solid var(--border); border-radius:var(--radius);
-    padding:13px 14px; font-family:inherit; font-size:var(--t-base); font-weight:600; cursor:pointer; text-align:center;
+    width:100%; background:var(--pane); color:var(--ink); border:1px solid var(--border); border-radius:var(--r-md);
+    padding:13px 14px; font-family:inherit; font-size:var(--t-base); font-weight:600; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:9px;
+    box-shadow:inset 0 1px 0 var(--glass-hl);
     transition:border-color .18s var(--ease), background .18s var(--ease), color .18s var(--ease);
   }
-  .btn-escape{transition:background .18s var(--ease);}
-  /* Los estados de ratón se limitan a los dispositivos que tienen ratón: en el
-     iPhone un :hover se queda pegado después de tocar y parece un fallo. */
-  @media (hover:hover) and (pointer:fine){
-    .btn-main:hover{box-shadow:var(--sh-3); transform:translateY(-1px);}
-    .btn-second:hover{border-color:var(--accent); color:var(--accent); background:var(--accent-soft);}
-    .btn-escape:hover{background:var(--border);}
-    .style-opt:hover:not(.active){border-color:var(--accent); color:var(--accent);}
-    .opts button:hover:not(.active){border-color:var(--accent);}
-    .daypicker button:hover{border-color:var(--accent);}
-    .swatch:hover{transform:scale(1.12);}
-    .stat:hover, .cinta-num:hover{background:var(--accent-soft);}
-    .wcell .box:hover{transform:translateY(-2px);}
-    details summary:hover{color:var(--accent);}
-    .btn-timer:hover{border-color:var(--accent); color:var(--accent);}
-  }
+  .btn-second .ic-v, .btn-main .ic-v{width:17px; height:17px;}
   /* La vía de escape no se esconde: mismo peso visual que lo demás, cero rojo, cero alarma */
   .btn-escape{
-    width:100%; background:var(--neutral); color:var(--ink); border:none; border-radius:3px;
+    width:100%; background:var(--neutral); color:var(--ink); border:none; border-radius:var(--r-md);
     padding:14px; font-family:inherit; font-size:var(--t-base); font-weight:700; cursor:pointer; margin-top:8px;
+    display:flex; align-items:center; justify-content:center; gap:9px;
+    transition:background .18s var(--ease);
   }
+  .btn-escape .ic-v{width:17px; height:17px;}
   .btn-undo{background:none; border:none; color:var(--accent); font-family:inherit; font-size:var(--t-xs); font-weight:700; cursor:pointer; padding:12px 0 0;}
-  .escape-card{display:none; border-left:3px solid var(--neutral-ink); padding:15px 16px; margin:12px 0 0;}
-  .escape-card.show{display:block;}
+  .escape-card{
+    display:none; background:var(--pane); border:1px solid var(--border); border-left:3px solid var(--neutral-ink);
+    border-radius:var(--r-md); padding:15px 16px; margin:12px 0 0; box-shadow:inset 0 1px 0 var(--glass-hl);
+  }
+  .escape-card.show{display:block; animation:fade .26s var(--ease);}
   .escape-card h4{margin:0 0 4px; font-family:var(--font-display); font-size:var(--t-md); font-weight:600;}
   .escape-card p{margin:0 0 14px; font-size:var(--t-sm); color:var(--muted);}
 
-  .horario{border-top:1px solid var(--border); padding:18px 0; margin-top:24px;}
-  .horario-title{font-size:var(--t-xs); color:var(--muted); text-transform:uppercase; letter-spacing:.9px; font-weight:700; margin-bottom:10px;}
-  .horario-row{display:flex; justify-content:space-between; gap:12px; font-size:var(--t-sm); padding:6px 0;}
+  .horario{margin-top:22px;}
+  .horario-title{font-size:var(--t-2xs); color:var(--muted); text-transform:uppercase; letter-spacing:.9px; font-weight:700; margin-bottom:10px;}
+  .horario-row{
+    display:flex; justify-content:space-between; gap:12px; font-size:var(--t-sm);
+    padding:11px 14px; background:var(--pane); border:1px solid var(--border);
+    border-radius:var(--r-sm); margin-bottom:6px; box-shadow:inset 0 1px 0 var(--glass-hl);
+  }
   .horario-row span:last-child{font-family:var(--font-mono); color:var(--muted); white-space:nowrap; font-size:var(--t-xs);}
   .horario-row.bad span:last-child{color:var(--warn);}
   .horario-row.good span:last-child{color:var(--accent);}
 
-  /* ===== Ejercicios ===== */
-  details{background:transparent; border:none; border-top:1px solid var(--border); border-radius:0;}
+  /* ===== Ejercicios / acordeones ===== */
+  details{
+    background:var(--pane); border:1px solid var(--border); border-radius:var(--r-lg);
+    margin-bottom:10px; box-shadow:inset 0 1px 0 var(--glass-hl), var(--sh-1); overflow:hidden;
+  }
   details summary{
-    padding:16px 2px; cursor:pointer; font-weight:600; font-family:var(--font-display); font-size:var(--t-md);
-    list-style:none; display:flex; justify-content:space-between; align-items:center; gap:8px;
+    padding:15px 16px; cursor:pointer; font-weight:600; font-family:var(--font-display); font-size:var(--t-md);
+    list-style:none; display:flex; justify-content:space-between; align-items:center; gap:10px;
+    transition:background .16s var(--ease), color .18s var(--ease);
   }
   details summary::-webkit-details-marker{display:none;}
-  details summary::after{content:"⌄"; color:var(--accent); font-size:var(--t-lg); transition:transform .2s; flex-shrink:0; font-family:var(--font-body);}
-  details[open] summary::after{transform:rotate(180deg);}
-  details summary{transition:color .18s var(--ease);}
+  details summary::after{
+    content:""; width:9px; height:9px; flex-shrink:0;
+    border-right:2px solid var(--accent); border-bottom:2px solid var(--accent);
+    transform:rotate(45deg) translateY(-2px); transition:transform .24s var(--ease);
+  }
+  details[open] summary::after{transform:rotate(-135deg) translateY(-2px);}
   details summary:active{background:var(--accent-soft);}
   details[open] summary{color:var(--accent);}
-  details .content{padding:0 2px 22px; font-size:var(--t-base);}
+  details .content{padding:0 16px 18px; font-size:var(--t-base);}
+  details .content > *:first-child{margin-top:0;}
   .ex-head{display:flex; align-items:baseline; gap:9px; flex:1; min-width:0;}
   .ex-num{font-family:var(--font-mono); font-size:var(--t-sm); color:var(--muted); font-weight:700; flex-shrink:0;}
   .ex-series{font-family:var(--font-mono); font-weight:400; color:var(--muted); font-size:var(--t-xs); flex-shrink:0;}
-  .ex-alias{font-size:var(--t-xs); color:var(--muted); font-family:var(--font-mono); margin:-6px 0 16px;}
+  .ex-alias{font-size:var(--t-xs); color:var(--muted); font-family:var(--font-mono); margin:2px 0 16px;}
   .ex-field{margin:0 0 15px;}
   .ex-field > div:first-child{font-size:var(--t-2xs); color:var(--muted); text-transform:uppercase; letter-spacing:.8px; font-weight:700; margin-bottom:3px;}
-  .ex-check{border-left:3px solid var(--accent); padding:11px 14px; margin:0 0 10px; font-size:var(--t-sm); background:var(--accent-soft);}
-  .ex-cross{border-left:3px solid var(--warn); padding:11px 14px; margin:0 0 14px; font-size:var(--t-sm); background:var(--warn-soft);}
-  .ex-sube{border-left:3px solid var(--ok); padding:11px 14px; margin:0 0 14px; font-size:var(--t-sm); background:var(--ok-soft);}
+  .ex-check{background:var(--accent-soft); border:1px solid color-mix(in srgb, var(--accent) 22%, transparent); border-left:3px solid var(--accent); border-radius:var(--r-sm); padding:11px 14px; margin:0 0 10px; font-size:var(--t-sm);}
+  .ex-cross{background:var(--warn-soft); border:1px solid color-mix(in srgb, var(--warn) 26%, transparent); border-left:3px solid var(--warn); border-radius:var(--r-sm); padding:11px 14px; margin:0 0 14px; font-size:var(--t-sm);}
+  .ex-sube{background:var(--ok-soft); border:1px solid color-mix(in srgb, var(--ok) 26%, transparent); border-left:3px solid var(--ok); border-radius:var(--r-sm); padding:11px 14px; margin:0 0 14px; font-size:var(--t-sm);}
 
-  /* ===== Sesión guiada (pantalla completa) ===== */
+  /* ==========================================================================
+     HOJA GENÉRICA (rescate, gym lleno, andar, decisión)
+     ========================================================================== */
+  .sheet-back{
+    position:fixed; inset:0; z-index:88; background:rgba(12,16,22,.48);
+    -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
+    display:none; align-items:flex-end; justify-content:center;
+  }
+  .sheet-back.show{display:flex; animation:fade .22s ease;}
+  .sheet{
+    background:var(--glass-3); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
+    border:1px solid var(--glass-brd); border-bottom:none;
+    width:100%; max-width:560px; border-radius:var(--r-xl) var(--r-xl) 0 0; max-height:92vh;
+    display:flex; flex-direction:column; overflow:hidden; box-shadow:var(--sh-3);
+    animation:sube .34s var(--ease-drawer);
+  }
+  @media (min-width:640px){
+    .sheet-back{align-items:center;}
+    .sheet{border-radius:var(--r-xl); max-height:88vh; border-bottom:1px solid var(--glass-brd);}
+  }
+  .sheet-top{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px 10px; flex-shrink:0;}
+  .sheet-tipo{display:inline-flex; align-items:center; gap:8px; font-size:var(--t-sm); font-weight:700; color:var(--muted);}
+  .sheet-x{
+    width:36px; height:36px; border-radius:50%; border:1px solid var(--border); cursor:pointer;
+    background:var(--pane); color:var(--ink); display:grid; place-items:center; flex-shrink:0;
+    transition:background .18s ease, transform .15s ease;
+  }
+  .sheet-x:active{transform:scale(.9);}
+  .sheet-scroll{overflow-y:auto; padding:0 16px 24px; -webkit-overflow-scrolling:touch;}
+  .sheet-h{font-family:var(--font-display); font-weight:600; font-size:var(--t-xl); margin:0 0 6px; line-height:1.2; letter-spacing:-.4px;}
+  .sheet-sub{color:var(--muted); font-size:var(--t-sm); margin:0 0 16px;}
+
+  .opt{
+    display:flex; gap:13px; align-items:flex-start; width:100%; text-align:left;
+    background:var(--pane); border:1px solid var(--border); border-radius:var(--r-md);
+    box-shadow:inset 0 1px 0 var(--glass-hl); padding:13px 14px; margin-bottom:9px;
+    cursor:pointer; font-family:inherit; color:var(--ink);
+    transition:transform .15s var(--ease), border-color .2s var(--ease);
+  }
+  .opt:active{transform:scale(.985); border-color:var(--accent);}
+  .opt-ico{width:42px; height:42px; border-radius:13px; display:grid; place-items:center; flex-shrink:0; color:#fff;}
+  .opt-ico .ic-v{width:22px; height:22px;}
+  .opt-txt{flex:1; min-width:0;}
+  .opt-txt b{display:block; font-size:var(--t-base); font-weight:700; line-height:1.3;}
+  .opt-txt span{display:block; font-size:var(--t-xs); color:var(--muted); line-height:1.45; margin-top:3px;}
+  .opt-min{
+    font-family:var(--font-mono); font-size:var(--t-2xs); font-weight:700; color:var(--accent);
+    background:var(--accent-soft); border-radius:99px; padding:3px 9px; flex-shrink:0; align-self:center;
+  }
+
+  .nivel{display:inline-flex; align-items:center; gap:6px; border-radius:99px; padding:4px 11px; font-size:var(--t-2xs); font-weight:700;}
+  .nivel.vacio{background:var(--ok-soft); color:var(--ok);}
+  .nivel.bien{background:var(--accent-soft); color:var(--accent);}
+  .nivel.lleno{background:var(--warn-soft); color:var(--warn);}
+  .lista-si, .lista-no{list-style:none; padding:0; margin:0 0 4px;}
+  .lista-si li, .lista-no li{display:flex; gap:10px; align-items:flex-start; font-size:var(--t-base); padding:7px 0; line-height:1.5;}
+  .lista-si li .ic-v{color:var(--ok); flex-shrink:0; margin-top:.28em;}
+  .lista-no li .ic-v{color:var(--warn); flex-shrink:0; margin-top:.28em;}
+  .veredicto{
+    background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, transparent), color-mix(in srgb, var(--accent2) 10%, transparent));
+    border:1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+    border-radius:var(--r-md); padding:14px 16px; font-size:var(--t-base); line-height:1.55; margin:14px 0 0;
+  }
+  .frase-agobio{
+    text-align:center; font-family:var(--font-display); font-size:var(--t-md); line-height:1.45;
+    color:var(--muted); padding:4px 8px 18px; font-style:italic;
+  }
+  .sheet-h2{
+    display:flex; align-items:center; gap:8px; margin:22px 0 10px;
+    font-size:var(--t-2xs); font-weight:700; color:var(--muted);
+    text-transform:uppercase; letter-spacing:.9px;
+  }
+  .sheet-h2 .ic-v{width:15px; height:15px;}
+  .paso-lista{list-style:none; padding:0; margin:0; counter-reset:paso;}
+  .paso-lista li{
+    display:flex; gap:13px; padding:0 0 14px; font-size:var(--t-base); line-height:1.55;
+    counter-increment:paso;
+  }
+  .paso-lista li::before{
+    content:counter(paso); flex-shrink:0;
+    width:28px; height:28px; border-radius:50%;
+    background:var(--accent-soft); color:var(--accent);
+    display:grid; place-items:center;
+    font-family:var(--font-mono); font-weight:700; font-size:var(--t-xs);
+  }
+  .sheet-nota{border-radius:var(--r-sm); padding:13px 15px; font-size:var(--t-sm); margin:0 0 12px; line-height:1.5;}
+  .sheet-nota.tip{background:var(--accent-soft); border-left:3px solid var(--accent);}
+  .sheet-nota.gris{background:var(--pane); border:1px solid var(--border);}
+  .sheet-nota b{display:block; margin-bottom:3px;}
+  .sheet-cta{
+    width:100%; border:none; border-radius:var(--r-md); cursor:pointer;
+    background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff;
+    padding:15px; font-family:inherit; font-size:var(--t-md); font-weight:700;
+    display:flex; align-items:center; justify-content:center; gap:9px;
+    box-shadow:var(--sh-2); margin:4px 0 14px;
+  }
+  .sheet-cta .ic-v{width:18px; height:18px;}
+
+  /* Sustitutos: tabla de "si está ocupada, coge esta" */
+  .sust{
+    background:var(--pane); border:1px solid var(--border); border-radius:var(--r-md);
+    box-shadow:inset 0 1px 0 var(--glass-hl); padding:13px 15px; margin-bottom:10px;
+  }
+  .sust-zona{font-family:var(--font-display); font-weight:600; font-size:var(--t-md); margin:0 0 2px;}
+  .sust-tuyo{font-size:var(--t-xs); color:var(--muted); font-family:var(--font-mono); margin:0 0 10px;}
+  .sust-op{display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-top:1px solid var(--border);}
+  .sust-op .n{
+    flex-shrink:0; width:22px; height:22px; border-radius:50%; background:var(--accent-soft); color:var(--accent);
+    display:grid; place-items:center; font-family:var(--font-mono); font-weight:700; font-size:10px; margin-top:2px;
+  }
+  .sust-op b{display:block; font-size:var(--t-sm); font-weight:700;}
+  .sust-op em{display:block; font-style:normal; font-family:var(--font-mono); font-size:var(--t-2xs); color:var(--accent); margin:1px 0 2px;}
+  .sust-op span{display:block; font-size:var(--t-xs); color:var(--muted); line-height:1.45;}
+
+  /* Franjas horarias */
+  .franja{
+    background:var(--pane); border:1px solid var(--border); border-radius:var(--r-md);
+    box-shadow:inset 0 1px 0 var(--glass-hl); padding:13px 15px; margin-bottom:9px;
+  }
+  .franja-top{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:5px;}
+  .franja-top b{font-size:var(--t-base); font-weight:700;}
+  .franja p{margin:0 0 5px; font-size:var(--t-xs); color:var(--muted); line-height:1.5;}
+  .franja p:last-child{margin-bottom:0; color:var(--ink); font-size:var(--t-sm);}
+
+  /* Decisión del gimnasio */
+  .dec{
+    background:var(--pane); border:1px solid var(--border); border-radius:var(--r-lg);
+    box-shadow:inset 0 1px 0 var(--glass-hl), var(--sh-1); padding:16px; margin-bottom:11px;
+  }
+  .dec-top{display:flex; align-items:center; gap:11px; margin-bottom:4px;}
+  .dec-ico{width:38px; height:38px; border-radius:12px; display:grid; place-items:center; flex-shrink:0; color:#fff; background:linear-gradient(135deg,var(--accent),var(--accent2));}
+  .dec-ico .ic-v{width:20px; height:20px;}
+  .dec-top b{font-family:var(--font-display); font-weight:600; font-size:var(--t-md); line-height:1.2;}
+  .dec-coste{font-family:var(--font-mono); font-size:var(--t-2xs); color:var(--muted); display:block; margin-top:2px;}
+  .dec-hacer{background:var(--accent-soft); border-radius:var(--r-sm); padding:11px 13px; font-size:var(--t-sm); margin-top:10px;}
+  .dec-hacer b{display:block; font-size:var(--t-2xs); text-transform:uppercase; letter-spacing:.8px; color:var(--accent); margin-bottom:3px;}
+
+  /* ==========================================================================
+     SESIÓN GUIADA — a propósito OPACA y sin vidrio.
+     Se lee de pie, en un gimnasio, con mala luz y el móvil en la mano.
+     ========================================================================== */
   .sesion{
-    display:none; position:fixed; inset:0; z-index:60; background:var(--bg);
+    display:none; position:fixed; inset:0; z-index:60; background:var(--bg2);
     flex-direction:column; overflow-y:auto;
     padding:calc(14px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));
   }
   .sesion.show{display:flex; animation:entrarSesion .3s var(--ease);}
   @keyframes entrarSesion{from{opacity:0; transform:scale(.985);} to{opacity:1; transform:scale(1);}}
   .ses-top{display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:14px;}
-  .ses-salir{background:none; border:none; color:var(--muted); font-family:inherit; font-size:var(--t-sm); font-weight:700; cursor:pointer; padding:6px 0;}
+  .ses-salir{background:none; border:none; color:var(--muted); font-family:inherit; font-size:var(--t-sm); font-weight:700; cursor:pointer; padding:6px 0; display:inline-flex; align-items:center; gap:5px;}
+  .ses-salir .ic-v{width:15px; height:15px; transform:rotate(180deg);}
   .ses-cuenta{font-family:var(--font-mono); font-size:var(--t-xs); color:var(--muted); font-weight:700;}
-  .ses-barra{height:3px; background:var(--neutral); margin-bottom:26px; overflow:hidden;}
-  .ses-barra{border-radius:2px;}
+  .ses-barra{height:4px; background:var(--neutral); margin-bottom:26px; overflow:hidden; border-radius:99px;}
   .ses-barra i{
-    display:block; height:100%; width:0; border-radius:2px;
+    display:block; height:100%; width:0; border-radius:99px;
     background:linear-gradient(90deg,var(--accent2),var(--accent));
     transition:width .45s var(--ease);
   }
@@ -313,151 +631,163 @@
   .ses-alias{font-family:var(--font-mono); font-size:var(--t-xs); color:var(--muted); margin:0 0 20px;}
   .ses-pasos{margin:0 0 20px; padding-left:20px; font-size:var(--t-base);}
   .ses-pasos li{margin-bottom:8px;}
-  .ses-recuerda{border-left:3px solid var(--accent); background:var(--accent-soft); padding:11px 14px; font-size:var(--t-sm); margin:0 0 20px;}
+  .ses-recuerda{border-left:3px solid var(--accent); background:var(--accent-soft); border-radius:var(--r-sm); padding:11px 14px; font-size:var(--t-sm); margin:0 0 20px;}
   .ses-peso{
     display:flex; align-items:center; justify-content:space-between; gap:12px;
-    border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:14px 0; margin:0 0 22px;
+    background:var(--card); border:1px solid var(--border); border-radius:var(--r-md);
+    padding:13px 15px; margin:0 0 20px;
   }
-  .ses-peso-lbl{font-size:var(--t-xs); color:var(--muted); text-transform:uppercase; letter-spacing:.7px; font-weight:700;}
+  .ses-peso-lbl{font-size:var(--t-2xs); color:var(--muted); text-transform:uppercase; letter-spacing:.7px; font-weight:700;}
   .ses-peso-ctrl{display:flex; align-items:center; gap:10px;}
   .ses-peso-ctrl button{
     width:38px; height:38px; border-radius:50%; border:1px solid var(--border); background:var(--bg);
-    color:var(--ink); font-size:var(--t-lg); font-family:inherit; cursor:pointer; line-height:1;
+    color:var(--ink); font-family:inherit; cursor:pointer; display:grid; place-items:center;
   }
+  .ses-peso-ctrl button .ic-v{width:16px; height:16px;}
   .ses-peso-ctrl input{
     width:66px; text-align:center; font-family:var(--font-mono); font-weight:700; font-size:var(--t-md);
-    border:1px solid var(--border); background:var(--bg); color:var(--ink); border-radius:3px; padding:8px 4px;
+    border:1px solid var(--border); background:var(--bg); color:var(--ink); border-radius:var(--r-sm); padding:8px 4px;
   }
   .ses-series{display:flex; gap:8px; margin:0 0 18px;}
   .ses-serie{
-    flex:1; text-align:center; padding:12px 4px; border:1px solid var(--border); border-radius:3px;
-    font-family:var(--font-mono); font-size:var(--t-sm); font-weight:700; color:var(--muted);
+    flex:1; text-align:center; padding:12px 4px; border:1px solid var(--border); border-radius:var(--r-sm);
+    font-family:var(--font-mono); font-size:var(--t-sm); font-weight:700; color:var(--muted); background:var(--card);
+    transition:background .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease);
   }
-  .ses-serie{transition:background .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease);}
-  .ses-serie.hecha{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .ses-serie.hecha{background:linear-gradient(135deg,var(--accent),var(--accent2)); border-color:transparent; color:#fff;}
   .ses-serie.actual{border-color:var(--accent); color:var(--accent);}
   .ses-foot{margin-top:auto; padding-top:16px; display:flex; flex-direction:column; gap:8px;}
 
-  /* Descanso */
   .ses-descanso{text-align:center; padding:16px 0 8px;}
-  .ring{width:190px; height:190px; margin:0 auto 6px; display:block;}
+  .ring{width:190px; height:190px; margin:0 auto 6px; display:block; filter:drop-shadow(0 4px 14px rgba(0,0,0,.08));}
   .ring circle{fill:none; stroke-width:8; stroke-linecap:round;}
   .ring .pista{stroke:var(--neutral);}
   .ring .avance{stroke:var(--accent); transition:stroke-dashoffset 1s linear;}
-  .ring{filter:drop-shadow(0 2px 8px rgba(0,0,0,.06));}
   .ring-txt{font-family:var(--font-mono); font-weight:700; font-size:var(--t-3xl); fill:var(--ink);}
   .ses-descanso p{color:var(--muted); font-size:var(--t-base); margin:2px 0 20px;}
   .btn-timer{
-    background:var(--bg); border:1px solid var(--border); color:var(--ink); border-radius:3px;
+    background:var(--card); border:1px solid var(--border); color:var(--ink); border-radius:var(--r-sm);
     padding:12px; font-family:inherit; font-size:var(--t-base); font-weight:600; cursor:pointer; flex:1;
   }
   .ses-siguiente{margin-top:22px; font-size:var(--t-sm); color:var(--muted);}
   .ses-siguiente b{color:var(--ink);}
-  .ses-alt{border:none; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin:0 0 20px;}
-  .ses-alt summary{padding:12px 2px; font-size:var(--t-sm); font-family:var(--font-body); color:var(--accent); font-weight:700;}
-  .ses-alt .content{padding:0 2px 14px; font-size:var(--t-sm); color:var(--muted);}
-  .cinta-nums{
-    display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border);
-    border:1px solid var(--border); margin:0 0 18px;
-    border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--sh-1);
-  }
-  .cinta-num{background:var(--card); padding:20px 6px; text-align:center; transition:background .2s var(--ease);}
-  .cinta-num b{display:block; font-family:var(--font-mono); font-weight:700; font-size:var(--t-2xl); color:var(--accent); line-height:1.1;}
-  .cinta-num span{font-size:var(--t-2xs); color:var(--muted); text-transform:uppercase; letter-spacing:.7px; font-weight:700;}
-  .cena-nota{font-size:var(--t-xs); color:var(--muted); margin:8px 0 0; line-height:1.45;}
-  .daypicker button.cinta{border-color:var(--accent2); background:var(--accent2); color:#fff;}
+  .ses-alt{background:var(--card); border:1px solid var(--border); border-radius:var(--r-md); margin:0 0 20px; box-shadow:none;}
+  .ses-alt summary{padding:12px 14px; font-size:var(--t-sm); font-family:var(--font-body); color:var(--accent); font-weight:700;}
+  .ses-alt .content{padding:0 14px 14px; font-size:var(--t-sm); color:var(--muted);}
   .ses-fin{text-align:center; padding:34px 0;}
-  .ses-fin .emo{font-size:56px; line-height:1; display:block; margin-bottom:14px;}
+  .ses-fin .emo{display:grid; place-items:center; width:82px; height:82px; margin:0 auto 16px; border-radius:26px; color:#fff; background:linear-gradient(135deg,var(--accent),var(--accent2)); box-shadow:var(--sh-2);}
+  .ses-fin .emo .ic-v{width:42px; height:42px;}
   .ses-fin h3{font-family:var(--font-display); font-size:var(--t-2xl); margin:0 0 8px; letter-spacing:-.4px;}
   .ses-fin p{color:var(--muted); font-size:var(--t-base); margin:0 auto 24px; max-width:34ch;}
 
-  /* ===== Semana ===== */
-  .statgrid{
-    display:grid; grid-template-columns:repeat(3,1fr); gap:1px; margin:4px 0 24px;
-    background:var(--border); border:1px solid var(--border);
-    border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--sh-1);
+  .cinta-nums{
+    display:grid; grid-template-columns:1fr 1fr; gap:9px; margin:0 0 18px;
   }
-  .stat{background:var(--card); padding:19px 6px; text-align:center; transition:background .2s var(--ease);}
-  .stat b{display:block; font-size:var(--t-xl); margin-bottom:3px; font-family:var(--font-mono); font-weight:700; color:var(--accent);}
+  .cinta-num{
+    background:var(--pane); border:1px solid var(--border); border-radius:var(--r-md);
+    padding:18px 6px; text-align:center; box-shadow:inset 0 1px 0 var(--glass-hl), var(--sh-1);
+  }
+  .cinta-num b{display:block; font-family:var(--font-mono); font-weight:700; font-size:var(--t-2xl); color:var(--accent); line-height:1.1;}
+  .cinta-num span{font-size:var(--t-2xs); color:var(--muted); text-transform:uppercase; letter-spacing:.7px; font-weight:700;}
+  .cena-nota{font-size:var(--t-xs); color:var(--muted); margin:8px 0 0; line-height:1.45;}
+
+  /* ===== Semana ===== */
+  .statgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin:4px 0 20px;}
+  .stat{
+    background:var(--pane); border:1px solid var(--border); border-radius:var(--r-md);
+    padding:17px 8px; text-align:center; box-shadow:inset 0 1px 0 var(--glass-hl), var(--sh-1);
+  }
+  .stat b{display:block; font-size:var(--t-xl); margin-bottom:3px; font-family:var(--font-mono); font-weight:700; color:var(--accent); letter-spacing:-.5px;}
   .stat span{font-size:var(--t-2xs); color:var(--muted); line-height:1.3; display:block;}
 
-  .weeks{display:grid; grid-template-columns:repeat(8,1fr); gap:4px; margin:6px 0 4px;}
+  .weeks{display:grid; grid-template-columns:repeat(8,1fr); gap:5px; margin:6px 0 4px;}
   .wcell{text-align:center;}
   .wcell .box{
     height:48px; display:flex; align-items:center; justify-content:center;
     font-family:var(--font-mono); font-weight:700; font-size:var(--t-base);
-    background:var(--neutral); color:var(--neutral-ink); border-radius:var(--radius);
+    background:var(--neutral); color:var(--neutral-ink); border-radius:var(--r-sm);
     transition:transform .2s var(--ease), background .3s var(--ease), color .3s var(--ease);
   }
   .wcell .box.l1{background:var(--accent-soft); color:var(--accent);}
   .wcell .box.l2{background:var(--accent2); color:#fff;}
-  .wcell .box.l3{background:var(--accent); color:#fff;}
-  .wcell .box.now{outline:2px solid var(--ink); outline-offset:1px;}
+  .wcell .box.l3{background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff;}
+  .wcell .box.now{outline:2px solid var(--ink); outline-offset:2px;}
   .wcell small{display:block; font-size:var(--t-2xs); color:var(--muted); margin-top:5px; font-family:var(--font-mono);}
 
-  .checkin label{display:block; font-size:var(--t-sm); font-weight:700; color:var(--muted); margin:18px 0 7px; text-transform:uppercase; letter-spacing:.3px;}
-  .opts{display:flex; gap:6px; flex-wrap:wrap;}
+  .checkin label{display:block; font-size:var(--t-xs); font-weight:700; color:var(--muted); margin:18px 0 7px; text-transform:uppercase; letter-spacing:.5px;}
+  .opts{display:flex; gap:7px; flex-wrap:wrap;}
   .opts button{
-    flex:1; min-width:72px; border:1px solid var(--border); background:var(--bg); color:var(--ink);
-    border-radius:3px; padding:11px 4px; font-family:inherit; font-size:var(--t-sm); font-weight:600; cursor:pointer;
+    flex:1; min-width:72px; border:1px solid var(--border); background:var(--pane); color:var(--ink);
+    border-radius:var(--r-sm); padding:11px 5px; font-family:inherit; font-size:var(--t-sm); font-weight:600; cursor:pointer;
+    box-shadow:inset 0 1px 0 var(--glass-hl);
+    transition:all .18s var(--ease);
   }
-  .opts button{transition:border-color .18s var(--ease), background .18s var(--ease), color .18s var(--ease);}
-  .opts button.active{border-color:var(--accent); background:var(--accent-soft); color:var(--accent);}
+  .opts button.active{border-color:transparent; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff;}
   .opts.dias button{display:flex; flex-direction:column; align-items:center; gap:3px; line-height:1.15; min-width:0; padding:9px 2px;}
   .opts.dias button .ic{font-size:var(--t-md);}
+  .opts.dias button .ic .ic-v{width:19px; height:19px;}
   .opts.dias button .tx{font-size:9px; color:var(--muted); font-weight:600;}
-  .opts.dias button.active .tx{color:var(--accent);}
+  .opts.dias button.active .tx{color:#fff; opacity:.85;}
   .checkin textarea{
-    width:100%; border:1px solid var(--border); background:var(--bg); color:var(--ink);
-    border-radius:3px; padding:11px; font-family:inherit; font-size:var(--t-base); resize:vertical; min-height:70px;
+    width:100%; border:1px solid var(--border); background:var(--pane); color:var(--ink);
+    border-radius:var(--r-sm); padding:12px; font-family:inherit; font-size:var(--t-base); resize:vertical; min-height:70px;
+    box-shadow:inset 0 1px 0 var(--glass-hl); outline:none;
   }
+  .checkin textarea:focus{border-color:var(--accent);}
   .saved-note{font-size:var(--t-xs); color:var(--accent); font-weight:700; margin-top:10px; min-height:18px;}
-  .dia-fila{border-top:1px solid var(--border); padding:14px 0;}
+  .dia-fila{
+    background:var(--pane); border:1px solid var(--border); border-radius:var(--r-md);
+    padding:13px 15px; margin-bottom:8px; box-shadow:inset 0 1px 0 var(--glass-hl);
+  }
   .dia-fila > .dl{font-size:var(--t-sm); font-weight:700; color:var(--muted); margin-bottom:7px;}
   .dia-fila > .dl em{font-style:normal; color:var(--accent);}
 
+  .pesos-lista{width:100%; font-size:var(--t-sm);}
+  .pesos-lista td{padding:9px 4px;}
+  .pesos-lista td:last-child{text-align:right; font-family:var(--font-mono); font-weight:700; color:var(--accent); white-space:nowrap;}
+  .pesos-lista td.vacio:last-child{color:var(--muted); font-weight:400;}
+
   /* ===== Nav inferior ===== */
   .bottomnav{
-    position:fixed; bottom:0; left:0; right:0; display:flex;
-    background:var(--card); border-top:1px solid var(--border);
-    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
-    box-shadow:0 -2px 14px rgba(0,0,0,.08); z-index:30; backdrop-filter:blur(10px);
+    position:fixed; bottom:0; left:0; right:0; display:flex; justify-content:center; gap:2px;
+    background:var(--glass-2); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
+    border-top:1px solid var(--glass-brd);
+    padding:7px 6px calc(7px + env(safe-area-inset-bottom));
+    box-shadow:0 -6px 26px rgba(18,24,34,.10); z-index:30;
   }
   .bottomnav button{
-    flex:1; background:none; border:none; display:flex; flex-direction:column;
-    align-items:center; gap:2px; font-size:var(--t-2xs); color:var(--muted);
-    padding:6px 1px 4px; font-family:inherit; cursor:pointer; font-weight:600; min-width:0;
-    position:relative; transition:color .2s var(--ease);
+    flex:1; max-width:110px; background:none; border:none; display:flex; flex-direction:column;
+    align-items:center; gap:3px; font-size:var(--t-2xs); color:var(--muted);
+    padding:7px 2px 5px; font-family:inherit; cursor:pointer; font-weight:600; min-width:0;
+    border-radius:var(--r-sm); position:relative;
+    transition:color .2s var(--ease);
   }
-  .bottomnav button .ic{font-size:var(--t-lg); line-height:1; transition:transform .28s var(--ease);}
+  .bottomnav button .ic{display:grid; place-items:center;}
   .bottomnav button.active{color:var(--accent);}
-  .bottomnav button.active .ic{transform:translateY(-2px);}
-  /* Barrita bajo la pestaña activa: una referencia más, además del color, para
-     que se vea de un vistazo dónde estás sin fijarte en el tono del icono. */
-  .bottomnav button::after{
-    content:""; position:absolute; top:0; left:50%; width:22px; height:2px;
-    background:var(--accent); border-radius:0 0 2px 2px;
-    transform:translateX(-50%) scaleX(0); transform-origin:center;
-    transition:transform .3s var(--ease);
+  .bottomnav button.active::before{
+    content:""; position:absolute; inset:2px 6px; border-radius:var(--r-sm);
+    background:var(--accent-soft); z-index:-1;
   }
-  .bottomnav button.active::after{transform:translateX(-50%) scaleX(1);}
 
   /* ===== Banners ===== */
   .banner{
-    position:fixed; left:12px; right:12px; z-index:70; padding:11px 14px; border-radius:3px;
+    position:fixed; left:12px; right:12px; z-index:70; padding:11px 15px; border-radius:99px;
     font-size:var(--t-sm); font-weight:600; text-align:center; box-shadow:var(--sh-2);
+    -webkit-backdrop-filter:var(--blur-sm); backdrop-filter:var(--blur-sm);
     top:-200px; visibility:hidden; transition:top .3s var(--ease), visibility .3s;
+    max-width:520px; margin:0 auto;
   }
   .banner.show{top:calc(10px + env(safe-area-inset-top)); visibility:visible;}
-  #offlineBanner{background:var(--warn-soft); color:var(--warn);}
-  #updateBanner{background:var(--accent-soft); color:var(--accent); display:flex; align-items:center; justify-content:center; gap:10px;}
-  #updateBanner button{background:var(--accent); color:#fff; border:none; border-radius:3px; padding:5px 12px; font-size:var(--t-xs); font-weight:700; cursor:pointer;}
+  #offlineBanner{background:var(--warn-soft); color:var(--warn); border:1px solid color-mix(in srgb, var(--warn) 30%, transparent);}
+  #updateBanner{background:var(--accent-soft); color:var(--accent); border:1px solid color-mix(in srgb, var(--accent) 30%, transparent); display:flex; align-items:center; justify-content:center; gap:10px;}
+  #updateBanner button{background:var(--accent); color:#fff; border:none; border-radius:99px; padding:6px 14px; font-size:var(--t-xs); font-weight:700; cursor:pointer;}
   #toast{
-    position:fixed; left:50%; transform:translateX(-50%); bottom:calc(92px + env(safe-area-inset-bottom));
-    background:var(--ink); color:var(--bg); padding:11px 18px; border-radius:3px; font-size:var(--t-sm);
-    font-weight:600; z-index:65; opacity:0; visibility:hidden; max-width:88vw; text-align:center;
-    box-shadow:var(--sh-3);
-    transform:translateX(-50%) translateY(10px);
+    position:fixed; left:50%; bottom:calc(92px + env(safe-area-inset-bottom)); z-index:95;
+    background:var(--glass-3); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
+    border:1px solid var(--glass-brd); color:var(--ink); box-shadow:var(--sh-3);
+    padding:11px 18px; border-radius:99px; font-size:var(--t-sm); font-weight:600;
+    max-width:88vw; text-align:center;
+    opacity:0; visibility:hidden; transform:translateX(-50%) translateY(14px);
     transition:opacity .24s var(--ease), transform .24s var(--ease), visibility .24s;
   }
   #toast.show{opacity:1; visibility:visible; transform:translateX(-50%) translateY(0);}
@@ -471,14 +801,15 @@
     --t-2xs:.82rem; --t-xs:.94rem; --t-sm:1.05rem; --t-base:1.16rem;
     --t-md:1.32rem; --t-lg:1.52rem; --t-xl:1.78rem; --t-2xl:2.35rem; --t-3xl:3.6rem;
   }
-  /* Alto contraste: sube el contraste del texto y de los bordes, sin tocar el acento */
-  html.contraste{ --muted:#3f3f39; --border:#8f8b80; --neutral-ink:#5c5952; }
-  html.contraste.dark{ --muted:#d2d8de; --border:#7c8891; --neutral-ink:#aab4bc; }
+  /* Alto contraste: sube el contraste del texto y de los bordes, y baja la
+     transparencia, porque el vidrio es justo lo que peor se lee con poca vista. */
+  html.contraste{ --muted:#3c4249; --border:rgba(30,35,41,.42); --neutral-ink:#5a606a; --pane:rgba(255,255,255,.94); --glass:rgba(255,255,255,.92); --glass-2:rgba(255,255,255,.95); }
+  html.contraste.dark{ --muted:#ccd4dc; --border:rgba(255,255,255,.34); --neutral-ink:#a4aeb8; --pane:rgba(26,33,40,.95); --glass:rgba(26,33,40,.93); --glass-2:rgba(26,33,40,.96); }
   html.contraste .lead, html.contraste .cena-nota, html.contraste .settings-hint{ color:var(--muted); }
 
-  /* ===== Respiración (el botón "Antes de esto") ===== */
+  /* ===== Respiración: opaca a propósito, igual que la sesión ===== */
   .respira{
-    display:none; position:fixed; inset:0; z-index:80; background:var(--bg);
+    display:none; position:fixed; inset:0; z-index:80; background:var(--bg2);
     flex-direction:column; align-items:center; justify-content:center; gap:0;
     padding:calc(20px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));
     text-align:center;
@@ -502,33 +833,95 @@
   .sync-estado{font-size:var(--t-xs); color:var(--muted); text-align:center; margin-top:12px; line-height:1.5;}
   .sync-estado b{color:var(--ink);}
   .sync-estado.mal b{color:var(--warn);}
-  .aviso-nivel{border-left:3px solid var(--ok); background:var(--ok-soft); padding:12px 15px; font-size:var(--t-sm); margin:16px 0 0;}
-  .pesos-lista{width:100%; font-size:var(--t-sm);}
-  .pesos-lista td{padding:9px 4px;}
-  .pesos-lista td:last-child{text-align:right; font-family:var(--font-mono); font-weight:700; color:var(--accent); white-space:nowrap;}
-  .pesos-lista td.vacio:last-child{color:var(--muted); font-weight:400;}
+
+  /* Los estados de ratón se limitan a los dispositivos que tienen ratón: en el
+     iPhone un :hover se queda pegado después de tocar y parece un fallo. */
+  @media (hover:hover) and (pointer:fine){
+    .headbtns button:hover{background:rgba(255,255,255,.32);}
+    .btn-main:hover{box-shadow:var(--sh-3); transform:translateY(-1px);}
+    .btn-second:hover{border-color:var(--accent); color:var(--accent); background:var(--accent-soft);}
+    .btn-escape:hover{filter:brightness(.96);}
+    .sos-btn:hover{box-shadow:var(--sh-2); transform:translateY(-1px);}
+    .opt:hover{border-color:var(--accent);}
+    .style-opt:hover:not(.active){border-color:var(--accent); color:var(--accent);}
+    .opts button:hover:not(.active){border-color:var(--accent);}
+    .daypicker button:hover{border-color:var(--accent);}
+    .swatch:hover{transform:scale(1.12);}
+    .stat:hover, .cinta-num:hover{background:var(--accent-soft);}
+    .wcell .box:hover{transform:translateY(-2px);}
+    details summary:hover{background:color-mix(in srgb, var(--accent) 5%, transparent);}
+    .btn-timer:hover{border-color:var(--accent); color:var(--accent);}
+    .sheet-x:hover{background:var(--border);}
+    .bottomnav button:hover{color:var(--accent);}
+  }
 
   @media (min-width:620px){
     :root{ --t-2xl:2.3rem; }
     .weeks{gap:6px;}
   }
 </style>
+</style>
 </head>
 <body>
 
-<div id="offlineBanner" class="banner">📡 Sin conexión — la app funciona igual</div>
-<div id="updateBanner" class="banner"><span>🔄 Hay una versión nueva</span><button onclick="applyUpdate()">Actualizar</button></div>
+<!-- ==================== ICONOS ====================
+     Símbolos dibujados a mano, sin librería externa: la app tiene que
+     funcionar entera sin conexión y una CDN rompía justo eso.
+     Los que se repiten con el plan de alimentación son los mismos a posta:
+     las dos apps son hermanas y tienen que reconocerse. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <symbol id="i-sol" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></symbol>
+  <symbol id="i-luna" viewBox="0 0 24 24"><path d="M20.4 14.6A8.6 8.6 0 0 1 9.4 3.6a8.6 8.6 0 1 0 11 11Z"/></symbol>
+  <symbol id="i-ajustes" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.1"/><path d="M19.3 14.4a1.6 1.6 0 0 0 .32 1.76l.06.06a1.94 1.94 0 1 1-2.74 2.74l-.06-.06a1.6 1.6 0 0 0-1.76-.32 1.6 1.6 0 0 0-.97 1.46v.17a1.94 1.94 0 1 1-3.88 0v-.09a1.6 1.6 0 0 0-1.05-1.46 1.6 1.6 0 0 0-1.76.32l-.06.06a1.94 1.94 0 1 1-2.74-2.74l.06-.06a1.6 1.6 0 0 0 .32-1.76 1.6 1.6 0 0 0-1.46-.97h-.17a1.94 1.94 0 1 1 0-3.88h.09a1.6 1.6 0 0 0 1.46-1.05 1.6 1.6 0 0 0-.32-1.76l-.06-.06a1.94 1.94 0 1 1 2.74-2.74l.06.06a1.6 1.6 0 0 0 1.76.32h.08a1.6 1.6 0 0 0 .97-1.46v-.17a1.94 1.94 0 1 1 3.88 0v.09a1.6 1.6 0 0 0 .97 1.46 1.6 1.6 0 0 0 1.76-.32l.06-.06a1.94 1.94 0 1 1 2.74 2.74l-.06.06a1.6 1.6 0 0 0-.32 1.76v.08a1.6 1.6 0 0 0 1.46.97h.17a1.94 1.94 0 1 1 0 3.88h-.09a1.6 1.6 0 0 0-1.46.97Z"/></symbol>
+  <symbol id="i-pesa" viewBox="0 0 24 24"><path d="M2.6 9.4v5.2M21.4 9.4v5.2M5.6 7.2v9.6M18.4 7.2v9.6M8.6 12h6.8"/></symbol>
+  <symbol id="i-brujula" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.8"/><path d="M15.6 8.4l-2.1 5.1-5.1 2.1 2.1-5.1 5.1-2.1Z"/></symbol>
+  <symbol id="i-volver" viewBox="0 0 24 24"><path d="M3.4 12a8.6 8.6 0 1 0 2.5-6.1"/><path d="M3.2 4.6v4.8h4.8"/></symbol>
+  <symbol id="i-grafico" viewBox="0 0 24 24"><path d="M4 20V10.5M10 20V4.5M16 20v-7M22 20H2"/></symbol>
+  <symbol id="i-casa" viewBox="0 0 24 24"><path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9.6V20h13V9.6"/><path d="M9.8 20v-5.6h4.4V20"/></symbol>
+  <symbol id="i-cinta" viewBox="0 0 24 24"><path d="M2.8 18.2h11.6L20 6.4"/><circle cx="4.8" cy="20.1" r="1.35"/><circle cx="12.6" cy="20.1" r="1.35"/><path d="M20 6.4h1.4M21.4 6.4v11.8"/></symbol>
+  <symbol id="i-andar" viewBox="0 0 24 24"><circle cx="13.2" cy="4.4" r="2"/><path d="M13.8 8.4 10.8 10.2 9.9 14.2"/><path d="M13.8 8.4l2.7 1.7 1.3 3"/><path d="M13.1 12.6 10 21.4"/><path d="M13.1 12.6l2.7 3.7.8 5.1"/></symbol>
+  <symbol id="i-escaleras" viewBox="0 0 24 24"><path d="M2.6 20.4h4.6v-4.4h4.6v-4.4h4.6V7.2h4.6"/><path d="M21.4 7.2V3.6"/></symbol>
+  <symbol id="i-cambiar" viewBox="0 0 24 24"><path d="M3.6 8.4h14M14.2 5l3.4 3.4-3.4 3.4"/><path d="M20.4 15.6h-14M9.8 12.2l-3.4 3.4 3.4 3.4"/></symbol>
+  <symbol id="i-reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.8"/><path d="M12 6.8V12l3.4 2"/></symbol>
+  <symbol id="i-rayo" viewBox="0 0 24 24"><path d="M13.4 2.6 4.6 13.6h6.4l-1.4 7.8 8.8-11h-6.4l1.4-7.8Z"/></symbol>
+  <symbol id="i-fuego" viewBox="0 0 24 24"><path d="M12 2.8c.6 3 2.2 4 3.6 5.6 1.5 1.7 2.4 3.3 2.4 5.4a6 6 0 0 1-12 0c0-2.3 1-3.7 2.2-5"/><path d="M12 20.6a2.9 2.9 0 0 1-2.9-2.9c0-1.7 1.4-2.5 2.1-3.9.8 1.2 3.7 2.2 3.7 3.9a2.9 2.9 0 0 1-2.9 2.9Z"/></symbol>
+  <symbol id="i-corazon" viewBox="0 0 24 24"><path d="M12 20.4S3.4 15.2 3.4 9.4a4.8 4.8 0 0 1 8.6-2.9 4.8 4.8 0 0 1 8.6 2.9c0 5.8-8.6 11-8.6 11Z"/></symbol>
+  <symbol id="i-buscar" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.6"/><path d="M15.6 15.6 20.4 20.4"/></symbol>
+  <symbol id="i-tienda" viewBox="0 0 24 24"><path d="M3.4 9.4h17.2v9.4a1.8 1.8 0 0 1-1.8 1.8H5.2a1.8 1.8 0 0 1-1.8-1.8V9.4Z"/><path d="M2.6 9.4 4.6 4.2a1.2 1.2 0 0 1 1.1-.8h12.6a1.2 1.2 0 0 1 1.1.8l2 5.2"/><path d="M9.4 20.6v-5.4h5.2v5.4"/></symbol>
+  <symbol id="i-respirar" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.8"/><path d="M6.9 6.9a7.2 7.2 0 0 0 0 10.2M17.1 6.9a7.2 7.2 0 0 1 0 10.2"/><path d="M4.1 4.1a11.2 11.2 0 0 0 0 15.8M19.9 4.1a11.2 11.2 0 0 1 0 15.8"/></symbol>
+  <symbol id="i-agobio" viewBox="0 0 24 24"><path d="M7 16.4a4 4 0 0 1-.5-7.97A5.4 5.4 0 0 1 17 8.6a3.9 3.9 0 0 1 .3 7.8H7Z"/><path d="M9.4 19.6l-1 1.8M13 19.6l-1 1.8M16.6 19.6l-1 1.8"/></symbol>
+  <symbol id="i-gente" viewBox="0 0 24 24"><circle cx="8.2" cy="7.6" r="2.8"/><path d="M2.4 19.4c0-3.2 2.6-5.4 5.8-5.4s5.8 2.2 5.8 5.4"/><circle cx="16.8" cy="8.6" r="2.2"/><path d="M15.4 13.6c3.2-.4 6.2 1.6 6.2 5"/></symbol>
+  <symbol id="i-maquina" viewBox="0 0 24 24"><rect x="3.6" y="5" width="8" height="14.4" rx="1.4"/><path d="M3.6 8.6h8M3.6 12.2h8M3.6 15.8h8"/><path d="M7.6 5V3.2M14.4 10.4h6M17.4 3.2v7.2"/></symbol>
+  <symbol id="i-sofa" viewBox="0 0 24 24"><path d="M4.8 11.8V8a2 2 0 0 1 2-2h10.4a2 2 0 0 1 2 2v3.8"/><path d="M2.6 13.6a1.9 1.9 0 0 1 3.8 0v2.2h11.2v-2.2a1.9 1.9 0 0 1 3.8 0v5.2H2.6v-5.2Z"/><path d="M5.4 18.8v1.6M18.6 18.8v1.6"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7.6 4.8 19 12 7.6 19.2V4.8Z"/></symbol>
+  <symbol id="i-pausa" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6.2 6.2 17.8 17.8M17.8 6.2 6.2 17.8"/></symbol>
+  <symbol id="i-flecha" viewBox="0 0 24 24"><path d="M9.2 5.4 15.8 12l-6.6 6.6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M4.6 12.6 9.4 17.4 19.4 6.6"/></symbol>
+  <symbol id="i-mas" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-menos" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.8"/><path d="M12 11v5.4"/><circle cx="12" cy="7.9" r=".95" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-alerta" viewBox="0 0 24 24"><path d="M12 3.6 21.4 20H2.6L12 3.6Z"/><path d="M12 9.8v4.4"/><circle cx="12" cy="17" r=".95" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-compartir" viewBox="0 0 24 24"><path d="M12 3.6v11.6"/><path d="M8 7.4 12 3.4l4 4"/><path d="M5 13.6v5.2a1.6 1.6 0 0 0 1.6 1.6h10.8a1.6 1.6 0 0 0 1.6-1.6v-5.2"/></symbol>
+  <symbol id="i-nota" viewBox="0 0 24 24"><rect x="4.4" y="3.4" width="15.2" height="17.2" rx="2.2"/><path d="M8.4 8.4h7.2M8.4 12h7.2M8.4 15.6h4.4"/></symbol>
+  <symbol id="i-descarga" viewBox="0 0 24 24"><path d="M12 3.6v11.2M7.8 10.6 12 14.8l4.2-4.2"/><path d="M4.4 17.4v1.8a1.8 1.8 0 0 0 1.8 1.8h11.6a1.8 1.8 0 0 0 1.8-1.8v-1.8"/></symbol>
+  <symbol id="i-euro" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.8"/><path d="M16 8.4a4.6 4.6 0 0 0-6.9 1.5 5.8 5.8 0 0 0 0 4.2A4.6 4.6 0 0 0 16 15.6"/><path d="M6.6 10.6h5.8M6.6 13.4h5.8"/></symbol>
+  <symbol id="i-dado" viewBox="0 0 24 24"><rect x="3.4" y="3.4" width="17.2" height="17.2" rx="3.6"/><circle cx="8.4" cy="8.4" r="1.15" fill="currentColor" stroke="none"/><circle cx="15.6" cy="8.4" r="1.15" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.15" fill="currentColor" stroke="none"/><circle cx="8.4" cy="15.6" r="1.15" fill="currentColor" stroke="none"/><circle cx="15.6" cy="15.6" r="1.15" fill="currentColor" stroke="none"/></symbol>
+</defs></svg>
+
+<div id="offlineBanner" class="banner">Sin conexión — la app funciona igual</div>
+<div id="updateBanner" class="banner"><span>Hay una versión nueva</span><button onclick="applyUpdate()">Actualizar</button></div>
 <div id="toast"></div>
 
 <header>
   <div class="headtop">
     <div>
-      <h1>💪 Plan de Ejercicio</h1>
+      <h1><svg class="ic-v" aria-hidden="true"><use href="#i-pesa"/></svg>Plan de Ejercicio</h1>
       <p id="headSub">Sin culpa. Sin rachas. Solo volver.</p>
     </div>
     <div class="headbtns">
-      <button id="themeBtn" onclick="toggleTheme()" aria-label="Cambiar modo claro/oscuro">🌙</button>
-      <button onclick="openSettings()" aria-label="Ajustes">⚙️</button>
+      <button id="themeBtn" onclick="toggleTheme()" aria-label="Cambiar modo claro/oscuro"><svg class="ic-v" aria-hidden="true"><use href="#i-luna" id="themeUse"/></svg></button>
+      <button onclick="openSettings()" aria-label="Ajustes"><svg class="ic-v" aria-hidden="true"><use href="#i-ajustes"/></svg></button>
     </div>
   </div>
 </header>
@@ -552,6 +945,19 @@
   <button class="btn-second" onclick="cerrarRespira()">Ya estoy</button>
 </div>
 
+<!-- ===================== HOJA DE RESCATE =====================
+     Una sola hoja reutilizable con su propia pila, para poder entrar en una
+     opción y volver atrás sin perder la lista. -->
+<div class="sheet-back" id="sheetBack" onclick="if(event.target===this)cerrarSheet()">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitulo">
+    <div class="sheet-top">
+      <span class="sheet-tipo" id="sheetTipo"></span>
+      <button class="sheet-x" onclick="cerrarSheet()" aria-label="Cerrar"><svg class="ic-v" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="sheet-scroll" id="sheetScroll"></div>
+  </div>
+</div>
+
 <!-- ===================== AJUSTES ===================== -->
 <div class="settings-overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
   <div class="settings-panel">
@@ -566,8 +972,8 @@
     <div class="settings-row">
       <div class="lbl">Dónde entreno</div>
       <div class="style-options" id="lugarOpts">
-        <button class="style-opt" data-lugar="gym" onclick="setLugar('gym')">🏋️ Gimnasio</button>
-        <button class="style-opt" data-lugar="casa" onclick="setLugar('casa')">🏠 Casa</button>
+        <button class="style-opt" data-lugar="gym" onclick="setLugar('gym')"><svg class="ic-v" aria-hidden="true"><use href="#i-maquina"/></svg>Gimnasio</button>
+        <button class="style-opt" data-lugar="casa" onclick="setLugar('casa')"><svg class="ic-v" aria-hidden="true"><use href="#i-casa"/></svg>Casa</button>
       </div>
       <div class="settings-hint">Cambia qué rutina se abre primero y cuál usa la sesión guiada. La otra sigue disponible.</div>
     </div>
@@ -604,8 +1010,8 @@
     <div class="settings-row">
       <div class="lbl">Aviso de sonido</div>
       <div class="style-options" id="sonidoOpts">
-        <button class="style-opt" data-sonido="si" onclick="setSonido('si')">🔊 Sonido</button>
-        <button class="style-opt" data-sonido="no" onclick="setSonido('no')">🔇 Silencio</button>
+        <button class="style-opt" data-sonido="si" onclick="setSonido('si')">Sonido</button>
+        <button class="style-opt" data-sonido="no" onclick="setSonido('no')">Silencio</button>
       </div>
       <div class="settings-hint">Con AirPods el pitido se oye por encima de la música y no molesta a nadie: déjalo en sonido. En silencio, el aviso es solo visual (la pantalla parpadea), así que tienes que estar mirando.</div>
     </div>
@@ -640,9 +1046,9 @@
     <div class="settings-row">
       <div class="lbl">Modo oscuro</div>
       <div class="style-options" id="temaOpts">
-        <button class="style-opt" data-tema="auto" onclick="setTema('auto')">🕐 Por hora</button>
-        <button class="style-opt" data-tema="light" onclick="setTema('light')">☀️ Claro</button>
-        <button class="style-opt" data-tema="dark" onclick="setTema('dark')">🌙 Oscuro</button>
+        <button class="style-opt" data-tema="auto" onclick="setTema('auto')"><svg class="ic-v" aria-hidden="true"><use href="#i-reloj"/></svg>Por hora</button>
+        <button class="style-opt" data-tema="light" onclick="setTema('light')"><svg class="ic-v" aria-hidden="true"><use href="#i-sol"/></svg>Claro</button>
+        <button class="style-opt" data-tema="dark" onclick="setTema('dark')"><svg class="ic-v" aria-hidden="true"><use href="#i-luna"/></svg>Oscuro</button>
       </div>
       <div class="settings-hint">Por hora: claro de 7:00 a 20:00, oscuro el resto. Útil si entrenas a las 6:45 o a las 23:00.</div>
     </div>
@@ -658,7 +1064,7 @@
 
     <button class="settings-close" onclick="closeSettings()">Listo</button>
     <div class="sync-estado" id="syncEstado"></div>
-    <button class="settings-danger" onclick="exportarDatos()">Descargar una copia de mis datos</button>
+    <button class="settings-danger" onclick="exportarDatos()"><svg class="ic-v" aria-hidden="true"><use href="#i-descarga"/></svg> Descargar una copia de mis datos</button>
     <button class="settings-danger" onclick="document.getElementById('inpImport').click()">Restaurar desde una copia</button>
     <input type="file" id="inpImport" accept="application/json,.json" style="display:none" onchange="importarDatos(this)">
   </div>
@@ -669,17 +1075,23 @@
 <!-- ==================== HOY ==================== -->
 <div id="tab-hoy" class="tabpanel active">
   <div id="hoyHero"></div>
+
+  <!-- Los tres botones de rescate van ANTES que el plan del día, a propósito.
+       El día que el plan se cae es justo el día que abre la app, y lo primero
+       que tiene que ver es la salida, no lo que no va a hacer. -->
+  <div class="sos-row" id="sosRow"></div>
+
   <div id="hoyActions"></div>
 
   <div class="escape-card" id="escapeCard">
     <h4>Vale. No pasa nada.</h4>
-    <p>De verdad que no pasa nada. Elige lo que te encaje ahora mismo — las tres son respuestas correctas.</p>
+    <p>De verdad que no pasa nada. Elige lo que te encaje ahora mismo — las cinco son respuestas correctas.</p>
     <div class="actions">
-      <button class="btn-second" onclick="empezarSesion('minima')">💪 Voy, pero solo los 3 primeros (15 min)</button>
-      <button class="btn-second" onclick="empezarSesion('express')">⚡ Lo mínimo de lo mínimo (8 min)</button>
-      <button class="btn-second" onclick="marcar('caminar')">🚶 Me da para caminar 10 minutos</button>
-      <button class="btn-second" onclick="marcar('activo')">🚶 Me he movido, pero no fue entreno</button>
-      <button class="btn-second" onclick="marcar('descanso')">🛋️ Hoy descanso. Punto.</button>
+      <button class="btn-second" onclick="empezarSesion('minima')"><svg class="ic-v" aria-hidden="true"><use href="#i-pesa"/></svg>Voy, pero solo los 3 primeros (15 min)</button>
+      <button class="btn-second" onclick="empezarSesion('express')"><svg class="ic-v" aria-hidden="true"><use href="#i-rayo"/></svg>Lo mínimo de lo mínimo (8 min)</button>
+      <button class="btn-second" onclick="marcar('caminar')"><svg class="ic-v" aria-hidden="true"><use href="#i-andar"/></svg>Me da para caminar 10 minutos</button>
+      <button class="btn-second" onclick="marcar('activo')"><svg class="ic-v" aria-hidden="true"><use href="#i-andar"/></svg>Me he movido, pero no fue entreno</button>
+      <button class="btn-second" onclick="marcar('descanso')"><svg class="ic-v" aria-hidden="true"><use href="#i-sofa"/></svg>Hoy descanso. Punto.</button>
     </div>
   </div>
 
@@ -687,10 +1099,9 @@
   <div id="hoyPesos"></div>
   <div class="horario" id="horarioBox"></div>
 </div>
-
 <!-- ==================== RUTINA ==================== -->
 <div id="tab-rutina" class="tabpanel">
-  <h2><span class="h2-badge">💪</span>Tu rutina</h2>
+  <h2><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-pesa"/></svg></span>Tu rutina</h2>
   <p class="lead">Una sola rutina, siempre la misma, cuerpo entero. No es por vagancia mía: si cada día haces lo mismo, a la tercera semana entras y ya no piensas. Y no pensar es exactamente lo que necesitas para no dejarlo.</p>
 
   <div class="tip">
@@ -699,10 +1110,12 @@
   </div>
 
   <div class="style-options" style="margin:20px 0 8px;">
-    <button class="style-opt" id="btnVerGym" onclick="setVista('gym')">🏋️ Fuerza</button>
-    <button class="style-opt" id="btnVerCinta" onclick="setVista('cinta')">🏃 Cinta</button>
-    <button class="style-opt" id="btnVerCasa" onclick="setVista('casa')">🏠 En casa</button>
+    <button class="style-opt" id="btnVerGym" onclick="setVista('gym')"><svg class="ic-v" aria-hidden="true"><use href="#i-maquina"/></svg>Fuerza</button>
+    <button class="style-opt" id="btnVerCinta" onclick="setVista('cinta')"><svg class="ic-v" aria-hidden="true"><use href="#i-cinta"/></svg>Cinta</button>
+    <button class="style-opt" id="btnVerCasa" onclick="setVista('casa')"><svg class="ic-v" aria-hidden="true"><use href="#i-casa"/></svg>En casa</button>
   </div>
+
+  <button class="btn-second" style="margin-bottom:6px;" onclick="abrirSustitutos()"><svg class="ic-v" aria-hidden="true"><use href="#i-cambiar"/></svg>Si la máquina está ocupada, ¿cuál vale?</button>
 
   <div id="vistaCinta" style="display:none;">
     <p class="lead">30 minutos andando en cuesta, en dos tandas de 15. Sin correr. Esto es lo que más le conviene ahora mismo a tu colesterol, y es lo que tu propio historial dice que sí sostienes: 106 de tus 140 entrenos registrados eran caminar.</p>
@@ -756,7 +1169,7 @@
 
     <h3 style="margin-top:32px;">Versión viaje — 10 minutos</h3>
     <p style="font-size:var(--t-base);">Para cuando estés fuera de Barcelona: hotel, casa de tu padre, donde sea. Los <b>cuatro primeros</b> de la lista de arriba, una sola serie de cada, sin descanso largo entre medias. Caben en el hueco entre la ducha y salir por la puerta, y no necesitas ni zapatillas.</p>
-    <button class="btn-main" onclick="empezarSesion('viaje')">▶️ Empezar la versión viaje</button>
+    <button class="btn-main" onclick="empezarSesion('viaje')"><svg class="ic-v" aria-hidden="true"><use href="#i-play"/></svg>Empezar la versión viaje</button>
     <div class="quiet" style="margin-top:16px;">
       Si estás de viaje y el sitio tiene gimnasio, mejor eso: <b>cinta en cuesta 15 minutos</b> y listo. Y si no hay nada de nada, andar rápido 30 minutos por donde estés cuenta igual — de hecho es lo que mejor se te da.
     </div>
@@ -765,11 +1178,42 @@
 
 <!-- ==================== GUÍA ==================== -->
 <div id="tab-guia" class="tabpanel">
-  <h2><span class="h2-badge">🧭</span>Ir sin agobio</h2>
-  <p class="lead">Esta pestaña es para lo que de verdad cuesta, que no son los ejercicios.</p>
 
-  <h3>Sobre la vergüenza</h3>
-  <p style="font-size:var(--t-base);">Vamos con lo importante primero, porque es real y no se arregla diciendo "no te preocupes":</p>
+  <h2><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-gente"/></svg></span>Cuando está lleno</h2>
+  <p class="lead">Esto es lo que te ha parado de verdad, así que va primero. No es una excusa tuya: a las siete de la tarde en septiembre no cabe la gente, y no hay fuerza de voluntad que arregle un problema de aforo.</p>
+
+  <div class="card">
+    <h3 style="margin-top:0;">La idea que lo cambia todo</h3>
+    <p style="font-size:var(--t-base);">Tu rutina no es una lista cerrada que hay que completar en orden. Son <b>cinco zonas del cuerpo</b>, y a cada zona se llega por tres máquinas distintas. Cuando entiendes eso, un gimnasio lleno deja de ser un muro y pasa a ser un inconveniente.</p>
+    <p style="font-size:var(--t-base); margin-bottom:0;">Y hay una regla que no se negocia: <b>no esperar de pie al lado de nadie</b>. Nunca. Es lo que genera el agobio y no hace falta hacerlo jamás.</p>
+    <div class="actions" style="margin-top:14px;">
+      <button class="btn-main" onclick="abrirLleno()"><svg class="ic-v" aria-hidden="true"><use href="#i-gente"/></svg>Abrir el plan para gimnasio lleno</button>
+      <button class="btn-second" onclick="abrirSustitutos()"><svg class="ic-v" aria-hidden="true"><use href="#i-cambiar"/></svg>Qué máquina vale en vez de cuál</button>
+    </div>
+  </div>
+
+  <div class="tip">
+    <b>Guárdatelo para el momento:</b> la lista de sustitutos está pensada para llevarla abierta en el móvil dentro del gimnasio. Los nombres van también en inglés porque es lo que pone escrito en las máquinas.
+  </div>
+
+  <h2><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-reloj"/></svg></span>Cuándo está vacío</h2>
+  <p class="lead">Tu gimnasio abre <b>de 6:00 a 1:00, los 365 días del año</b>. Está a reventar entre semana de 18:00 a 22:30, y en los días de teletrabajo no puedes ir a mediodía. Con eso, estos son tus huecos reales, de más a menos realista:</p>
+  <div id="franjasBox"></div>
+  <div class="tip">
+    <b>La recepción abre a las 9:00, el gimnasio a las 6:00.</b> Si vas muy temprano no hay nadie a quien preguntar. Los primeros días, si crees que vas a querer preguntar algo, ve en horario de recepción.
+  </div>
+
+  <h2><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-euro"/></svg></span>¿Me cambio de gimnasio?</h2>
+  <p class="lead">Lo has planteado tú y merece una respuesta seria, no un "tú verás". Hay tres opciones reales y una de ellas es claramente la primera que hay que probar.</p>
+  <div class="actions">
+    <button class="btn-main" onclick="abrirDecision()"><svg class="ic-v" aria-hidden="true"><use href="#i-euro"/></svg>Ver las tres opciones comparadas</button>
+  </div>
+  <div class="quiet" style="margin-top:14px;">
+    <b>El resumen, por si no quieres abrir nada:</b> la pregunta no es <i>qué gimnasio</i>, es <i>a qué hora</i>. Si el gimnasio nuevo lo pisarías a las siete de la tarde, estarías pagando una matrícula nueva por exactamente el mismo problema. Prueba tres viernes a las 15:30 en el que ya tienes pagado — eso es gratis y responde la pregunta.
+  </div>
+
+  <h2><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-brujula"/></svg></span>Sobre la vergüenza</h2>
+  <p class="lead">Lo otro que cuesta de verdad, y que no se arregla diciendo "no te preocupes":</p>
   <ul style="font-size:var(--t-base);">
     <li><b>Nadie te está mirando.</b> No es un tópico: la gente en un gimnasio está mirando su móvil, su propio reflejo o el suelo. Nadie recuerda a nadie al salir.</li>
     <li><b>Las máquinas llevan instrucciones.</b> Literalmente. Cada máquina tiene un cartel con el dibujo del movimiento y el músculo pintado. Leerlo de pie delante de la máquina es normalísimo y lo hace todo el mundo.</li>
@@ -781,19 +1225,19 @@
 
   <div class="tip">
     <b>El primer día puede ser solo ir a mirar.</b><br>
-    En serio. Entras, das una vuelta, localizas las 6 máquinas, te sientas en cada una y haces el movimiento con el peso más bajo. Diez minutos y a casa. En esta app <b>eso cuenta como sesión</b>, y no es un premio de consolación: es la forma más rápida de que la segunda vez ya no te dé nada de corte.
+    En serio. Entras, das una vuelta, localizas las 6 máquinas, te sientas en cada una y haces el movimiento con el peso más bajo. Diez minutos y a casa. En esta app <b>eso cuenta como sesión</b>, y no es un premio de consolación: es la forma más rápida de que la segunda vez ya no te dé nada de corte. Después de tres meses fuera, además, es probablemente la mejor manera de volver.
   </div>
 
-  <h2 style="margin-top:36px;"><span class="h2-badge">🏋️</span>Qué máquinas son las tuyas</h2>
+  <h2><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-maquina"/></svg></span>Qué máquinas son las tuyas</h2>
   <p class="lead">En tu gimnasio hay dos tipos de máquina que se parecen y no son lo mismo. Saber distinguirlas te ahorra el mal rato de sentarte en la que no toca.</p>
 
   <div class="ex-check" style="margin-bottom:14px;">
-    <b>✅ Las tuyas: máquinas de placas con pin.</b><br>
+    <b>Las tuyas: máquinas de placas con pin.</b><br>
     Tienen una <b>torre de pesas rectangulares apiladas</b> a un lado, con un pincho de metal (el "pin") metido en una de ellas. Para cambiar el peso sacas el pin y lo metes más arriba o más abajo. Son las de las marcas <b>Technogym</b> y <b>Gym80</b>, y son la zona que el gimnasio llama "musculación guiada". <b>Toda tu rutina se hace aquí.</b>
   </div>
 
   <div class="ex-cross">
-    <b>❌ De momento no: las de discos.</b><br>
+    <b>De momento no: las de discos.</b><br>
     Tienen unos <b>pinchos vacíos</b> donde la gente va metiendo discos de hierro a mano. Son las <b>Hammer Strength</b>, y tu gimnasio presume de tener 16. No son peores — al revés, están muy bien — pero para empezar tienen dos pegas: hay que cargar y descargar los discos tú, y la propia máquina ya pesa algo aunque no le pongas nada. Déjalas para dentro de unos meses.
   </div>
 
@@ -805,27 +1249,14 @@
     <b>Truco para el primer día:</b> las máquinas de placas tienen todas el mismo mecanismo. Cuando entiendas cómo se saca y se mete el pin en una, ya sabes usarlas todas. Es literalmente el único gesto técnico que necesitas aprender para hacer la rutina entera.
   </div>
 
-  <h2 style="margin-top:36px;"><span class="h2-badge">🕐</span>Cuándo ir</h2>
-  <p class="lead">Tu gimnasio está a reventar hasta las 22:30 entre semana, y a mediodía no puedes ir aunque teletrabajes. Pero abre <b>de 6:00 a 1:00, los 365 días del año</b>, y eso te deja estos huecos, ordenados de más a menos realista para ti:</p>
-
-  <table>
-    <tr><th>Cuándo</th><th>Cómo está</th></tr>
-    <tr><td><b>Viernes 15:30-17:00</b><br><span style="color:var(--muted); font-size:var(--t-xs);">Sales a las 15h y vas directo, sin pasar por casa. Es con diferencia el mejor hueco que tienes.</span></td><td>Muy vacío</td></tr>
-    <tr><td><b>Sábado o domingo, 9:00-11:30</b><br><span style="color:var(--muted); font-size:var(--t-xs);">Abre a las 6:00 también el finde, así que a las 9 hay sitio de sobra.</span></td><td>Tranquilo</td></tr>
-    <tr><td><b>Entre semana, 6:45-8:00</b><br><span style="color:var(--muted); font-size:var(--t-xs);">Existe de verdad, y en un día de teletrabajo cunde el doble porque no tienes que ir a la oficina después. Pero con tu sueño irregular, esto es un extra, no la base del plan.</span></td><td>Vacío</td></tr>
-    <tr><td><b>Entre semana, 22:45-00:30</b><br><span style="color:var(--muted); font-size:var(--t-xs);">Cierra a la 1:00. Ojo: entrenar tan tarde te va a descolocar más el sueño, y el sueño ya lo tienes movido.</span></td><td>Tranquilo</td></tr>
-    <tr><td><b>Entre semana, 18:00-22:30</b><br><span style="color:var(--muted); font-size:var(--t-xs);">Lo que llevas años intentando. Ya sabes cómo acaba.</span></td><td>A reventar</td></tr>
-  </table>
-
-  <div class="tip">
-    <b>La recepción abre a las 9:00, el gimnasio a las 6:00.</b> O sea que si vas muy temprano no hay nadie a quien preguntar. Los primeros días, si crees que vas a querer preguntar algo, ve en horario de recepción.
+  <h2><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-andar"/></svg></span>Andar cuenta como entrenar</h2>
+  <p class="lead">De tus 140 entrenos registrados, <b>106 eran caminar</b>. Y en Roma hiciste 36 km en un día casi sin agujetas. Eso no es el plan B: es lo único de tu historial que ha durado años, y para tu colesterol es de lo más útil que puedes hacer.</p>
+  <div id="andarBox"></div>
+  <div class="quiet">
+    Andar no sustituye a la fuerza — la fuerza hace cosas que caminar no hace — pero un mes andando cuatro días a la semana vale infinitamente más que un mes de gimnasio perfecto que no existe.
   </div>
 
-  <div class="warn">
-    <b>Ojo con agosto.</b> Ahora mismo el gimnasio está medio vacío porque media Barcelona está fuera — es el mejor mes del año para reengancharse, aprovéchalo. Pero eso significa que <b>no puedes juzgar los horarios hasta septiembre</b>, cuando vuelve todo el mundo. Si estás pensando en dejar el gimnasio, esa decisión tómala a finales de septiembre con datos reales, no ahora.
-  </div>
-
-  <h2 style="margin-top:36px;"><span class="h2-badge">🔔</span>Que te avise el iPhone</h2>
+  <h2><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-nota"/></svg></span>Que te avise el iPhone</h2>
   <p class="lead">Esta app no puede mandarte notificaciones: una web necesita un servidor propio para eso, y montarlo no compensa para lo poco que aporta. Pero el iPhone ya sabe hacerlo, y mejor:</p>
   <ul style="font-size:var(--t-base);">
     <li><b>Una alarma normal, repetida.</b> Reloj → Alarma → repetir los días que entrenas, con la etiqueta que quieras. Es lo más simple y lo que menos falla.</li>
@@ -839,10 +1270,9 @@
   <h3>Lo que llevas encima</h3>
   <p style="font-size:var(--t-base);">Toalla, botella de agua y zapatillas. Ya está — no necesitas ropa especial ni nada más. Hay vestuarios, duchas y taquillas; pregunta el primer día si las taquillas necesitan candado propio, que eso cambia de un sitio a otro. Hay fuente de agua dentro, así que la botella puedes llenarla allí.</p>
 </div>
-
 <!-- ==================== VOLVER ==================== -->
 <div id="tab-volver" class="tabpanel">
-  <h2><span class="h2-badge">🔄</span>Cuando lo has dejado</h2>
+  <h2><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-volver"/></svg></span>Cuando lo has dejado</h2>
   <p class="lead">Esta pestaña no está escondida a propósito. Vas a necesitarla, y el día que la necesites quiero que esté a un toque.</p>
 
   <div class="tip" style="font-size:var(--t-md);">
@@ -853,6 +1283,16 @@
   <h3>Tus propios datos, que son la mejor prueba</h3>
   <p style="font-size:var(--t-base);">De mayo 2024 a mayo 2026 registraste <b>140 entrenamientos</b>. En marzo de 2025 hiciste <b>39 en un solo mes</b>. Y en noviembre de 2025 y enero de 2026 hiciste <b>cero</b>.</p>
   <p style="font-size:var(--t-base);">Léelo otra vez: el problema nunca ha sido que no puedas, ni que no sepas, ni que te falte intensidad. Eres perfectamente capaz de hacer 39 sesiones en un mes. Lo que falla es lo de después. Por eso esta app no intenta que entrenes más — intenta que <b>el hueco entre una racha y la siguiente sea más corto</b>.</p>
+
+  <div class="card">
+    <h3 style="margin-top:0;">Los tres meses que llevas</h3>
+    <p style="font-size:var(--t-base);">Lo digo sin rodeos porque es lo que hay y porque no cambia nada malo: llevas unos tres meses sin ir, y el motivo que das es que el gimnasio está lleno y te agobia. Eso no es una excusa ni una recaída — es un plan que solo tenía una puerta de entrada, y esa puerta llevaba meses cerrada de 18:00 a 22:30.</p>
+    <p style="font-size:var(--t-base); margin-bottom:0;">Lo que ha cambiado en la app es justo eso: ahora hay más de una puerta. El botón <b>«Está lleno»</b> de la pestaña Hoy da seis maneras de entrenar sin depender de encontrar máquina, y el de <b>«Hoy no voy»</b> da seis que no pasan por el gimnasio.</p>
+    <div class="actions" style="margin-top:14px;">
+      <button class="btn-main" onclick="empezarSesion('express')"><svg class="ic-v" aria-hidden="true"><use href="#i-rayo"/></svg>Volver hoy en 8 minutos</button>
+      <button class="btn-second" onclick="marcar('reconocimiento')"><svg class="ic-v" aria-hidden="true"><use href="#i-brujula"/></svg>Ir solo a mirar, y que cuente</button>
+    </div>
+  </div>
 
   <h3>El plan de vuelta, después de un parón</h3>
   <p style="font-size:var(--t-base);">Da exactamente igual si has estado dos semanas o cinco meses sin ir. El plan es el mismo:</p>
@@ -877,17 +1317,17 @@
 
 <!-- ==================== SEMANA ==================== -->
 <div id="tab-semana" class="tabpanel">
-  <h2><span class="h2-badge">📊</span>Cómo va</h2>
+  <h2><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-grafico"/></svg></span>Cómo va</h2>
   <div class="statgrid" id="statGrid"></div>
 
   <h3>Las últimas 8 semanas</h3>
   <p class="lead" style="margin-bottom:10px;">Sesiones por semana. Las semanas en cero salen en gris, no en rojo: son información, no una falta.</p>
   <div class="weeks" id="weeksGrid"></div>
   <p style="font-size:var(--t-xs); color:var(--muted); margin-top:12px;">Aquí no hay rachas que romper. Los números de arriba solo suben, nunca bajan, pase lo que pase.</p>
-  <button class="btn-second" style="margin-top:10px;" onclick="compartirProgreso()">📤 Compartir mis números como imagen</button>
+  <button class="btn-second" style="margin-top:10px;" onclick="compartirProgreso()"><svg class="ic-v" aria-hidden="true"><use href="#i-compartir"/></svg>Compartir mis números como imagen</button>
   <p style="font-size:var(--t-xs); color:var(--muted); margin-top:8px;">Genera una imagen con los tres números de arriba y nada más. No sale ninguna fecha, ninguna semana en cero ni nada que no quieras enseñar.</p>
 
-  <h2 style="margin-top:36px;"><span class="h2-badge">📝</span>Check-in de la semana</h2>
+  <h2 style="margin-top:36px;"><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-nota"/></svg></span>Check-in de la semana</h2>
   <p class="lead">Opcional y una vez por semana como mucho. Si lo saltas no pasa nada, no hay nada que rellenar ni recuperar.</p>
 
   <div class="checkin">
@@ -923,13 +1363,14 @@
 </main>
 
 <nav class="bottomnav" id="tabnav">
-  <button class="active" onclick="showTab('hoy', this)"><span class="ic">☀️</span>Hoy</button>
-  <button onclick="showTab('rutina', this)"><span class="ic">💪</span>Rutina</button>
-  <button onclick="showTab('guia', this)"><span class="ic">🧭</span>Guía</button>
-  <button onclick="showTab('volver', this)"><span class="ic">🔄</span>Volver</button>
-  <button onclick="showTab('semana', this)"><span class="ic">📊</span>Semana</button>
+  <button class="active" onclick="showTab('hoy', this)"><span class="ic"><svg class="ic-v" aria-hidden="true"><use href="#i-sol"/></svg></span>Hoy</button>
+  <button onclick="showTab('rutina', this)"><span class="ic"><svg class="ic-v" aria-hidden="true"><use href="#i-pesa"/></svg></span>Rutina</button>
+  <button onclick="showTab('guia', this)"><span class="ic"><svg class="ic-v" aria-hidden="true"><use href="#i-brujula"/></svg></span>Guía</button>
+  <button onclick="showTab('volver', this)"><span class="ic"><svg class="ic-v" aria-hidden="true"><use href="#i-volver"/></svg></span>Volver</button>
+  <button onclick="showTab('semana', this)"><span class="ic"><svg class="ic-v" aria-hidden="true"><use href="#i-grafico"/></svg></span>Semana</button>
 </nav>
 
+<script src="rescate.js"></script>
 <script>
 /* ==========================================================================
    Plan de Ejercicio — Alejandro
@@ -1329,18 +1770,317 @@ function enReentrada(){
 }
 
 const ETIQUETAS = {
-  fuerza:        { txt:'Sesión de fuerza hecha', icon:'💪', corto:'Fuerza' },
-  minima:        { txt:'Sesión mínima hecha',    icon:'💪', corto:'Mínima' },
-  cinta:         { txt:'Cinta hecha',            icon:'🏃', corto:'Cinta' },
-  caminar:       { txt:'Has caminado',           icon:'🚶', corto:'Caminar' },
-  reconocimiento:{ txt:'Reconocimiento hecho',   icon:'🧭', corto:'Ver' },
-  activo:        { txt:'Día activo',             icon:'🌤️', corto:'Activo' },
-  descanso:      { txt:'Día de descanso',        icon:'🛋️', corto:'Descanso' }
+  fuerza:        { txt:'Sesión de fuerza hecha', ico:'i-pesa',    corto:'Fuerza' },
+  minima:        { txt:'Sesión mínima hecha',    ico:'i-pesa',    corto:'Mínima' },
+  cinta:         { txt:'Cinta hecha',            ico:'i-cinta',   corto:'Cinta' },
+  caminar:       { txt:'Has caminado',           ico:'i-andar',   corto:'Caminar' },
+  reconocimiento:{ txt:'Reconocimiento hecho',   ico:'i-brujula', corto:'Ver' },
+  activo:        { txt:'Día activo',             ico:'i-corazon', corto:'Activo' },
+  descanso:      { txt:'Día de descanso',        ico:'i-sofa',    corto:'Descanso' }
 };
-function etiqueta(tipo){ return ETIQUETAS[tipo] || { txt:'Día marcado', icon:'✅', corto:'—' }; }
+function etiqueta(tipo){ return ETIQUETAS[tipo] || { txt:'Día marcado', ico:'i-check', corto:'—' }; }
 
 function esc(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ==========================================================================
+   RESCATE — las salidas para el día que el plan se cae
+   --------------------------------------------------------------------------
+   Los datos están en rescate.js. Aquí solo está cómo se enseñan.
+
+   El principio de diseño: el día que más falta hace es el día que menos
+   capacidad tienes de decidir. Así que ninguna de estas pantallas pide elegir
+   entre muchas cosas — y todas tienen un botón que decide por ti.
+   ========================================================================== */
+
+function ic(nombre, extra){
+  return '<svg class="ic-v' + (extra ? ' ' + extra : '') + '" aria-hidden="true"><use href="#' + nombre + '"/></svg>';
+}
+
+/* Degradado estable por icono: sin fotos de nada, la identidad visual de cada
+   tarjeta la da su color, y tiene que ser siempre el mismo color. */
+const DEGRADADOS = [
+  'linear-gradient(135deg,#2b6cb0,#4a8fd1)',
+  'linear-gradient(135deg,#2f7a5f,#57a686)',
+  'linear-gradient(135deg,#b5651d,#e8901f)',
+  'linear-gradient(135deg,#6b46c1,#9061e0)',
+  'linear-gradient(135deg,#0e7490,#22a5c4)',
+  'linear-gradient(135deg,#9b2c2c,#c85454)'
+];
+function degradado(semilla){
+  let n = 0;
+  const s = String(semilla || '');
+  for(let i = 0; i < s.length; i++) n = (n * 31 + s.charCodeAt(i)) % 997;
+  return DEGRADADOS[n % DEGRADADOS.length];
+}
+
+/* ===== Hoja genérica, con su propia pila para poder volver atrás =====
+   El estado vive en una variable, no en el DOM: el cuerpo de una hoja son
+   varios kilobytes de HTML y no tiene ningún sentido meterlos en un atributo. */
+let sheetPila = [];
+let sheetActual = null;
+
+function pintarSheet(estado){
+  document.getElementById('sheetScroll').innerHTML = estado.cuerpo;
+  document.getElementById('sheetTipo').innerHTML = sheetPila.length
+    ? '<button class="sheet-tipo" style="background:none;border:none;padding:0;cursor:pointer;font-family:inherit;" onclick="volverSheet()">' + ic('i-flecha') + ' Volver</button>'
+    : ic(estado.icono) + ' ' + esc(estado.tipo);
+  document.getElementById('sheetScroll').scrollTop = 0;
+}
+function abrirSheet(icono, tipo, cuerpo, apilar){
+  if(apilar && sheetActual) sheetPila.push(sheetActual);
+  else if(!apilar) sheetPila = [];
+  sheetActual = { icono:icono, tipo:tipo, cuerpo:cuerpo };
+  pintarSheet(sheetActual);
+  document.getElementById('sheetBack').classList.add('show');
+  document.body.classList.add('sesion-abierta');
+}
+function volverSheet(){
+  const anterior = sheetPila.pop();
+  if(!anterior) return cerrarSheet();
+  sheetActual = anterior;
+  pintarSheet(anterior);
+}
+function cerrarSheet(){
+  sheetPila = [];
+  sheetActual = null;
+  document.getElementById('sheetBack').classList.remove('show');
+  if(!S.activa && !RESP.activa) document.body.classList.remove('sesion-abierta');
+}
+function sheetAbierta(){ return document.getElementById('sheetBack').classList.contains('show'); }
+
+function frasePorHoy(){
+  /* La misma frase durante todo el día: cambiar de frase cada vez que abres
+     la hoja la convierte en ruido. */
+  const d = new Date();
+  const n = d.getFullYear() * 400 + d.getMonth() * 31 + d.getDate();
+  return FRASES_AGOBIO[n % FRASES_AGOBIO.length];
+}
+
+/* ===== Cabecera común de las hojas ===== */
+function cabSheet(titulo, sub){
+  return '<h2 class="sheet-h" id="sheetTitulo">' + esc(titulo) + '</h2>' +
+         '<p class="sheet-sub">' + sub + '</p>';
+}
+
+/* ===== 1. EL GIMNASIO ESTÁ LLENO ===== */
+function abrirLleno(){
+  const opciones = LLENO.map((o, i) =>
+    '<button class="opt" onclick="verLleno(' + i + ')">' +
+      '<span class="opt-ico" style="background:' + degradado(o.icono + o.id) + '">' + ic(o.icono) + '</span>' +
+      '<span class="opt-txt"><b>' + esc(o.nombre) + '</b><span>' + esc(o.resumen) + '</span></span>' +
+      '<span class="opt-min">' + o.min + ' min</span>' +
+    '</button>'
+  ).join('');
+  abrirSheet('i-gente', 'Está lleno',
+    cabSheet('No hay máquinas libres',
+      'Seis planes que no dependen de encontrar sitio. Ninguno es peor que el original: son el original hecho de otra manera.') +
+    opciones +
+    '<button class="btn-second" onclick="rescateAlAzar()" style="margin-top:4px;">' + ic('i-dado') + 'Elige tú por mí</button>' +
+    '<p class="frase-agobio" style="padding-top:20px;">' + esc(frasePorHoy()) + '</p>');
+}
+
+function verLleno(i){
+  const o = LLENO[i];
+  let cuerpo =
+    '<div class="opt-ico" style="width:74px;height:74px;border-radius:22px;margin:2px auto 14px;background:' + degradado(o.icono + o.id) + '">' +
+      ic(o.icono, 'ic-lg') + '</div>' +
+    '<h2 class="sheet-h" style="text-align:center;">' + esc(o.nombre) + '</h2>' +
+    '<p class="sheet-sub" style="text-align:center;">' + esc(o.resumen) + ' · ' + o.min + ' min</p>';
+
+  if(o.pasos){
+    cuerpo += '<div class="sheet-h2">' + ic('i-check') + 'Qué haces</div>' +
+      '<ol class="paso-lista">' + o.pasos.map(p => '<li>' + esc(p) + '</li>').join('') + '</ol>';
+  }
+  cuerpo += '<div class="sheet-h2">' + ic('i-info') + 'Por qué esto cuenta</div>' +
+    '<div class="sheet-nota gris">' + esc(o.porQue) + '</div>';
+  if(o.truco){
+    cuerpo += '<div class="sheet-nota tip"><b>' + 'Truco' + '</b>' + esc(o.truco) + '</div>';
+  }
+  if(o.verSustitutos){
+    cuerpo += '<button class="sheet-cta" onclick="abrirSustitutos(true)">' + ic('i-cambiar') + 'Ver la lista de sustitutos</button>';
+  }
+  /* El botón de marcar va al final: primero lees qué hacer, luego lo haces,
+     y solo entonces tiene sentido guardarlo. */
+  if(o.cuenta){
+    cuerpo += '<button class="sheet-cta" onclick="marcarDesdeSheet(\'' + o.cuenta + '\')">' +
+      ic('i-check') + 'Ya lo he hecho, márcalo</button>';
+  }
+  abrirSheet('i-gente', 'Está lleno', cuerpo, true);
+}
+
+function marcarDesdeSheet(tipo){
+  cerrarSheet();
+  marcar(tipo);
+  showTabByName('hoy');
+}
+
+/* ===== 2. SUSTITUTOS POR ZONA ===== */
+function abrirSustitutos(apilar){
+  const bloques = SUSTITUTOS.map(z =>
+    '<div class="sust">' +
+      '<div class="sust-zona">' + esc(z.zona) + '</div>' +
+      '<div class="sust-tuyo">Tu ejercicio: ' + esc(z.tuyo) + (z.ingles !== '—' ? ' · ' + esc(z.ingles) : '') + '</div>' +
+      z.opciones.map((op, i) =>
+        '<div class="sust-op"><span class="n">' + (i+1) + '</span><span>' +
+          '<b>' + esc(op.m) + '</b>' +
+          (op.en !== '—' ? '<em>' + esc(op.en) + '</em>' : '') +
+          '<span>' + esc(op.nota) + '</span>' +
+        '</span></div>'
+      ).join('') +
+    '</div>'
+  ).join('');
+  abrirSheet('i-cambiar', 'Sustitutos',
+    cabSheet('Si está ocupada, coge esta',
+      'Por zona del cuerpo, no por máquina. Si de un grupo no hay ninguna libre, sáltate el grupo entero y sigue: <b>no esperes de pie al lado de nadie</b>.') +
+    bloques +
+    '<div class="sheet-nota tip"><b>El orden no importa</b>La rutina va en ese orden por costumbre, no por ninguna razón fisiológica. Empieza por la que esté libre.</div>',
+    apilar);
+}
+
+/* ===== 3. HOY NO VOY AL GIMNASIO ===== */
+function abrirNoVoy(){
+  const opciones = NO_VOY.map((o, i) =>
+    '<button class="opt" onclick="verNoVoy(' + i + ')">' +
+      '<span class="opt-ico" style="background:' + degradado(o.icono + o.id) + '">' + ic(o.icono) + '</span>' +
+      '<span class="opt-txt"><b>' + esc(o.nombre) + '</b><span>' + esc(o.resumen) + '</span></span>' +
+      '<span class="opt-min">' + o.min + ' min</span>' +
+    '</button>'
+  ).join('');
+  abrirSheet('i-casa', 'Hoy no voy',
+    cabSheet('El gimnasio no es el plan',
+      'El gimnasio es <b>un sitio</b> donde ejecutar el plan. Estas seis cosas se hacen sin pisarlo y cuentan igual en tus números.') +
+    opciones +
+    '<button class="btn-second" onclick="rescateAlAzar()" style="margin-top:4px;">' + ic('i-dado') + 'Elige tú por mí</button>' +
+    '<p class="frase-agobio" style="padding-top:20px;">' + esc(frasePorHoy()) + '</p>');
+}
+
+function verNoVoy(i){
+  const o = NO_VOY[i];
+  let cuerpo =
+    '<div class="opt-ico" style="width:74px;height:74px;border-radius:22px;margin:2px auto 14px;background:' + degradado(o.icono + o.id) + '">' +
+      ic(o.icono, 'ic-lg') + '</div>' +
+    '<h2 class="sheet-h" style="text-align:center;">' + esc(o.nombre) + '</h2>' +
+    '<p class="sheet-sub" style="text-align:center;">' + esc(o.resumen) + ' · ' + o.min + ' min</p>' +
+    '<div class="sheet-h2">' + ic('i-info') + 'Por qué esto cuenta</div>' +
+    '<div class="sheet-nota gris">' + esc(o.porQue) + '</div>' +
+    '<div class="sheet-nota tip"><b>Truco</b>' + esc(o.truco) + '</div>';
+
+  if(o.modo){
+    cuerpo += '<button class="sheet-cta" onclick="sesionDesdeSheet(\'' + o.modo + '\')">' +
+      ic('i-play') + 'Empezar ahora, guiado paso a paso</button>';
+  } else if(o.marca){
+    cuerpo += '<button class="sheet-cta" onclick="marcarDesdeSheet(\'' + o.marca + '\')">' +
+      ic('i-check') + 'Ya lo he hecho, márcalo</button>';
+  } else if(o.id === 'respirar'){
+    cuerpo += '<button class="sheet-cta" onclick="respiraDesdeSheet()">' +
+      ic('i-respirar') + 'Empezar los dos minutos</button>';
+  }
+  if(o.id === 'andar-30'){
+    cuerpo += '<button class="btn-second" onclick="abrirAndar(true)">' + ic('i-andar') + 'Ver las cinco formas de andar</button>';
+  }
+  abrirSheet('i-casa', 'Hoy no voy', cuerpo, true);
+}
+
+function sesionDesdeSheet(modo){ cerrarSheet(); empezarSesion(modo); }
+function respiraDesdeSheet(){ cerrarSheet(); abrirRespira(); }
+
+/* ===== 4. ANDAR ===== */
+function tarjetasAndar(){
+  return ANDAR.map(a =>
+    '<div class="opt" style="cursor:default;">' +
+      '<span class="opt-ico" style="background:' + degradado(a.icono + a.nombre) + '">' + ic(a.icono) + '</span>' +
+      '<span class="opt-txt"><b>' + esc(a.nombre) + '</b><span>' + esc(a.como) + '</span>' +
+      '<span style="color:var(--ink); margin-top:5px;">' + esc(a.nota) + '</span></span>' +
+      '<span class="opt-min">' + a.min + ' min</span>' +
+    '</div>'
+  ).join('');
+}
+function abrirAndar(apilar){
+  abrirSheet('i-andar', 'Andar',
+    cabSheet('Andar es entrenar',
+      '106 de tus 140 entrenos registrados eran esto. No es el plan B de nada.') +
+    tarjetasAndar() +
+    '<button class="sheet-cta" onclick="marcarDesdeSheet(\'caminar\')" style="margin-top:10px;">' +
+      ic('i-check') + 'He caminado hoy</button>',
+    apilar);
+}
+
+/* ===== 5. FRANJAS HORARIAS ===== */
+function tarjetasFranjas(){
+  const nombre = { vacio:'Vacío', bien:'Tranquilo', lleno:'A reventar' };
+  return FRANJAS.map(f =>
+    '<div class="franja">' +
+      '<div class="franja-top"><b>' + esc(f.cuando) + '</b>' +
+        '<span class="nivel ' + f.nivel + '">' + ic(f.nivel === 'lleno' ? 'i-gente' : 'i-check') + nombre[f.nivel] + '</span></div>' +
+      '<p>' + esc(f.quePasa) + '</p>' +
+      '<p>' + esc(f.veredicto) + '</p>' +
+    '</div>'
+  ).join('');
+}
+
+function abrirHoras(){
+  abrirSheet('i-reloj', 'Horas',
+    cabSheet('Cuándo está vacío',
+      'Tu gimnasio abre de <b>6:00 a 1:00 los 365 días del año</b>. El problema no es que no haya horario: es que solo has probado la peor franja.') +
+    tarjetasFranjas() +
+    '<div class="veredicto"><b>Si solo vas a cambiar una cosa</b><br>Cambia la hora antes que el gimnasio. El viernes a las 15:30 es el único hueco que encaja con tu horario real sin depender de madrugar ni de trasnochar.</div>' +
+    '<button class="btn-second" onclick="abrirDecision()" style="margin-top:12px;">' + ic('i-euro') + 'Y si aun así me quiero cambiar...</button>');
+}
+
+/* ===== 6. ¿ME CAMBIO DE GIMNASIO? ===== */
+function abrirDecision(){
+  const tarjetas = DECISION.opciones.map(o =>
+    '<div class="dec">' +
+      '<div class="dec-top"><span class="dec-ico">' + ic(o.icono) + '</span>' +
+        '<span><b>' + esc(o.titulo) + '</b><span class="dec-coste">' + esc(o.coste) + '</span></span></div>' +
+      '<ul class="lista-si">' + o.aFavor.map(t => '<li>' + ic('i-check') + '<span>' + esc(t) + '</span></li>').join('') + '</ul>' +
+      '<ul class="lista-no">' + o.enContra.map(t => '<li>' + ic('i-alerta') + '<span>' + esc(t) + '</span></li>').join('') + '</ul>' +
+      '<div class="dec-hacer"><b>Qué hacer</b>' + esc(o.queHacer) + '</div>' +
+    '</div>'
+  ).join('');
+  abrirSheet('i-euro', 'La decisión',
+    cabSheet('¿Me cambio de gimnasio?', esc(DECISION.intro)) +
+    '<div class="sheet-nota tip"><b>' + esc(DECISION.pregunta) + '</b>' + esc(DECISION.clave) + '</div>' +
+    tarjetas +
+    '<div class="veredicto"><b>Lo que yo haría</b><br>' + esc(DECISION.recomendacion) + '</div>');
+}
+
+/* ===== 7. ELIGE TÚ POR MÍ =====
+   Quita la decisión de en medio, que es justo lo que falla en el mal momento. */
+function rescateAlAzar(){
+  const enGym = getLugar() === 'gym';
+  if(enGym && Math.random() < 0.5){
+    verLleno(Math.floor(Math.random() * LLENO.length));
+  } else {
+    /* La última de NO_VOY es "respirar": no se sortea como si fuese un entreno. */
+    verNoVoy(Math.floor(Math.random() * (NO_VOY.length - 1)));
+  }
+}
+
+/* ===== Los tres botones de rescate en Hoy ===== */
+function renderSos(){
+  const el = document.getElementById('sosRow');
+  if(!el) return;
+  el.innerHTML =
+    '<button class="sos-btn" onclick="abrirLleno()">' +
+      '<span class="sos-ico" style="background:' + degradado('lleno') + '">' + ic('i-gente') + '</span>' +
+      '<span><b>Está lleno</b><span>Planes sin máquinas</span></span></button>' +
+    '<button class="sos-btn" onclick="abrirNoVoy()">' +
+      '<span class="sos-ico" style="background:' + degradado('novoy') + '">' + ic('i-casa') + '</span>' +
+      '<span><b>Hoy no voy</b><span>Casa, andar, escaleras</span></span></button>' +
+    '<button class="sos-btn ancho" onclick="rescateAlAzar()">' +
+      '<span class="sos-ico" style="background:' + degradado('azar') + '">' + ic('i-dado') + '</span>' +
+      '<span><b>Elige tú por mí</b><span>Una sola cosa, sin pensar. Para cuando decidir ya es demasiado.</span></span></button>';
+}
+
+/* Las dos listas que también van sueltas dentro de la Guía. */
+function renderGuia(){
+  const f = document.getElementById('franjasBox');
+  if(f) f.innerHTML = tarjetasFranjas();
+  const a = document.getElementById('andarBox');
+  if(a) a.innerHTML = tarjetasAndar();
 }
 
 /* ===================== HOY ===================== */
@@ -1390,7 +2130,7 @@ function renderHoy(){
       '<p class="hoy-sub">' + sub + '</p>' +
       (marcado ? (
         '<div class="hoy-hecho">' +
-          '<b>' + etiqueta(marcado).icon + ' ' + etiqueta(marcado).txt + '</b>' +
+          '<b>' + ic(etiqueta(marcado).ico) + etiqueta(marcado).txt + '</b>' +
           '<span>' + (marcado === 'descanso'
             ? T('Descansar también forma parte del plan. Nos vemos en la siguiente.', 'Guardado.')
             : marcado === 'activo'
@@ -1402,41 +2142,41 @@ function renderHoy(){
     '</div>';
 
   const acciones = document.getElementById('hoyActions');
-  const bEmpezar  = '<button class="btn-main" onclick="empezarSesion(\'fuerza\')">▶️ Empezar la sesión</button>';
-  const bEmpezarM = '<button class="btn-main" onclick="empezarSesion(\'minima\')">▶️ Empezar la sesión mínima</button>';
+  const bEmpezar  = '<button class="btn-main" onclick="empezarSesion(\'fuerza\')">' + ic('i-play') + 'Empezar la sesión</button>';
+  const bEmpezarM = '<button class="btn-main" onclick="empezarSesion(\'minima\')">' + ic('i-play') + 'Empezar la sesión mínima</button>';
   const bMinima   = '<button class="btn-second" onclick="empezarSesion(\'minima\')">Solo los 3 primeros (15 min)</button>';
   const bCompleta = '<button class="btn-second" onclick="empezarSesion(\'fuerza\')">Hacer la sesión completa</button>';
-  const bCaminar  = '<button class="btn-second" onclick="marcar(\'caminar\')">🚶 He caminado</button>';
-  const bEscape   = '<button class="btn-escape" onclick="toggleEscape()">😮‍💨 Hoy no tengo fuerzas para esto</button>';
+  const bCaminar  = '<button class="btn-second" onclick="marcar(\'caminar\')">' + ic('i-andar') + 'He caminado</button>';
+  const bEscape   = '<button class="btn-escape" onclick="toggleEscape()">' + ic('i-agobio') + 'Hoy no tengo fuerzas para esto</button>';
   /* Un minuto de respiración, en el momento en que aparece el agobio. No es
      terapia ni pretende serlo: es bajar el pico lo justo para poder salir. */
-  const bRespira  = '<button class="btn-second" onclick="abrirRespira()">🫁 Antes de esto, un minuto de respiración</button>';
+  const bRespira  = '<button class="btn-second" onclick="abrirRespira()">' + ic('i-respirar') + 'Antes de esto, un minuto de respiración</button>';
   const bYaEsta   = '<button class="btn-second" onclick="marcar(\'fuerza\')">Ya la he hecho, márcala sin más</button>';
 
   if(marcado){
     acciones.innerHTML =
-      '<div class="actions"><button class="btn-second" onclick="empezarSesion(\'fuerza\')">▶️ Hacer otra sesión de todas formas</button></div>' +
+      '<div class="actions"><button class="btn-second" onclick="empezarSesion(\'fuerza\')">' + ic('i-play') + 'Hacer otra sesión de todas formas</button></div>' +
       '<button class="btn-undo" onclick="desmarcar()">Deshacer lo de hoy</button>';
     document.getElementById('escapeCard').classList.remove('show');
   } else if(primeraVez){
     acciones.innerHTML =
       '<div class="actions">' +
-        (enCasa ? bEmpezarM : '<button class="btn-main" onclick="marcar(\'reconocimiento\')">🧭 He ido a ver las máquinas</button>') +
+        (enCasa ? bEmpezarM : '<button class="btn-main" onclick="marcar(\'reconocimiento\')">' + ic('i-brujula') + 'He ido a ver las máquinas</button>') +
         (enCasa ? bCompleta : bEmpezarM) +
         bCaminar + bRespira +
       '</div>' + bEscape;
   } else if(tipo === 'cinta'){
     acciones.innerHTML =
       '<div class="actions">' +
-        '<button class="btn-main" onclick="empezarCinta()">▶️ Empezar la cinta</button>' +
+        '<button class="btn-main" onclick="empezarCinta()">' + ic('i-play') + 'Empezar la cinta</button>' +
         '<button class="btn-second" onclick="marcar(\'cinta\')">Ya la he hecho, márcala sin más</button>' +
         bCaminar + bRespira +
       '</div>' + bEscape;
   } else if(tipo === 'libre'){
     acciones.innerHTML =
       '<div class="actions">' + bCaminar +
-        '<button class="btn-second" onclick="empezarCinta()">🏃 Hacer cinta</button>' +
-        '<button class="btn-second" onclick="empezarSesion(\'fuerza\')">💪 Hacer fuerza</button>' +
+        '<button class="btn-second" onclick="empezarCinta()">' + ic('i-cinta') + 'Hacer cinta</button>' +
+        '<button class="btn-second" onclick="empezarSesion(\'fuerza\')">' + ic('i-pesa') + 'Hacer fuerza</button>' +
         bRespira +
       '</div>';
   } else {
@@ -1585,7 +2325,8 @@ function renderHorario(){
   filas += '<div class="horario-row"><span>Cierra a la 1:00, así que aún queda margen luego</span><span>22:45+</span></div>';
 
   document.getElementById('horarioBox').innerHTML =
-    '<div class="horario-title">Cuándo ir hoy</div>' + filas;
+    '<div class="horario-title">Cuándo ir hoy</div>' + filas +
+    '<button class="btn-second" style="margin-top:8px;" onclick="abrirHoras()">' + ic('i-reloj') + 'Ver todas las franjas y cuál te conviene</button>';
 }
 
 function marcar(tipo, silencioso){
@@ -1596,7 +2337,7 @@ function marcar(tipo, silencioso){
   renderHoy();
   renderSemana();
   if(!silencioso){
-    toast(etiqueta(tipo).icon + ' ' + etiqueta(tipo).txt);
+    toast(etiqueta(tipo).txt);
     window.scrollTo({top:0, behavior:scrollBehavior()});
   }
 }
@@ -1690,7 +2431,7 @@ const DESCANSO_TANDAS = 120;   // 2 min entre las dos tandas de cinta
 /* modo: 'fuerza' (todo) · 'minima' (3 primeros) · 'express' (3 primeros, 1 serie,
    ~8 min, para los días de verdad malos) · 'viaje' (4 en casa, 1 serie). */
 function empezarSesion(modo){
-  const todos = modo === 'viaje' ? EJERCICIOS_CASA : ejerciciosActuales();
+  const todos = (modo === 'viaje' || modo === 'casa') ? EJERCICIOS_CASA : ejerciciosActuales();
   S.tipo = 'fuerza';
   if(modo === 'minima' || modo === 'express') S.lista = todos.slice(0,3);
   else if(modo === 'viaje') S.lista = todos.slice(0,4);
@@ -1748,7 +2489,7 @@ function pintarSesion(){
     document.getElementById('sesBarra').style.width = '100%';
     body.innerHTML =
       '<div class="ses-fin">' +
-        '<span class="emo">💪</span>' +
+        '<span class="emo">' + ic('i-check','ic-lg') + '</span>' +
         '<h3>' + (S.modo === 'fuerza' ? 'Sesión completa'
                 : S.modo === 'express' ? 'Hecho'
                 : S.modo === 'viaje'   ? 'Sesión de viaje hecha'
@@ -1780,10 +2521,10 @@ function pintarSesion(){
         '<div style="font-size:var(--t-xs); color:var(--muted);">' +
           (pesoGuardado ? 'La última vez pusiste esto' : 'Empieza por el más bajo') + '</div></div>' +
       '<div class="ses-peso-ctrl">' +
-        '<button onclick="cambiarPeso(\'' + ej.id + '\',-1)" aria-label="Bajar peso">−</button>' +
+        '<button onclick="cambiarPeso(\'' + ej.id + '\',-1)" aria-label="Bajar peso">' + ic('i-menos') + '</button>' +
         '<input type="number" inputmode="decimal" id="inpPeso" value="' + (pesoGuardado || '') + '" ' +
           'placeholder="—" onchange="fijarPeso(\'' + ej.id + '\', this.value)" aria-label="Peso">' +
-        '<button onclick="cambiarPeso(\'' + ej.id + '\',1)" aria-label="Subir peso">+</button>' +
+        '<button onclick="cambiarPeso(\'' + ej.id + '\',1)" aria-label="Subir peso">' + ic('i-mas') + '</button>' +
       '</div>' +
     '</div>';
 
@@ -1800,7 +2541,7 @@ function pintarSesion(){
     '<div class="ses-foot">' +
       '<button class="btn-main" onclick="serieHecha()">✓ Serie hecha</button>' +
       '<button class="btn-second" onclick="saltarEjercicio()">Saltar este ejercicio</button>' +
-      (getLugar() === 'gym' ? '<button class="btn-second" onclick="noSeQueMaquina()">🤔 No sé cuál es esta máquina</button>' : '') +
+      (getLugar() === 'gym' ? '<button class="btn-second" onclick="noSeQueMaquina()">' + ic('i-info') + 'No sé cuál es esta máquina</button>' : '') +
     '</div>';
 }
 
@@ -1850,7 +2591,7 @@ function pintarCinta(){
     document.getElementById('sesBarra').style.width = '100%';
     body.innerHTML =
       '<div class="ses-fin">' +
-        '<span class="emo">🏃</span><h3>30 minutos de cinta</h3>' +
+        '<span class="emo">' + ic('i-check','ic-lg') + '</span><h3>30 minutos de cinta</h3>' +
         '<p>Media hora andando en cuesta. Eso es exactamente lo que más le conviene ahora mismo a tu colesterol.</p>' +
         '<button class="btn-main" onclick="terminarCinta()">Guardar y salir</button>' +
       '</div>';
@@ -1883,7 +2624,7 @@ function pintarCinta(){
     '<div class="ses-descanso" style="padding-top:6px;">' + anilloHTML('15:00') +
       '<p>' + esc(niv.nota) + '</p>' +
       '<div style="display:flex; gap:8px;">' +
-        '<button class="btn-timer" onclick="pausarCinta()" id="btnPausa">' + (S.pausada ? '▶ Seguir' : '⏸ Pausa') + '</button>' +
+        '<button class="btn-timer" onclick="pausarCinta()" id="btnPausa">' + (S.pausada ? ic('i-play') + 'Seguir' : ic('i-pausa') + 'Pausa') + '</button>' +
         '<button class="btn-timer" onclick="finTanda()">Acabar tanda</button>' +
       '</div>' +
     '</div>' +
@@ -1902,7 +2643,7 @@ function pausarCinta(){
     pararTick();
   }
   const b = document.getElementById('btnPausa');
-  if(b) b.textContent = S.pausada ? '▶ Seguir' : '⏸ Pausa';
+  if(b) b.innerHTML = S.pausada ? ic('i-play') + 'Seguir' : ic('i-pausa') + 'Pausa';
 }
 
 function finTanda(){
@@ -1921,7 +2662,7 @@ function terminarCinta(){
   S.hechos = 2;
   marcar('cinta', true);
   cerrarSesion();
-  toast('🏃 Cinta hecha');
+  toast('Cinta hecha');
   showTabByName('hoy');
 }
 
@@ -2021,14 +2762,14 @@ function cerrarSesion(){
 
 /* express y viaje se guardan como 'minima': son sesiones reales y cuentan, pero
    no hace falta un tipo nuevo en el historial para distinguirlas. */
-function tipoDeModo(){ return S.modo === 'fuerza' ? 'fuerza' : 'minima'; }
+function tipoDeModo(){ return (S.modo === 'fuerza' || S.modo === 'casa') ? 'fuerza' : 'minima'; }
 
 function terminarSesion(){
   const tipo = tipoDeModo();
   S.hechos = S.lista.length;
   marcar(tipo, true);
   cerrarSesion();
-  toast('💪 ' + etiqueta(tipo).txt);
+  toast(etiqueta(tipo).txt);
   showTabByName('hoy');
 }
 
@@ -2146,7 +2887,7 @@ function renderCintaNivel(){
     '</div>' +
     '<p class="lead" style="margin-bottom:14px;"><b>Nivel ' + niv.n + '</b> · ' + esc(niv.nota) +
       (hechas ? ' <span style="white-space:nowrap;">(' + hechas + ' ' + (hechas === 1 ? 'sesión hecha' : 'sesiones hechas') + ')</span>' : '') + '</p>' +
-    '<button class="btn-main" onclick="empezarCinta()">▶️ Empezar la cinta</button>';
+    '<button class="btn-main" onclick="empezarCinta()">' + ic('i-play') + 'Empezar la cinta</button>';
 }
 
 /* ===================== SEMANA ===================== */
@@ -2194,11 +2935,11 @@ function renderSemanaDias(){
     /* Cada opción lleva texto visible: en el móvil no hay hover, así que un
        emoji suelto no se entiende. */
     const opciones = ['','fuerza','minima','cinta','caminar','activo','descanso'].map(t => {
-      const e = t === '' ? { icon:'—', corto:'Nada' } : etiqueta(t);
+      const e = t === '' ? { ico:null, corto:'Nada' } : etiqueta(t);
       return '<button class="' + (actual === t ? 'active' : '') + '" role="radio" ' +
              'aria-checked="' + (actual === t) + '" ' +
              'onclick="marcarDia(\'' + key + '\',\'' + t + '\')">' +
-             '<span class="ic">' + e.icon + '</span><span class="tx">' + e.corto + '</span></button>';
+             '<span class="ic">' + (e.ico ? ic(e.ico) : '—') + '</span><span class="tx">' + e.corto + '</span></button>';
     }).join('');
     html += '<div class="dia-fila"><div class="dl">' + DIAS_LARGOS[d.getDay()] + ' ' + d.getDate() +
             (key === hoy ? ' <em>· hoy</em>' : '') + '</div>' +
@@ -2335,7 +3076,9 @@ function aplicarTema(){
   const oscuro = modo === 'dark' || (modo === 'auto' && oscuroTocaAhora());
   document.documentElement.classList.toggle('dark', oscuro);
   const b = document.getElementById('themeBtn');
-  if(b) b.textContent = oscuro ? '☀️' : '🌙';
+  const u = document.getElementById('themeUse');
+  if(u) u.setAttribute('href', oscuro ? '#i-sol' : '#i-luna');
+  if(b) b.setAttribute('aria-label', oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
 }
 /* El botón de la cabecera sigue siendo un interruptor directo: al usarlo se
    sale del modo automático, que es lo que uno espera al pulsarlo. */
@@ -2610,6 +3353,8 @@ function renderTodo(){
   renderRutina();
   renderHoy();
   renderSemana();
+  renderSos();
+  renderGuia();
   setVista(getLugar());
 }
 document.addEventListener('DOMContentLoaded', () => {
@@ -2640,6 +3385,7 @@ document.addEventListener('DOMContentLoaded', () => {
    pero en el PC es lo que uno espera y no costaba nada. */
 document.addEventListener('keydown', e => {
   if(e.key !== 'Escape') return;
+  if(sheetAbierta()){ cerrarSheet(); return; }
   if(RESP.activa){ cerrarRespira(); return; }
   if(document.getElementById('settingsOverlay').classList.contains('show')){ closeSettings(); return; }
   if(S.activa) salirSesion();
