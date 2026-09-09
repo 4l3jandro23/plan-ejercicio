@@ -24,11 +24,11 @@ const LLENO = [
   {
     id:'tres-libres', icono:'i-pesa', min:20, cuenta:'minima',
     nombre:'Las tres que estén libres',
-    resumen:'Da igual cuáles. Tres máquinas, dos series de cada, te vas.',
+    resumen:'Da igual cuáles. Tres máquinas, tres series de cada, te vas.',
     pasos:[
       'Entra y da UNA vuelta. No dos. Apunta mentalmente las tres primeras máquinas de tu rutina que veas libres.',
       'Empieza por esas tres, en el orden que sea. El orden de la rutina no importa nada: es una convención, no una regla.',
-      'Dos series de diez en cada una. Descanso de un minuto.',
+      'Tres series de diez en cada una. Descanso de un minuto.',
       'Cuando acabes las tres, te vas. Aunque lleves quince minutos. Aunque haya quedado libre otra.'
     ],
     porQue:'Tu rutina son seis ejercicios porque seis cubren todo el cuerpo, no porque menos de seis no valga. Tres máquinas es el 100% de una sesión mínima, y la app la guarda exactamente igual que una completa.',
@@ -150,7 +150,7 @@ const SUSTITUTOS = [
    ========================================================================== */
 const NO_VOY = [
   {
-    id:'casa-20', icono:'i-casa', min:20, modo:'casa',
+    id:'casa-20', icono:'i-casa', min:28, modo:'casa',
     nombre:'La rutina de casa entera',
     resumen:'Seis ejercicios, sin material, en el salón.',
     porQue:'Es la misma estructura que la del gimnasio: piernas, espalda, pecho, hombro y centro. Cambian las herramientas, no el entreno.',
