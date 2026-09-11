@@ -233,12 +233,16 @@ const ANDAR = [
    Datos suyos, no generales: no puede ir a mediodía en días de teletrabajo,
    y su gimnasio está lleno hasta las 22:30 entre semana. Abre 6:00-1:00.
    ========================================================================== */
+/* `dias` va en índices de lunes(0) a domingo(6), y `desde`/`hasta` en minutos
+   desde medianoche. Está así para que la pestaña Hoy pueda decir a qué hora
+   está lleno AHORA MISMO sin tener que interpretar el texto de `cuando`.
+   Una sola fuente: si cambia un horario, cambia en los dos sitios. */
 const FRANJAS = [
-  { cuando:'Viernes, 15:30 - 17:00', nivel:'vacio', quePasa:'Sales de trabajar a las 15h y vas directo, sin pasar por casa.', veredicto:'El mejor hueco que tienes, con diferencia. Si solo vas un día a la semana, que sea este.' },
-  { cuando:'Sábado o domingo, 9:00 - 11:30', nivel:'bien', quePasa:'Abre a las 6:00 también el finde.', veredicto:'Segundo mejor. A las 9 hay sitio de sobra y todavía te queda el día entero.' },
-  { cuando:'Entre semana, 6:45 - 8:00', nivel:'vacio', quePasa:'Está prácticamente vacío. Existe de verdad.', veredicto:'Un extra, no la base: con tu sueño irregular no lo vas a sostener todas las semanas. Pero un día suelto que te despiertes pronto, es oro.' },
-  { cuando:'Entre semana, 22:45 - 00:30', nivel:'bien', quePasa:'Cierra a la 1:00 y a esa hora ya se ha vaciado.', veredicto:'Funciona, pero entrenar tan tarde te descoloca el sueño, y el sueño ya lo tienes movido. Como excepción, no como plan.' },
-  { cuando:'Entre semana, 18:00 - 22:30', nivel:'lleno', quePasa:'A reventar. Cinco horas seguidas.', veredicto:'Es la franja que llevas años intentando y es la razón por la que llevas tres meses sin ir. No es cabezonería tuya: es que a esa hora no cabe la gente.' }
+  { cuando:'Viernes, 15:30 - 17:00', nivel:'vacio', dias:[4], desde:930, hasta:1020, quePasa:'Sales de trabajar a las 15h y vas directo, sin pasar por casa.', veredicto:'El mejor hueco que tienes, con diferencia. Si solo vas un día a la semana, que sea este.' },
+  { cuando:'Sábado o domingo, 9:00 - 11:30', nivel:'bien', dias:[5,6], desde:540, hasta:690, quePasa:'Abre a las 6:00 también el finde.', veredicto:'Segundo mejor. A las 9 hay sitio de sobra y todavía te queda el día entero.' },
+  { cuando:'Entre semana, 6:45 - 8:00', nivel:'vacio', dias:[0,1,2,3,4], desde:405, hasta:480, quePasa:'Está prácticamente vacío. Existe de verdad.', veredicto:'Un extra, no la base: con tu sueño irregular no lo vas a sostener todas las semanas. Pero un día suelto que te despiertes pronto, es oro.' },
+  { cuando:'Entre semana, 22:45 - 00:30', nivel:'bien', dias:[0,1,2,3,4], desde:1365, hasta:1470, quePasa:'Cierra a la 1:00 y a esa hora ya se ha vaciado.', veredicto:'Funciona, pero entrenar tan tarde te descoloca el sueño, y el sueño ya lo tienes movido. Como excepción, no como plan.' },
+  { cuando:'Entre semana, 18:00 - 22:30', nivel:'lleno', dias:[0,1,2,3,4], desde:1080, hasta:1350, quePasa:'A reventar. Cinco horas seguidas.', veredicto:'Es la franja que llevas años intentando y es la razón por la que llevas tres meses sin ir. No es cabezonería tuya: es que a esa hora no cabe la gente.' }
 ];
 
 

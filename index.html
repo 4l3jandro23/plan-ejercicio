@@ -376,6 +376,34 @@
   .hoy-manana b{color:var(--ink); font-weight:600;}
 
   /* ===== Botonera de rescate: lo primero que se ve en Hoy ===== */
+  /* ===== Cómo está el gimnasio ahora =====
+     El naranja de "lleno" no es un regaño: es el aforo, que no depende de ti.
+     Por eso el aviso es informativo y viene con una salida, no con un "deberías". */
+  .aforo{
+    display:flex; gap:12px; align-items:flex-start; margin:0 0 14px;
+    padding:13px 14px; border-radius:var(--r-md);
+    background:var(--pane); border:1px solid var(--border);
+  }
+  .aforo-ico{
+    width:38px; height:38px; border-radius:12px; flex-shrink:0;
+    display:grid; place-items:center; background:var(--neutral); color:var(--neutral-ink);
+  }
+  .aforo-ico .ic-v{width:20px; height:20px;}
+  .aforo-txt{min-width:0; flex:1;}
+  /* Solo el título va en bloque. Sin el ">", cualquier <b> dentro del texto
+     (una hora en negrita, por ejemplo) se iba a su propia línea y dejaba el
+     punto final suelto debajo. */
+  .aforo-txt > b{display:block; font-size:var(--t-base); line-height:1.3; margin-bottom:3px;}
+  .aforo-txt p{margin:0; font-size:var(--t-sm); color:var(--muted); line-height:1.45;}
+  .aforo-txt .btn-second{width:100%;}
+  .aforo-lleno{background:var(--warn-soft); border-color:color-mix(in srgb, var(--warn) 35%, transparent);}
+  .aforo-lleno .aforo-ico{background:var(--warn); color:#fff;}
+  .aforo-lleno .aforo-txt b{color:var(--warn);}
+  .aforo-vacio{background:var(--ok-soft); border-color:color-mix(in srgb, var(--ok) 38%, transparent);}
+  .aforo-vacio .aforo-ico{background:var(--ok); color:#fff;}
+  .aforo-vacio .aforo-txt b{color:var(--ok);}
+  .aforo-bien .aforo-ico{background:var(--accent-soft); color:var(--accent);}
+
   .sos-row{display:grid; grid-template-columns:1fr 1fr; gap:9px; margin:0 0 14px;}
   .sos-btn{
     background:var(--glass); -webkit-backdrop-filter:var(--blur-sm); backdrop-filter:var(--blur-sm);
@@ -1076,6 +1104,11 @@
 <div id="tab-hoy" class="tabpanel active">
   <div id="hoyHero"></div>
 
+  <!-- Cómo está el gimnasio AHORA. Lo que te paró tres meses fue el aforo, y
+       hasta ahora esa información estaba enterrada en la pestaña Guía: había
+       que acordarse de ir a buscarla. Aquí te la encuentras sin buscar nada. -->
+  <div id="hoyAforo"></div>
+
   <!-- Los tres botones de rescate van ANTES que el plan del día, a propósito.
        El día que el plan se cae es justo el día que abre la app, y lo primero
        que tiene que ver es la salida, no lo que no va a hacer. -->
@@ -1104,10 +1137,6 @@
   <h2><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-pesa"/></svg></span>Tu rutina</h2>
   <p class="lead">Una sola rutina, siempre la misma, cuerpo entero. No es por vagancia mía: si cada día haces lo mismo, a la tercera semana entras y ya no piensas. Y no pensar es exactamente lo que necesitas para no dejarlo.</p>
 
-  <div class="tip">
-    <b>La regla del peso, que es la única que importa:</b><br>
-    El primer día pon <b>el peso más bajo</b> en todo: el pin, arriba del todo de la torre de placas. Haz 10 repeticiones. ¿Te han salido fáciles? La próxima vez bajas el pin una placa. Ya está. No existe el peso "correcto" — si te quedas corto, lo subes el día siguiente y no ha pasado nada.
-  </div>
 
   <div class="style-options" style="margin:20px 0 8px;">
     <button class="style-opt" id="btnVerGym" onclick="setVista('gym')"><svg class="ic-v" aria-hidden="true"><use href="#i-maquina"/></svg>Fuerza</button>
@@ -1158,6 +1187,13 @@
     <h3 style="margin-top:26px;">Los 6 ejercicios</h3>
     <p class="lead" style="margin-bottom:4px;">Todos en máquina y sentado. Las máquinas te obligan a hacer el movimiento bien: es físicamente difícil hacerlo mal. Por eso empiezas aquí y no con pesas sueltas.</p>
     <div id="listaGym"></div>
+    <!-- La regla del peso vivía arriba del todo, antes de la rutina: un muro de
+         texto entre tú y los seis ejercicios, cada vez que abrías la pestaña.
+         Aquí debajo sigue estando, que es donde de verdad la vas a leer. -->
+    <div class="tip" style="margin-top:18px;">
+      <b>La regla del peso, que es la única que importa:</b><br>
+      El primer día pon <b>el peso más bajo</b> en todo: el pin, arriba del todo de la torre de placas. Haz 10 repeticiones. ¿Te han salido fáciles? La próxima vez bajas el pin una placa. Ya está. No existe el peso "correcto" — si te quedas corto, lo subes el día siguiente y no ha pasado nada.
+    </div>
     <div class="quiet" style="margin-top:22px;">
       <b>Descanso entre series:</b> de 60 a 90 segundos. Si usas la sesión guiada, el tiempo lo cuenta ella y no tienes que pensarlo.
     </div>
@@ -1331,12 +1367,17 @@
   <h2><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-grafico"/></svg></span>Cómo va</h2>
   <div class="statgrid" id="statGrid"></div>
 
-  <h3>Las últimas 8 semanas</h3>
-  <p class="lead" style="margin-bottom:10px;">Sesiones por semana. Las semanas en cero salen en gris, no en rojo: son información, no una falta.</p>
-  <div class="weeks" id="weeksGrid"></div>
-  <p style="font-size:var(--t-xs); color:var(--muted); margin-top:12px;">Aquí no hay rachas que romper. Los números de arriba solo suben, nunca bajan, pase lo que pase.</p>
-  <button class="btn-second" style="margin-top:10px;" onclick="compartirProgreso()"><svg class="ic-v" aria-hidden="true"><use href="#i-compartir"/></svg>Compartir mis números como imagen</button>
-  <p style="font-size:var(--t-xs); color:var(--muted); margin-top:8px;">Genera una imagen con los tres números de arriba y nada más. No sale ninguna fecha, ninguna semana en cero ni nada que no quieras enseñar.</p>
+  <!-- Todo este bloque se oculta hasta que haya una primera sesión: ocho ceros
+       grises y un botón de "compartir mis números" sin números que compartir no
+       le cuentan nada a nadie. -->
+  <div id="semanaHistorial">
+    <h3>Las últimas 8 semanas</h3>
+    <p class="lead" style="margin-bottom:10px;">Sesiones por semana. Las semanas en cero salen en gris, no en rojo: son información, no una falta.</p>
+    <div class="weeks" id="weeksGrid"></div>
+    <p style="font-size:var(--t-xs); color:var(--muted); margin-top:12px;">Aquí no hay rachas que romper. Los números de arriba solo suben, nunca bajan, pase lo que pase.</p>
+    <button class="btn-second" style="margin-top:10px;" onclick="compartirProgreso()"><svg class="ic-v" aria-hidden="true"><use href="#i-compartir"/></svg>Compartir mis números como imagen</button>
+    <p style="font-size:var(--t-xs); color:var(--muted); margin-top:8px;">Genera una imagen con los tres números de arriba y nada más. No sale ninguna fecha, ninguna semana en cero ni nada que no quieras enseñar.</p>
+  </div>
 
   <h2 style="margin-top:36px;"><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-nota"/></svg></span>Check-in de la semana</h2>
   <p class="lead">Opcional y una vez por semana como mucho. Si lo saltas no pasa nada, no hay nada que rellenar ni recuperar.</p>
@@ -1369,7 +1410,7 @@
 
 <footer>
   Plan de Ejercicio de Alejandro · hermana del <a href="https://4l3jandro23.github.io/plan-alimentacion/" style="color:var(--accent);">plan de alimentación</a><br>
-  Funciona sin conexión · Se sincroniza entre iPhone y PC
+  Funciona sin conexión · Tus datos se guardan en este dispositivo
 </footer>
 </main>
 
@@ -1634,7 +1675,6 @@ function loadJSON(key, fallback){
 function setLS(key, value){ try{ localStorage.setItem(key, value); }catch(e){} }
 function saveJSON(key, value){
   setLS(key, JSON.stringify(value));
-  pushSync();
 }
 
 function getDias(){
@@ -2074,6 +2114,100 @@ function rescateAlAzar(){
   }
 }
 
+/* ===== CÓMO ESTÁ EL GIMNASIO AHORA =====
+   El motivo real de los tres meses sin ir no fue la pereza: fue llegar y no
+   caber. Esa información ya existía en la app, pero en la pestaña Guía, que
+   es donde vas cuando te acuerdas — y el día que te agobias no te acuerdas.
+
+   Sale de las mismas FRANJAS que la Guía, no de datos nuevos. Aquí solo se
+   traduce a la pregunta que de verdad te haces antes de coger la bolsa:
+   ¿voy ahora o me voy a comer la hora punta? */
+function hhmm(min){
+  const m = ((min % 1440) + 1440) % 1440;
+  return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+}
+function aforoAhora(d){
+  d = d || new Date();
+  const dia = (d.getDay() + 6) % 7;
+  const min = d.getHours() * 60 + d.getMinutes();
+  /* `dias` vive en rescate.js, que es otro archivo y otra entrada de caché.
+     Si el navegador se queda con un rescate.js viejo y un index nuevo, esto
+     reventaba y dejaba la pestaña Hoy entera en blanco. Un plan de ejercicio
+     no puede caerse porque falte un dato de horarios. */
+  const deHoy = FRANJAS.filter(f => f.dias && f.dias.indexOf(dia) !== -1);
+  /* La franja de noche acaba pasada medianoche (hasta > 1440), así que a la
+     01:00 hay que mirarla como si fuera del día anterior. */
+  const dentro = f => (min >= f.desde && min < f.hasta) || (f.hasta > 1440 && min < f.hasta - 1440);
+  const siguiente = deHoy
+    .filter(f => f.nivel !== 'lleno' && f.desde > min)
+    .sort((a, b) => a.desde - b.desde)[0] || null;
+  return {
+    cerrado: min >= 60 && min < 360,
+    ahora: deHoy.filter(dentro)[0] || null,
+    siguiente: siguiente,
+    esViernes: dia === 4
+  };
+}
+function renderAforo(){
+  const cont = document.getElementById('hoyAforo');
+  /* Si el rescate.js que hay cargado es de una versión sin horarios, esto no
+     se enseña y ya está. Mejor sin tarjeta que con una tarjeta que miente. */
+  if(!cont || typeof FRANJAS === 'undefined' || !FRANJAS.some(f => f.dias)){
+    if(cont) cont.innerHTML = '';
+    return;
+  }
+  const a = aforoAhora();
+  const proximo = a.siguiente
+    ? 'Tu hueco de hoy empieza a las <b>' + hhmm(a.siguiente.desde) + '</b>.'
+    : '';
+
+  let nivel, titulo, texto, boton = '';
+
+  if(a.cerrado){
+    nivel = 'cerrado';
+    titulo = 'Cerrado hasta las 6:00';
+    texto = 'Tu gimnasio abre de 6:00 a 1:00 todos los días del año. ' + proximo;
+  } else if(a.ahora && a.ahora.nivel === 'lleno'){
+    nivel = 'lleno';
+    titulo = 'Ahora mismo está a reventar';
+    texto = 'De ' + hhmm(a.ahora.desde) + ' a ' + hhmm(a.ahora.hasta) + ' no cabe la gente. ' +
+            'No es cabezonería tuya: es aforo. ' + proximo;
+    boton = '<button class="btn-second" style="margin-top:10px;" onclick="abrirLleno()">' +
+            ic('i-gente') + 'Si vas igual, abre esto antes de entrar</button>';
+  } else if(a.ahora && a.ahora.nivel === 'vacio'){
+    nivel = 'vacio';
+    titulo = a.esViernes ? 'Ahora. Es tu mejor hueco de la semana' : 'Ahora mismo está vacío';
+    texto = a.ahora.quePasa + ' Dura hasta las ' + hhmm(a.ahora.hasta) + '.';
+  } else if(a.ahora){
+    nivel = 'bien';
+    titulo = 'Ahora hay sitio';
+    texto = a.ahora.veredicto;
+  } else if(a.siguiente && a.siguiente.nivel === 'vacio' && a.esViernes){
+    nivel = 'vacio';
+    titulo = 'Hoy tienes el mejor hueco de la semana';
+    texto = 'De ' + hhmm(a.siguiente.desde) + ' a ' + hhmm(a.siguiente.hasta) + ', saliendo de trabajar y ' +
+            'sin pasar por casa. Es el único rato en el que tu gimnasio está vacío de verdad.';
+  } else if(a.siguiente){
+    nivel = 'bien';
+    titulo = 'No es hora punta, pero tampoco tu mejor hueco';
+    texto = proximo + ' ' + a.siguiente.veredicto;
+  } else {
+    nivel = 'bien';
+    titulo = 'Hoy ya no queda hueco bueno';
+    texto = 'Lo que queda de día entra en hora punta o el gimnasio cierra. Si aun así te apetece ir, ' +
+            'los planes de "está lleno" están hechos para esto.';
+    boton = '<button class="btn-second" style="margin-top:10px;" onclick="abrirLleno()">' +
+            ic('i-gente') + 'Ver los planes para gimnasio lleno</button>';
+  }
+
+  const iconos = { lleno:'i-gente', vacio:'i-reloj', bien:'i-reloj', cerrado:'i-luna' };
+  cont.innerHTML =
+    '<div class="aforo aforo-' + nivel + '">' +
+      '<span class="aforo-ico">' + ic(iconos[nivel]) + '</span>' +
+      '<div class="aforo-txt"><b>' + titulo + '</b><p>' + texto + '</p>' + boton + '</div>' +
+    '</div>';
+}
+
 /* ===== Los tres botones de rescate en Hoy ===== */
 function renderSos(){
   const el = document.getElementById('sosRow');
@@ -2100,6 +2234,7 @@ function renderGuia(){
 
 /* ===================== HOY ===================== */
 function renderHoy(){
+  renderAforo();
   const hoy = new Date();
   const key = hoyKey();
   const log = getLog();
@@ -2537,8 +2672,10 @@ function pintarSesion(){
           (pesoGuardado ? 'La última vez pusiste esto' : 'Empieza por el más bajo') + '</div></div>' +
       '<div class="ses-peso-ctrl">' +
         '<button onclick="cambiarPeso(\'' + ej.id + '\',-1)" aria-label="Bajar peso">' + ic('i-menos') + '</button>' +
+        /* El placeholder era un guion largo y, entre el botón de menos y el de
+           más, parecía un tercer botón. "kg" deja claro que ahí se escribe. */
         '<input type="number" inputmode="decimal" id="inpPeso" value="' + (pesoGuardado || '') + '" ' +
-          'placeholder="—" onchange="fijarPeso(\'' + ej.id + '\', this.value)" aria-label="Peso">' +
+          'placeholder="kg" onchange="fijarPeso(\'' + ej.id + '\', this.value)" aria-label="Peso en kilos">' +
         '<button onclick="cambiarPeso(\'' + ej.id + '\',1)" aria-label="Subir peso">' + ic('i-mas') + '</button>' +
       '</div>' +
     '</div>';
@@ -2912,11 +3049,19 @@ function renderSemana(){
   const mejor = mejorSemana();
 
   /* Los tres números son de los que solo pueden subir. Ninguno es un objetivo
-     que se pueda incumplir, a propósito. */
-  document.getElementById('statGrid').innerHTML =
-    '<div class="stat"><b>' + total + '</b><span>sesiones en total<br>desde que empezaste</span></div>' +
-    '<div class="stat"><b>' + estaSemana + '</b><span>esta semana</span></div>' +
-    '<div class="stat"><b>' + mejor + '</b><span>tu mejor semana<br>hasta ahora</span></div>';
+     que se pueda incumplir, a propósito.
+
+     Antes de la primera sesión salían tres ceros enormes, que es exactamente
+     el recibimiento que no necesita alguien que lleva tres meses sin ir. Hasta
+     que haya algo que contar, esto dice qué va a aparecer aquí y ya está. */
+  document.getElementById('statGrid').innerHTML = total === 0
+    ? '<div class="stat vacio" style="grid-column:1 / -1;">' +
+        '<span style="font-size:var(--t-base); color:var(--ink); font-weight:600;">Aquí todavía no hay nada</span>' +
+        '<span>En cuanto hagas la primera sesión — la que sea, aunque sea ir a mirar — ' +
+        'empiezan a salir tus números. Solo suben, nunca bajan.</span></div>'
+    : '<div class="stat"><b>' + total + '</b><span>sesiones en total<br>desde que empezaste</span></div>' +
+      '<div class="stat"><b>' + estaSemana + '</b><span>esta semana</span></div>' +
+      '<div class="stat"><b>' + mejor + '</b><span>tu mejor semana<br>hasta ahora</span></div>';
 
   let html = '';
   const lunesHoy = lunesDe(new Date());
@@ -2930,6 +3075,8 @@ function renderSemana(){
             '<small>' + l.getDate() + '/' + (l.getMonth()+1) + '</small></div>';
   }
   document.getElementById('weeksGrid').innerHTML = html;
+  const hist = document.getElementById('semanaHistorial');
+  if(hist) hist.hidden = total === 0;
 
   renderCheckin();
   renderSemanaDias();
@@ -3033,7 +3180,7 @@ function ciclarDia(dow){
   renderDayPicker(); renderHoy(); renderSemana();
 }
 function setLugar(l){
-  setLS(K.lugar, l); pushSync();
+  setLS(K.lugar, l);
   renderLugar(); setVista(l); renderHoy();
 }
 function renderLugar(){
@@ -3042,14 +3189,14 @@ function renderLugar(){
     b.classList.toggle('active', b.dataset.lugar === l);
   });
 }
-function setDescanso(seg){ setLS(K.descanso, String(seg)); pushSync(); renderDescanso(); }
+function setDescanso(seg){ setLS(K.descanso, String(seg)); renderDescanso(); }
 function renderDescanso(){
   const d = String(getDescanso());
   Array.prototype.forEach.call(document.querySelectorAll('#descansoOpts .style-opt'), b => {
     b.classList.toggle('active', b.dataset.seg === d);
   });
 }
-function setColor(c){ setLS(K.color, c); pushSync(); aplicarColor(); }
+function setColor(c){ setLS(K.color, c); aplicarColor(); }
 function aplicarColor(){
   let c = '';
   try{ c = localStorage.getItem(K.color) || ''; }catch(e){}
@@ -3065,11 +3212,11 @@ function marcarOpts(sel, attr, valor){
     b.classList.toggle('active', b.dataset[attr] === valor);
   });
 }
-function setSonido(v){ setLS(K.sonido, v); pushSync(); renderAjustes(); if(v === 'si') prepararSonido(); }
-function setTam(v){ setLS(K.tam, v); pushSync(); aplicarTam(); renderAjustes(); }
-function setContraste(v){ setLS(K.contraste, v); pushSync(); aplicarContraste(); renderAjustes(); }
-function setTono(v){ setLS(K.tono, v); pushSync(); renderAjustes(); renderHoy(); }
-function setInicio(v){ setLS(K.inicio, v); pushSync(); renderAjustes(); }
+function setSonido(v){ setLS(K.sonido, v); renderAjustes(); if(v === 'si') prepararSonido(); }
+function setTam(v){ setLS(K.tam, v); aplicarTam(); renderAjustes(); }
+function setContraste(v){ setLS(K.contraste, v); aplicarContraste(); renderAjustes(); }
+function setTono(v){ setLS(K.tono, v); renderAjustes(); renderHoy(); }
+function setInicio(v){ setLS(K.inicio, v); renderAjustes(); }
 function setTema(v){ setLS(K.theme, v); aplicarTema(); renderAjustes(); }
 
 function aplicarTam(){
@@ -3111,24 +3258,14 @@ function renderAjustes(){
   renderSyncEstado();
 }
 
-/* Estado del sync, visible y en cristiano. Antes fallaba en silencio: si la
-   tabla no existía o no había red, no había forma de enterarse. */
+/* Antes esto enseñaba el estado del sync. Ya no hay sync, así que dice lo
+   único que importa saber: dónde están tus datos y cómo moverlos. */
 function renderSyncEstado(){
   const el = document.getElementById('syncEstado');
   if(!el) return;
-  let ts = null;
-  try{ ts = parseInt(localStorage.getItem(K.sync), 10); }catch(e){}
-  if(!ts || isNaN(ts)){
-    el.className = 'sync-estado mal';
-    el.innerHTML = '<b>Sin sincronizar todavía.</b> Tus datos están guardados en este dispositivo y no se pierden, pero aún no viajan entre el iPhone y el PC.';
-    return;
-  }
-  const dias = Math.floor((Date.now() - ts) / 86400000);
-  const cuando = dias === 0 ? 'hoy' : dias === 1 ? 'ayer' : 'hace ' + dias + ' días';
-  el.className = 'sync-estado' + (dias >= 7 ? ' mal' : '');
-  el.innerHTML = dias >= 7
-    ? '<b>Última sincronización ' + cuando + '.</b> Llevas tiempo sin conectar: si usas dos dispositivos, conviene abrir la app con datos para que se pongan al día.'
-    : 'Sincronizado <b>' + cuando + '</b>.';
+  el.className = 'sync-estado';
+  el.innerHTML = 'Todo lo que marcas se guarda <b>en este dispositivo</b> y no se pierde al cerrar la app. ' +
+    'Para pasarlo a otro móvil o al ordenador, descárgate una copia aquí abajo.';
 }
 
 function importarDatos(input){
@@ -3154,7 +3291,7 @@ function importarDatos(input){
     });
     if(!n){ toast('Ese archivo no es de esta app'); return; }
     aplicarTema(); aplicarTam(); aplicarContraste();
-    renderTodo(); renderAjustes(); pushSync();
+    renderTodo(); renderAjustes();
     toast('Copia restaurada');
   };
   lector.readAsText(f);
@@ -3247,6 +3384,11 @@ function scrollBehavior(){
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 }
 function showTab(name, btn){
+  /* Arriba del todo ANTES de cambiar de panel, y de golpe.
+     Con scroll suave y después del cambio, el navegador re-anclaba la posición
+     al crecer la página y te dejaba a mitad de la pestaña nueva: tocabas Guía
+     desde Hoy y aparecías en "Que te avise el iPhone", al final de todo. */
+  window.scrollTo({ top:0, behavior:'auto' });
   Array.prototype.forEach.call(document.querySelectorAll('.tabpanel'), p => p.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   Array.prototype.forEach.call(document.querySelectorAll('#tabnav button'), b => {
@@ -3255,7 +3397,6 @@ function showTab(name, btn){
   btn.classList.add('active');
   btn.setAttribute('aria-current', 'page');
   setLS(K.tab, name);
-  window.scrollTo({top:0, behavior:scrollBehavior()});
 }
 const TABS = ['hoy','rutina','guia','volver','semana'];
 function showTabByName(name){
@@ -3273,26 +3414,17 @@ function toast(msg){
   toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
 }
 
-/* ===================== SINCRONIZACIÓN (Supabase) =====================
-   Fila única con todo el estado en JSON, igual que el plan de alimentación.
-   La diferencia importante: el registro de días, los pesos y los check-ins se
-   FUSIONAN clave a clave en vez de reemplazarse enteros. Si marcas algo en el
-   iPhone sin cobertura y luego tocas algo en el PC, no se pisa lo del otro. */
-const SUPABASE_URL = 'https://ibouktzmckphsvqabgig.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_8pdb7ItwgBzII8SMsdWjzA_kunVAiq5';
-const SYNC_KEYS = [K.color, K.dias, K.log, K.check, K.lugar, K.pesos, K.descanso,
-                   K.sonido, K.tam, K.contraste, K.tono, K.inicio];
-const FUSIONABLES = [K.log, K.pesos];
-let syncPushTimer = null;
+/* ===================== FUSIÓN DE COPIAS =====================
+   Aquí vivía la sincronización con Supabase entre el iPhone y el PC. El
+   proyecto de Supabase ya no existe — el dominio ni siquiera resuelve — así
+   que la app disparaba peticiones a la nada en cada ajuste que tocabas y los
+   ajustes enseñaban un aviso rojo permanente de "sin sincronizar".
 
-function collectSyncState(){
-  const state = {};
-  SYNC_KEYS.forEach(k => {
-    const v = localStorage.getItem(k);
-    if(v !== null) state[k] = v;
-  });
-  return state;
-}
+   Lo que queda es lo que sí funciona: todo vive en este dispositivo, y para
+   llevártelo a otro está la copia manual. La fusión clave a clave sigue aquí
+   porque restaurar una copia no debe borrar lo que hayas hecho desde entonces. */
+const FUSIONABLES = [K.log, K.pesos];
+
 function fusionarObjetos(localRaw, remotoRaw){
   let local = {}, remoto = {};
   try{ local = JSON.parse(localRaw || '{}') || {}; }catch(e){}
@@ -3300,62 +3432,6 @@ function fusionarObjetos(localRaw, remotoRaw){
   /* Lo local gana en caso de conflicto sobre la misma clave: es lo que el
      usuario acaba de tocar en este dispositivo. */
   return JSON.stringify(Object.assign({}, remoto, local));
-}
-function applySyncState(state){
-  if(!state) return;
-  SYNC_KEYS.forEach(k => {
-    if(!Object.prototype.hasOwnProperty.call(state, k)) return;
-    if(FUSIONABLES.indexOf(k) !== -1){
-      setLS(k, fusionarObjetos(localStorage.getItem(k), state[k]));
-    } else if(k === K.check){
-      /* Los check-ins se fusionan por semana, sin mezclar campos dentro. */
-      setLS(k, fusionarObjetos(localStorage.getItem(k), state[k]));
-    } else if(localStorage.getItem(k) === null){
-      setLS(k, state[k]);
-    }
-  });
-}
-function pushSync(){
-  clearTimeout(syncPushTimer);
-  syncPushTimer = setTimeout(() => {
-    fetch(SUPABASE_URL + '/rest/v1/ejercicio?on_conflict=id', {
-      method:'POST', cache:'no-store',
-      headers:{
-        'apikey': SUPABASE_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates'
-      },
-      body: JSON.stringify({ id:1, data: JSON.stringify(collectSyncState()) })
-    }).then(res => { if(res.ok) marcarSyncOK(); })
-      .catch(() => { /* sin conexión: se queda en local y sube la próxima vez */ });
-  }, 600);
-}
-/* La fecha del último sync correcto va aparte y NO se sincroniza: es un dato de
-   este dispositivo, no del plan. */
-function marcarSyncOK(){
-  setLS(K.sync, String(Date.now()));
-  renderSyncEstado();
-}
-let ultimoPull = 0;
-async function pullSync(forzar){
-  /* Cambiar de app en el iPhone dispara visibilitychange constantemente: sin
-     este freno era una petición de red por cada vez que volvías. */
-  if(!forzar && Date.now() - ultimoPull < 20000) return;
-  ultimoPull = Date.now();
-  try{
-    const res = await fetch(SUPABASE_URL + '/rest/v1/ejercicio?id=eq.1&select=data', {
-      cache:'no-store',
-      headers:{ 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Cache-Control':'no-cache' }
-    });
-    if(!res.ok) return;
-    marcarSyncOK();
-    const rows = await res.json();
-    if(!rows || !rows[0] || !rows[0].data) return;
-    applySyncState(JSON.parse(rows[0].data));
-    aplicarTam(); aplicarContraste();
-    renderTodo();
-  }catch(e){ /* sin conexión o primera vez sin datos remotos: seguimos con lo local */ }
 }
 
 /* ===================== ARRANQUE ===================== */
@@ -3393,7 +3469,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if(!navigator.onLine) showBanner('offlineBanner');
-  pullSync(true);
 });
 
 /* Escape cierra lo que esté abierto, de dentro a fuera. En el móvil no se usa,
@@ -3414,7 +3489,7 @@ window.addEventListener('hashchange', () => {
    (o la franja horaria del modo automático). */
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'visible' && !S.activa){
-    aplicarTema(); renderHoy(); renderSemana(); pullSync();
+    aplicarTema(); renderHoy(); renderSemana();
   }
 });
 
@@ -3423,7 +3498,7 @@ let swRegistration = null;
 function showBanner(id){ document.getElementById(id).classList.add('show'); }
 function hideBanner(id){ document.getElementById(id).classList.remove('show'); }
 
-window.addEventListener('online', () => { hideBanner('offlineBanner'); pushSync(); });
+window.addEventListener('online', () => hideBanner('offlineBanner'));
 window.addEventListener('offline', () => showBanner('offlineBanner'));
 
 function applyUpdate(){
