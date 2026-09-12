@@ -1387,6 +1387,11 @@
     <p style="font-size:var(--t-xs); color:var(--muted); margin-top:8px;">Genera una imagen con los tres números de arriba y nada más. No sale ninguna fecha, ninguna semana en cero ni nada que no quieras enseñar.</p>
   </div>
 
+  <!-- Aparece solo cuando hay al menos un peso que haya cambiado. Es el único
+       sitio de la app que enseña fuerza bruta, y a propósito solo enseña
+       números que no pueden bajar: con cuánto empezaste y tu mejor marca. -->
+  <div id="progresoPesos"></div>
+
   <h2 style="margin-top:36px;"><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-nota"/></svg></span>Check-in de la semana</h2>
   <p class="lead">Opcional y una vez por semana como mucho. Si lo saltas no pasa nada, no hay nada que rellenar ni recuperar.</p>
 
@@ -1665,7 +1670,7 @@ const K = {
   pesos:'planEjercicioPesos', descanso:'planEjercicioDescanso', tab:'planEjercicioTab',
   sonido:'planEjercicioSonido', tam:'planEjercicioTam', contraste:'planEjercicioContraste',
   tono:'planEjercicioTono', inicio:'planEjercicioInicio', sync:'planEjercicioUltimoSync',
-  cintaExtra:'planEjercicioCintaExtra'
+  cintaExtra:'planEjercicioCintaExtra', pesosHist:'planEjercicioPesosHist'
 };
 const DIAS_CORTOS = ['D','L','M','X','J','V','S'];
 const DIAS_LARGOS = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
@@ -1832,12 +1837,26 @@ function ultimaSesion(){
   const claves = Object.keys(log).filter(k => esSesion(log[k])).sort();
   return claves.length ? claves[claves.length-1] : null;
 }
-/* Modo reentrada: sin sesiones en 10 días, o si nunca ha habido ninguna.
-   OJO: esto cambia lo que se PROPONE. El número de días NUNCA se muestra. */
+/* Modo reentrada: las DOS primeras sesiones después de un parón de 10+ días.
+   OJO: esto cambia lo que se PROPONE. El número de días NUNCA se muestra.
+
+   Antes se apagaba en cuanto hacías UNA sesión, pero la pestaña Volver promete
+   literalmente "segunda sesión: la mínima otra vez. Sí, otra vez" — y era
+   mentira: al día siguiente ya te proponía la completa. Justo el día que peor
+   viene, porque volver a saco a la segunda es su patrón de siempre. */
 function enReentrada(){
-  const ultima = ultimaSesion();
-  if(!ultima) return true;
-  return Math.floor((new Date() - desdeKey(ultima)) / 86400000) >= 10;
+  const log = getLog();
+  const claves = Object.keys(log).filter(k => esSesion(log[k])).sort();
+  if(!claves.length) return true;
+  const dias = (a, b) => Math.floor((a - b) / 86400000);
+  if(dias(new Date(), desdeKey(claves[claves.length - 1])) >= 10) return true;
+  /* Cuántas sesiones lleva encadenadas desde el último parón largo. */
+  let n = 1;
+  for(let i = claves.length - 1; i > 0; i--){
+    if(dias(desdeKey(claves[i]), desdeKey(claves[i - 1])) >= 10) break;
+    n++;
+  }
+  return n < 2;
 }
 
 const ETIQUETAS = {
@@ -2392,15 +2411,36 @@ function avisosHTML(tipo, marcado){
               nivelHoy.vel + ' km/h y ' + nivelHoy.inc + '% de cuesta. Si te agarras a las barras, baja la cuesta.</div>';
     }
   }
-  /* Máquinas ocupadas: solo cuando de verdad va a estar lleno. */
-  const ahora = new Date();
-  const dow = ahora.getDay(), h = ahora.getHours();
-  if(esFuerza && !marcado && getLugar() === 'gym' && dow >= 1 && dow <= 5 && h >= 17 && h < 22){
-    html += '<div class="quiet" style="margin-top:14px;"><b>A esta hora vas a encontrar máquinas ocupadas.</b> ' +
-            'Cada ejercicio tiene su plan B dentro de la sesión guiada, en "¿Está ocupada?". ' +
-            'El orden da igual: sáltala y vuelve luego.</div>';
-  }
+  /* Aquí había un aviso de "a esta hora vas a encontrar máquinas ocupadas".
+     Lo dice mejor, y con la hora exacta y el hueco siguiente, la tarjeta de
+     aforo que abre la pestaña Hoy. Dos avisos de lo mismo, uno encima del
+     otro, es ruido. */
   return html;
+}
+
+/* Lo único de la app que mide fuerza en bruto. Solo números que no bajan:
+   con cuánto empezaste y tu mejor marca. Si un día bajas el peso (vuelta de un
+   parón, mal día, lo que sea) esto no se entera y no te lo recuerda. */
+function renderProgresoPesos(){
+  const el = document.getElementById('progresoPesos');
+  if(!el) return;
+  const hist = getPesosHist();
+  const filas = EJERCICIOS_GYM.filter(e => !e.sinPeso).map(e => {
+    const lista = hist[e.id];
+    if(!Array.isArray(lista) || lista.length < 2) return '';
+    const primero = lista[0].kg;
+    const mejor = lista.reduce((m, p) => Math.max(m, p.kg), 0);
+    if(mejor <= primero) return '';
+    return '<tr><td>' + esc(e.nombre) + '</td>' +
+           '<td><span style="color:var(--muted); font-weight:400;">' + primero + '</span> → ' + mejor + ' kg</td></tr>';
+  }).filter(Boolean).join('');
+
+  if(!filas){ el.innerHTML = ''; return; }
+  el.innerHTML =
+    '<h2 style="margin-top:36px;"><span class="h2-badge">' + ic('i-pesa') + '</span>Lo que has subido</h2>' +
+    '<p class="lead">Desde el primer día que apuntaste un peso hasta tu mejor marca. Es la prueba de que esto está haciendo algo, aunque la báscula diga otra cosa.</p>' +
+    '<table class="pesos-lista">' + filas + '</table>' +
+    '<p style="font-size:var(--t-xs); color:var(--muted); margin:8px 0 0;">Si algún día bajas el peso, aquí no pasa nada: esta tabla solo guarda lo más alto que has hecho.</p>';
 }
 
 /* Recordatorio de qué peso puso la última vez en cada máquina, todo junto y
@@ -2589,7 +2629,8 @@ function cerrarRespira(){
 const S = {
   activa:false, tipo:'fuerza', modo:'fuerza', lista:[], iEj:0, serie:0,
   descansando:false, finDescanso:0, tick:null, hechos:0,
-  tanda:0, tandaObjetivo:2, cintaExtra:false, finTanda:0, pausada:false, restante:0, ultimoSeg:-1
+  tanda:0, tandaObjetivo:2, cintaExtra:false, finTanda:0, pausada:false, restante:0, ultimoSeg:-1,
+  aguantando:false, finAguante:0, segAguante:0
 };
 const TANDA_MIN = 15;
 const DESCANSO_TANDAS = 120;   // 2 min entre las dos tandas de cinta
@@ -2697,6 +2738,7 @@ function pintarSesion(){
   const nSeries = seriesDe(ej, S.iEj);
   document.getElementById('sesCuenta').textContent = 'Ejercicio ' + (S.iEj+1) + ' de ' + S.lista.length;
   if(S.descansando) return pintarDescanso(ej, nSeries);
+  if(S.aguantando) return pintarAguante(ej, nSeries);
 
   let series = '';
   for(let i = 0; i < nSeries; i++){
@@ -2732,7 +2774,12 @@ function pintarSesion(){
     alt + bloquePeso +
     '<div class="ses-series">' + series + '</div>' +
     '<div class="ses-foot">' +
-      '<button class="btn-main" onclick="serieHecha()">✓ Serie hecha</button>' +
+      (segundosDe(ej)
+        ? '<button class="btn-main" onclick="empezarAguante()">' + ic('i-reloj') + 'Empezar los ' + segundosDe(ej) + ' segundos</button>'
+        : '<button class="btn-main" onclick="serieHecha()">' + ic('i-check') + 'Serie hecha</button>') +
+      /* Con las manos sudadas se toca "Serie hecha" sin querer más veces de las
+         que parece, y hasta ahora no había forma de volver atrás. */
+      (puedeDeshacer() ? '<button class="btn-undo" onclick="deshacerSerie()">Deshacer la última serie</button>' : '') +
       '<button class="btn-second" onclick="saltarEjercicio()">Saltar este ejercicio</button>' +
       (getLugar() === 'gym' ? '<button class="btn-second" onclick="noSeQueMaquina()">' + ic('i-info') + 'No sé cuál es esta máquina</button>' : '') +
     '</div>';
@@ -2748,6 +2795,21 @@ function noSeQueMaquina(){
   if(ej) toast('Busca: ' + ej.alias);
 }
 
+function pintarAguante(ej, nSeries){
+  const body = document.getElementById('sesBody');
+  body.innerHTML =
+    '<div class="ses-descanso">' + anilloHTML(S.segAguante) +
+      '<p><b>Aguanta.</b> Serie ' + (S.serie + 1) + ' de ' + nSeries + '. ' +
+      'Respira normal, no aguantes el aire.</p>' +
+      '<div style="display:flex; gap:8px;">' +
+        '<button class="btn-timer" onclick="finAguante()">Ya no puedo más</button>' +
+      '</div>' +
+      '<div class="ses-siguiente">Si sueltas antes de tiempo, cuenta igual. ' +
+      'Con las rodillas apoyadas también cuenta.</div>' +
+    '</div>';
+  actualizarRing(true);
+}
+
 function pintarDescanso(ej, nSeries){
   const body = document.getElementById('sesBody');
   const siguiente = S.serie >= nSeries
@@ -2761,6 +2823,9 @@ function pintarDescanso(ej, nSeries){
         '<button class="btn-timer" onclick="finDescanso()">Seguir ya</button>' +
       '</div>' +
       '<div class="ses-siguiente">Siguiente: <b>' + esc(siguiente) + '</b></div>' +
+      /* El descanso es justo cuando te das cuenta de que has tocado el botón
+         sin querer, así que el deshacer también tiene que estar aquí. */
+      (puedeDeshacer() ? '<button class="btn-undo" onclick="deshacerSerie()">Deshacer la última serie</button>' : '') +
     '</div>';
   actualizarRing(true);
 }
@@ -2884,10 +2949,38 @@ function terminarCintaExtra(){
 }
 
 /* ---------- Fuerza: series ---------- */
+/* ---------- Ejercicios que se miden en tiempo ----------
+   La plancha son 20 segundos, y hasta ahora la app te los pedía y te dejaba
+   contando de cabeza mientras aguantas — que es justo cuando peor se cuenta.
+   El anillo del descanso ya existía; aquí se reutiliza para aguantar. */
+function segundosDe(ej){
+  if(!ej || !ej.sinPeso) return 0;
+  const m = /(\d+)\s*segundo/.exec(ej.reps || '');
+  return m ? parseInt(m[1], 10) : 0;
+}
+function empezarAguante(){
+  const seg = segundosDe(S.lista[S.iEj]);
+  if(!seg) return serieHecha();
+  S.aguantando = true;
+  S.segAguante = seg;
+  S.finAguante = Date.now() + seg * 1000;
+  arrancarTick();
+  pintarSesion();
+}
+/* Sirve tanto para el final del tiempo como para el botón de "ya no puedo".
+   Aguantar 12 de 20 segundos también es una serie: cuenta igual. */
+function finAguante(){
+  pararTick();
+  S.aguantando = false;
+  serieHecha();
+}
+
 function serieHecha(){
   const ej = S.lista[S.iEj];
   const nSeries = seriesDe(ej, S.iEj);
   S.serie++;
+  /* Primera serie completada de este ejercicio: el peso ya se ha usado. */
+  if(S.serie === 1 && !ej.sinPeso) registrarPeso(ej.id, getPesos()[ej.id]);
   if(S.serie >= nSeries) S.hechos++;
   if(S.serie >= nSeries && S.iEj + 1 >= S.lista.length){
     S.iEj++; S.serie = 0;
@@ -2902,8 +2995,26 @@ function serieHecha(){
 }
 
 function saltarEjercicio(){
-  S.iEj++; S.serie = 0; S.descansando = false;
+  S.iEj++; S.serie = 0; S.descansando = false; S.aguantando = false;
   pararTick();
+  pintarSesion();
+}
+
+/* Deshacer: quita la última serie marcada. Si era la primera del ejercicio,
+   retrocede al anterior y lo deja en su última serie. No toca el peso ni
+   nada guardado: solo el contador de la sesión que está en marcha. */
+function puedeDeshacer(){ return S.serie > 0 || S.iEj > 0; }
+function deshacerSerie(){
+  pararTick();
+  S.descansando = false;
+  S.aguantando = false;
+  if(S.serie > 0){
+    S.serie--;
+  } else if(S.iEj > 0){
+    S.iEj--;
+    S.serie = Math.max(0, seriesDe(S.lista[S.iEj], S.iEj) - 1);
+    S.hechos = Math.max(0, S.hechos - 1);
+  }
   pintarSesion();
 }
 
@@ -2932,9 +3043,14 @@ function finDescanso(){
 function arrancarTick(){
   pararTick();
   S.tick = setInterval(() => {
-    const objetivo = (S.tipo === 'cinta' && !S.descansando) ? S.finTanda : S.finDescanso;
+    const objetivo = S.aguantando ? S.finAguante
+                   : (S.tipo === 'cinta' && !S.descansando) ? S.finTanda
+                   : S.finDescanso;
     if(Math.ceil((objetivo - Date.now()) / 1000) <= 0){
-      if(S.tipo === 'cinta' && !S.descansando){
+      if(S.aguantando){
+        pito('seguir');
+        finAguante();
+      } else if(S.tipo === 'cinta' && !S.descansando){
         /* Última tanda: es el fin de la sesión, no un cambio de tanda. */
         pito(S.tanda + 1 >= 2 ? 'fin' : 'tanda');
         finTanda();
@@ -2954,8 +3070,10 @@ function actualizarRing(forzar){
   const anillo = document.getElementById('ringAvance');
   if(!txt || !anillo) return;
   const enTanda = S.tipo === 'cinta' && !S.descansando;
-  const objetivo = enTanda ? S.finTanda : S.finDescanso;
-  const total = enTanda ? TANDA_MIN * 60 : (S.tipo === 'cinta' ? DESCANSO_TANDAS : descansoActual());
+  const objetivo = S.aguantando ? S.finAguante : enTanda ? S.finTanda : S.finDescanso;
+  const total = S.aguantando ? S.segAguante
+              : enTanda ? TANDA_MIN * 60
+              : (S.tipo === 'cinta' ? DESCANSO_TANDAS : descansoActual());
   const quedan = S.pausada
     ? Math.ceil(S.restante / 1000)
     : Math.max(0, Math.ceil((objetivo - Date.now()) / 1000));
@@ -2988,6 +3106,27 @@ function terminarSesion(){
   cerrarSesion();
   toast(etiqueta(tipo).txt);
   showTabByName('hoy');
+}
+
+/* ---------- Historial de pesos ----------
+   El número de "qué pusiste la última vez" sigue siendo lo que manda dentro
+   de la sesión. Aparte de eso se guarda una línea cada vez que el peso CAMBIA
+   de verdad (no cada vez que tocas el +), para poder enseñarle una cosa que
+   ningún otro sitio de la app enseña: que levanta más que cuando empezó.
+
+   Se apunta al terminar la primera serie del ejercicio, que es cuando ese peso
+   se ha usado de verdad — no cuando estaba trasteando con los botones. */
+function getPesosHist(){ const h = loadJSON(K.pesosHist, {}); return (h && typeof h === 'object') ? h : {}; }
+function registrarPeso(id, kg){
+  if(!id || !kg || kg <= 0) return;
+  const hist = getPesosHist();
+  const lista = Array.isArray(hist[id]) ? hist[id] : [];
+  const ultimo = lista.length ? lista[lista.length - 1] : null;
+  if(ultimo && ultimo.kg === kg) return;        // mismo peso que la última vez
+  lista.push({ f: hoyKey(), kg: kg });
+  if(lista.length > 60) lista.shift();          // no crece sin fin
+  hist[id] = lista;
+  saveJSON(K.pesosHist, hist);
 }
 
 /* Peso: un solo número por ejercicio, sin historial ni series ni gráficas.
@@ -3145,6 +3284,7 @@ function renderSemana(){
 
   renderCheckin();
   renderSemanaDias();
+  renderProgresoPesos();
 }
 
 function renderSemanaDias(){
