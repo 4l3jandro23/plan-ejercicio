@@ -648,6 +648,56 @@
   .ses-salir{background:none; border:none; color:var(--muted); font-family:inherit; font-size:var(--t-sm); font-weight:700; cursor:pointer; padding:6px 0; display:inline-flex; align-items:center; gap:5px;}
   .ses-salir .ic-v{width:15px; height:15px; transform:rotate(180deg);}
   .ses-cuenta{font-family:var(--font-mono); font-size:var(--t-xs); color:var(--muted); font-weight:700;}
+  /* ===== Modo gimnasio: lista de máquinas, valoración y sugerencia de peso ===== */
+  .ses-lista{
+    background:var(--accent-soft); color:var(--accent); border:none; border-radius:999px;
+    padding:8px 14px; font-family:inherit; font-size:var(--t-xs); font-weight:700; cursor:pointer;
+  }
+  .ses-lista-ej{display:flex; flex-direction:column; gap:8px; margin-top:12px;}
+  .ses-ej{
+    display:flex; align-items:center; gap:12px; width:100%; min-height:60px; text-align:left;
+    padding:12px 14px; border-radius:var(--r-md); border:1px solid var(--border);
+    background:var(--card); color:var(--ink); font-family:inherit; cursor:pointer;
+  }
+  .ses-ej.actual{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent);}
+  .ses-ej.hecho{opacity:.55; cursor:default;}
+  .ses-ej-marca{
+    width:34px; height:34px; border-radius:50%; flex-shrink:0; display:grid; place-items:center;
+    background:var(--accent-soft); color:var(--accent); font-family:var(--font-mono); font-weight:700; font-size:var(--t-sm);
+  }
+  .ses-ej.hecho .ses-ej-marca{background:var(--ok-soft); color:var(--ok);}
+  .ses-ej-marca .ic-v{width:17px; height:17px;}
+  .ses-ej-txt{min-width:0;}
+  .ses-ej-txt b{display:block; font-size:var(--t-base); line-height:1.3;}
+  .ses-ej-txt span{font-size:var(--t-xs); color:var(--muted);}
+  .ses-quedan{margin:16px 0 4px; text-align:left; display:flex; flex-direction:column; gap:8px;}
+  .ses-quedan > span{font-size:var(--t-xs); color:var(--muted);}
+  .ses-sensacion{margin-top:18px; text-align:center;}
+  .ses-sensacion p{margin:0 0 8px; font-size:var(--t-sm); color:var(--ink);}
+  .ses-sensacion-ops{display:flex; gap:6px;}
+  .ses-sensacion-ops button{
+    flex:1; min-height:44px; padding:8px 6px; border-radius:var(--r-sm); border:1px solid var(--border);
+    background:var(--card); color:var(--ink); font-family:inherit; font-size:var(--t-xs); font-weight:700; cursor:pointer;
+  }
+  .ses-sensacion-ops button.on{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .ses-sugerencia{
+    margin-top:10px; padding:11px 13px; border-radius:var(--r-sm); background:var(--accent-soft);
+    font-size:var(--t-sm); color:var(--ink); line-height:1.45; text-align:left;
+  }
+  .ses-sugerencia .btn-undo{display:block; padding:8px 0 0;}
+
+  /* ===== Sincronización ===== */
+  .sync-pasos{margin:10px 0; padding-left:20px; color:var(--ink); line-height:1.55;}
+  .sync-pasos li{margin-bottom:5px;}
+  .sync-pasos a{color:var(--accent); word-break:break-word;}
+  .sync-token{
+    width:100%; box-sizing:border-box; margin:4px 0 8px; padding:12px; border:1px solid var(--border);
+    border-radius:var(--r-sm); background:var(--card); color:var(--ink); font-family:var(--font-mono); font-size:var(--t-sm);
+  }
+  .sync-token:focus{outline:none; border-color:var(--accent);}
+  .sync-botones{display:flex; gap:8px; margin-top:10px;}
+  .sync-botones .btn-second{flex:1;}
+
   .ses-barra{height:4px; background:var(--neutral); margin-bottom:26px; overflow:hidden; border-radius:99px;}
   .ses-barra i{
     display:block; height:100%; width:0; border-radius:99px;
@@ -858,7 +908,7 @@
   .respira .btn-second{max-width:320px;}
   @media (prefers-reduced-motion: reduce){ .resp-circulo{transition:none;} }
 
-  .sync-estado{font-size:var(--t-xs); color:var(--muted); text-align:center; margin-top:12px; line-height:1.5;}
+  .sync-estado{font-size:var(--t-xs); color:var(--muted); line-height:1.5;}
   .sync-estado b{color:var(--ink);}
   .sync-estado.mal b{color:var(--warn);}
 
@@ -958,6 +1008,7 @@
 <div class="sesion" id="sesion" role="dialog" aria-modal="true" aria-label="Sesión en curso">
   <div class="ses-top">
     <button class="ses-salir" onclick="salirSesion()">‹ Salir</button>
+    <button class="ses-lista" id="sesListaBtn" onclick="verListaEjercicios()">Ejercicios</button>
     <span class="ses-cuenta" id="sesCuenta"></span>
   </div>
   <div class="ses-barra"><i id="sesBarra"></i></div>
@@ -1090,8 +1141,12 @@
       <div class="settings-hint">Además puedes tener un segundo icono en el iPhone que abra directo a una pestaña: comparte esta web, añádele <b>#rutina</b> (o <b>#hoy</b>) al final de la dirección y añádela a la pantalla de inicio.</div>
     </div>
 
+    <div class="settings-row">
+      <div class="lbl">Móvil y ordenador</div>
+      <div class="sync-estado" id="syncEstado"></div>
+    </div>
+
     <button class="settings-close" onclick="closeSettings()">Listo</button>
-    <div class="sync-estado" id="syncEstado"></div>
     <button class="settings-danger" onclick="exportarDatos()"><svg class="ic-v" aria-hidden="true"><use href="#i-descarga"/></svg> Descargar una copia de mis datos</button>
     <button class="settings-danger" onclick="document.getElementById('inpImport').click()">Restaurar desde una copia</button>
     <input type="file" id="inpImport" accept="application/json,.json" style="display:none" onchange="importarDatos(this)">
@@ -1173,7 +1228,7 @@
     <p style="font-size:var(--t-xs); color:var(--muted);">A 6,5 km/h ya estás en el límite de andar: más rápido sería correr. Y con un 15% de cuesta, eso es un entreno duro de verdad. De ahí en adelante manda tu criterio.</p>
 
     <div class="tip">
-      <b>Cinta y fuerza, en días distintos.</b> Si haces 30 minutos de cuesta y luego te vas a las máquinas, llegas con las piernas muertas y la fuerza no sirve de nada. Y una sesión de 65 minutos no la vas a sostener muchas semanas. Si algún día quieres las dos: <b>fuerza primero</b> y la cinta bájala a 10 minutos.
+      <b>Cinta y fuerza el mismo día: la fuerza primero.</b> Si haces 30 minutos de cuesta y luego vas a las máquinas, llegas con las piernas muertas y la fuerza no sirve de nada. Al revés sí funciona: los 6 ejercicios y después 15 minutos de cinta, que es lo que te propone la sesión guiada al terminar. Esta media hora en dos tandas es para los días que solo haces cinta.
     </div>
   </div>
 
@@ -1192,7 +1247,7 @@
          Aquí debajo sigue estando, que es donde de verdad la vas a leer. -->
     <div class="tip" style="margin-top:18px;">
       <b>La regla del peso, que es la única que importa:</b><br>
-      El primer día pon <b>el peso más bajo</b> en todo: el pin, arriba del todo de la torre de placas. Haz 10 repeticiones. ¿Te han salido fáciles? La próxima vez bajas el pin una placa. Ya está. No existe el peso "correcto" — si te quedas corto, lo subes el día siguiente y no ha pasado nada.
+      El primer día pon <b>el peso más bajo</b> en todo: el pin, arriba del todo de la torre de placas. Haz <b>entre 10 y 15 repeticiones</b>. Cuando te salgan 15 en las tres series, la próxima vez bajas el pin una placa y vuelves a empezar desde 10. Ya está. No existe el peso "correcto" — si te quedas corto, lo subes el día siguiente y no ha pasado nada.
     </div>
     <div class="quiet" style="margin-top:22px;">
       <b>Descanso entre series:</b> de 60 a 90 segundos. Si usas la sesión guiada, el tiempo lo cuenta ella y no tienes que pensarlo.
@@ -1423,7 +1478,7 @@
 
 <footer>
   Plan de Ejercicio de Alejandro · hermana del <a href="https://4l3jandro23.github.io/plan-alimentacion/" style="color:var(--accent);">plan de alimentación</a><br>
-  Funciona sin conexión · Tus datos se guardan en este dispositivo
+  Funciona sin conexión · Para juntar móvil y ordenador: Ajustes
 </footer>
 </main>
 
@@ -1450,7 +1505,7 @@ const EJERCICIOS_GYM = [
   {
     id:'prensa', nombre:'Prensa de piernas',
     alias:'En la máquina pone "Leg Press" o "Prensa"',
-    series:3, reps:'10 repeticiones',
+    series:3, reps:'10-15 repeticiones',
     musculo:'Los muslos y el culo. Es el ejercicio que más peso vas a mover de todos, con diferencia.',
     maquina:'Te sientas medio tumbado y empujas con los pies una plataforma que tienes delante.',
     ajuste:'Mueve el respaldo hasta que, con las piernas dobladas, las rodillas no se te claven en el pecho. Si te cuesta encontrar la palanca, suele estar a la derecha del asiento.',
@@ -1468,7 +1523,7 @@ const EJERCICIOS_GYM = [
   {
     id:'jalon', nombre:'Jalón al pecho',
     alias:'En la máquina pone "Lat Pulldown" o "Jalón"',
-    series:3, reps:'10 repeticiones',
+    series:3, reps:'10-15 repeticiones',
     musculo:'La espalda (los laterales, los que dan forma de V) y de paso el bíceps.',
     maquina:'Es una polea: o sea, un cable con una barra colgando arriba. Te sientas debajo y tiras de la barra hacia abajo. Eso es todo lo que significa "polea".',
     ajuste:'Hay una almohadilla que te queda encima de los muslos: ajústala apretada, es lo que impide que el peso te levante del asiento.',
@@ -1486,7 +1541,7 @@ const EJERCICIOS_GYM = [
   {
     id:'pecho', nombre:'Press de pecho',
     alias:'En la máquina pone "Chest Press"',
-    series:3, reps:'10 repeticiones',
+    series:3, reps:'10-15 repeticiones',
     musculo:'El pecho, la parte de delante del hombro y el tríceps (la parte de atrás del brazo).',
     maquina:'Te sientas y empujas dos asas hacia delante, como si empujaras una puerta pesada. "Press" significa empujar, nada más.',
     ajuste:'Sube o baja el asiento hasta que las asas te queden a la altura del pecho, no del cuello. Esto es lo que más gente hace mal y es lo único que hay que mirar.',
@@ -1504,7 +1559,7 @@ const EJERCICIOS_GYM = [
   {
     id:'remo', nombre:'Remo sentado',
     alias:'En la máquina pone "Seated Row" o "Remo"',
-    series:3, reps:'10 repeticiones',
+    series:3, reps:'10-15 repeticiones',
     musculo:'La espalda del medio: la que te mantiene derecho. Muy útil si pasas ocho horas sentado delante de un ordenador, que es tu caso.',
     maquina:'Te sientas y tiras de dos asas hacia tu barriga, como si remaras.',
     ajuste:'Si la máquina tiene una almohadilla para el pecho, ajústala para apoyarte en ella; así la espalda baja no trabaja de más.',
@@ -1522,7 +1577,7 @@ const EJERCICIOS_GYM = [
   {
     id:'hombros', nombre:'Press de hombros',
     alias:'En la máquina pone "Shoulder Press"',
-    series:3, reps:'10 repeticiones',
+    series:3, reps:'10-15 repeticiones',
     musculo:'Los hombros.',
     maquina:'Te sientas y empujas dos asas hacia arriba, por encima de la cabeza.',
     ajuste:'El asiento a una altura donde las asas te queden más o menos a la altura de los hombros al empezar.',
@@ -1670,8 +1725,24 @@ const K = {
   pesos:'planEjercicioPesos', descanso:'planEjercicioDescanso', tab:'planEjercicioTab',
   sonido:'planEjercicioSonido', tam:'planEjercicioTam', contraste:'planEjercicioContraste',
   tono:'planEjercicioTono', inicio:'planEjercicioInicio', sync:'planEjercicioUltimoSync',
-  cintaExtra:'planEjercicioCintaExtra', pesosHist:'planEjercicioPesosHist'
+  cintaExtra:'planEjercicioCintaExtra', pesosHist:'planEjercicioPesosHist',
+  sensacion:'planEjercicioSensacion', sesion:'planEjercicioSesionActiva', vuelta:'planEjercicioVuelta',
+  marcas:'planEjercicioMarcas', ghToken:'planEjercicioGhToken', gistId:'planEjercicioGistId',
+  syncOk:'planEjercicioSyncOk', syncError:'planEjercicioSyncError'
 };
+/* Qué viaja entre el móvil y el ordenador, y cómo se junta (ver fusionarEstado).
+   Tema, tamaño de letra, contraste y 'al abrir la app' se quedan en cada
+   dispositivo a propósito: el iPhone y el PC no tienen por qué verse igual. */
+const SYNC_CFG = {
+  todas: [K.color, K.dias, K.lugar, K.descanso, K.sonido, K.tono,
+          K.log, K.pesos, K.check, K.sensacion, K.cintaExtra, K.pesosHist],
+  objeto: [K.log, K.pesos, K.check, K.sensacion],
+  union: { [K.cintaExtra]: 'fechas', [K.pesosHist]: 'historial' }
+};
+/* Lo que nunca sale del dispositivo, ni en la copia descargada: el token de
+   GitHub en un archivo .json suelto sería regalarlo. */
+const NO_SE_EXPORTA = [K.ghToken, K.gistId, K.syncOk, K.syncError, K.sesion, K.vuelta, K.marcas, K.sync];
+const GIST_ARCHIVO = 'plan-ejercicio-sync.json';
 const DIAS_CORTOS = ['D','L','M','X','J','V','S'];
 const DIAS_LARGOS = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
 const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -1686,7 +1757,21 @@ function loadJSON(key, fallback){
     return raw ? JSON.parse(raw) : fallback;
   }catch(e){ return fallback; }
 }
-function setLS(key, value){ try{ localStorage.setItem(key, value); }catch(e){} }
+let sincronizando = false, timerSubida = null, ultimaSincro = 0, sincEnCurso = null, subidaPendiente = false;
+function setRaw(key, value){ try{ localStorage.setItem(key, value); }catch(e){} }
+/* Todas las escrituras pasan por aquí, así que es el sitio donde se apunta
+   qué ha cambiado y cuándo, para que la sincronización sepa qué gana. */
+function setLS(key, value){
+  const vigilada = !sincronizando && SYNC_CFG.todas.indexOf(key) !== -1;
+  let antes = null;
+  if(vigilada){ try{ antes = localStorage.getItem(key); }catch(e){} }
+  setRaw(key, value);
+  if(vigilada && antes !== value){
+    setRaw(K.marcas, JSON.stringify(sellarCambio(getMarcas(), key, antes, value, SYNC_CFG, Date.now())));
+    programarSubida();
+  }
+}
+function getMarcas(){ const m = loadJSON(K.marcas, {}); return (m && typeof m === 'object') ? m : {}; }
 function saveJSON(key, value){
   setLS(key, JSON.stringify(value));
 }
@@ -2630,7 +2715,8 @@ const S = {
   activa:false, tipo:'fuerza', modo:'fuerza', lista:[], iEj:0, serie:0,
   descansando:false, finDescanso:0, tick:null, hechos:0,
   tanda:0, tandaObjetivo:2, cintaExtra:false, finTanda:0, pausada:false, restante:0, ultimoSeg:-1,
-  aguantando:false, finAguante:0, segAguante:0
+  aguantando:false, finAguante:0, segAguante:0,
+  hechasPor:[], historial:[], terminada:false, valorados:{}, ultimoCompletado:null, viendoLista:false
 };
 const TANDA_MIN = 15;
 const DESCANSO_TANDAS = 120;   // 2 min entre las dos tandas de cinta
@@ -2643,7 +2729,9 @@ function empezarSesion(modo){
   if(modo === 'minima' || modo === 'express') S.lista = todos.slice(0,3);
   else if(modo === 'viaje') S.lista = todos.slice(0,4);
   else S.lista = todos.slice();
-  S.modo = modo; S.iEj = 0; S.serie = 0; S.activa = true; S.descansando = false; S.hechos = 0;
+  S.modo = modo; S.iEj = 0; S.serie = 0; S.activa = true; S.descansando = false; S.aguantando = false; S.hechos = 0;
+  S.hechasPor = S.lista.map(() => 0); S.historial = []; S.terminada = false;
+  S.valorados = {}; S.ultimoCompletado = null; S.viendoLista = false;
   abrirSesion();
 }
 /* En express y viaje, una sola serie por ejercicio: el objetivo es haber ido,
@@ -2678,6 +2766,7 @@ function abrirSesion(){
   document.getElementById('sesion').classList.add('show');
   document.body.classList.add('sesion-abierta');
   prepararSonido();
+  pantallaEncendida(true);
   pintarSesion();
 }
 
@@ -2695,22 +2784,30 @@ function salirSesion(){
     toast('Guardado. Lo que has hecho cuenta.');
   }
   S.activa = false;
+  borrarSesionGuardada();
+  pantallaEncendida(false);
   document.getElementById('sesion').classList.remove('show');
   document.body.classList.remove('sesion-abierta');
   renderHoy(); renderSemana();
 }
 
+/* Cada repintado guarda la sesión: es el único punto por el que pasan todos
+   los cambios, así que si iOS cierra la app, se pierde como mucho un toque. */
 function pintarSesion(){
+  pintarSesionDentro();
+  ajustarCabecera();
+  guardarSesion();
+}
+function pintarSesionDentro(){
   if(S.tipo === 'cinta') return pintarCinta();
 
   const body = document.getElementById('sesBody');
+  anotarSerieActual();
   const totalSeries = S.lista.reduce((a,e,i) => a + seriesDe(e,i), 0);
-  let seriesHechas = 0;
-  for(let i = 0; i < S.iEj; i++) seriesHechas += seriesDe(S.lista[i], i);
-  seriesHechas += S.serie;
+  const seriesHechas = S.lista.reduce((a,e,i) => a + Math.min(S.hechasPor[i] || 0, seriesDe(e,i)), 0);
   document.getElementById('sesBarra').style.width = Math.round(seriesHechas / totalSeries * 100) + '%';
 
-  if(S.iEj >= S.lista.length){
+  if(S.terminada){
     document.getElementById('sesCuenta').textContent = '';
     document.getElementById('sesBarra').style.width = '100%';
     body.innerHTML =
@@ -2723,6 +2820,7 @@ function pintarSesion(){
         '<p>' + (S.modo === 'express'
           ? 'Ocho minutos en un día malo valen más que una sesión perfecta dentro de dos semanas. Cuenta igual que cualquier otra.'
           : T('Ya está. No hay nada más que rellenar ni que apuntar en ningún sitio.', 'Guardado.')) + '</p>' +
+        bloqueFinPendientes() + preguntaSensacion(S.ultimoCompletado) +
         '<button class="btn-main" onclick="terminarSesion()">Guardar y salir</button>' +
         /* Solo en sesión completa y en el gimnasio: es donde de verdad hay
            cinta. Lo pidió él directamente — quiere cinta y fuerza en la misma
@@ -2734,10 +2832,20 @@ function pintarSesion(){
     return;
   }
 
-  const ej = S.lista[S.iEj];
-  const nSeries = seriesDe(ej, S.iEj);
+  if(S.viendoLista) return pintarListaEjercicios();
+  let ej = S.lista[S.iEj];
+  let nSeries = seriesDe(ej, S.iEj);
   document.getElementById('sesCuenta').textContent = 'Ejercicio ' + (S.iEj+1) + ' de ' + S.lista.length;
   if(S.descansando) return pintarDescanso(ej, nSeries);
+  /* Este ya está hecho (se ha vuelto a él desde la lista, o se recupera la
+     sesión justo al acabarlo): al siguiente que quede. */
+  if(S.serie >= nSeries){
+    const sig = siguientePendiente(S.iEj);
+    if(sig === -1){ S.terminada = true; return pintarSesionDentro(); }
+    irAEjercicio(sig);
+    ej = S.lista[S.iEj]; nSeries = seriesDe(ej, S.iEj);
+    document.getElementById('sesCuenta').textContent = 'Ejercicio ' + (S.iEj+1) + ' de ' + S.lista.length;
+  }
   if(S.aguantando) return pintarAguante(ej, nSeries);
 
   let series = '';
@@ -2761,7 +2869,7 @@ function pintarSesion(){
           'placeholder="kg" onchange="fijarPeso(\'' + ej.id + '\', this.value)" aria-label="Peso en kilos">' +
         '<button onclick="cambiarPeso(\'' + ej.id + '\',1)" aria-label="Subir peso">' + ic('i-mas') + '</button>' +
       '</div>' +
-    '</div>';
+    '</div>' + sugerenciaPeso(ej);
 
   const alt = ej.alternativa ?
     '<details class="ses-alt"><summary>¿Está ocupada?</summary><div class="content">' + ej.alternativa + '</div></details>' : '';
@@ -2780,7 +2888,8 @@ function pintarSesion(){
       /* Con las manos sudadas se toca "Serie hecha" sin querer más veces de las
          que parece, y hasta ahora no había forma de volver atrás. */
       (puedeDeshacer() ? '<button class="btn-undo" onclick="deshacerSerie()">Deshacer la última serie</button>' : '') +
-      '<button class="btn-second" onclick="saltarEjercicio()">Saltar este ejercicio</button>' +
+      '<button class="btn-second" onclick="saltarEjercicio()">' +
+        (pendientes().filter(i => i !== S.iEj).length ? 'Está ocupada: hago otra y vuelvo' : 'Saltar este ejercicio') + '</button>' +
       (getLugar() === 'gym' ? '<button class="btn-second" onclick="noSeQueMaquina()">' + ic('i-info') + 'No sé cuál es esta máquina</button>' : '') +
     '</div>';
 }
@@ -2812,8 +2921,9 @@ function pintarAguante(ej, nSeries){
 
 function pintarDescanso(ej, nSeries){
   const body = document.getElementById('sesBody');
+  const sigIdx = S.serie >= nSeries ? siguientePendiente(S.iEj) : S.iEj;
   const siguiente = S.serie >= nSeries
-    ? (S.lista[S.iEj+1] ? S.lista[S.iEj+1].nombre : 'terminar')
+    ? (sigIdx !== -1 ? S.lista[sigIdx].nombre : 'terminar')
     : ej.nombre + ' · serie ' + (S.serie+1);
   body.innerHTML =
     '<div class="ses-descanso">' + anilloHTML(descansoActual()) +
@@ -2825,6 +2935,7 @@ function pintarDescanso(ej, nSeries){
       '<div class="ses-siguiente">Siguiente: <b>' + esc(siguiente) + '</b></div>' +
       /* El descanso es justo cuando te das cuenta de que has tocado el botón
          sin querer, así que el deshacer también tiene que estar aquí. */
+      (S.serie >= nSeries ? preguntaSensacion(S.iEj) : '') +
       (puedeDeshacer() ? '<button class="btn-undo" onclick="deshacerSerie()">Deshacer la última serie</button>' : '') +
     '</div>';
   actualizarRing(true);
@@ -2841,6 +2952,11 @@ function anilloHTML(valor){
 
 /* ---------- Cinta ---------- */
 function pintarCinta(){
+  pintarCintaDentro();
+  ajustarCabecera();
+  guardarSesion();
+}
+function pintarCintaDentro(){
   const body = document.getElementById('sesBody');
   const niv = nivelCinta();
   const objetivo = S.tandaObjetivo || 2;
@@ -2908,6 +3024,7 @@ function pausarCinta(){
   }
   const b = document.getElementById('btnPausa');
   if(b) b.innerHTML = S.pausada ? ic('i-play') + 'Seguir' : ic('i-pausa') + 'Pausa';
+  guardarSesion();
 }
 
 function finTanda(){
@@ -2975,18 +3092,51 @@ function finAguante(){
   serieHecha();
 }
 
+/* ---------- Orden libre ----------
+   En un gimnasio lleno la máquina que toca casi nunca es la que está libre.
+   Antes la sesión iba en fila: solo se podía "saltar", y lo saltado se perdía.
+   Ahora cada ejercicio lleva su propia cuenta de series, y se puede ir a
+   cualquiera desde la lista y volver luego al que estaba ocupado. */
+function anotarSerieActual(){ if(Array.isArray(S.hechasPor)) S.hechasPor[S.iEj] = S.serie; }
+function completo(i){
+  anotarSerieActual();
+  return (S.hechasPor[i] || 0) >= seriesDe(S.lista[i], i);
+}
+function irAEjercicio(i){
+  anotarSerieActual();
+  S.iEj = i;
+  S.serie = S.hechasPor[i] || 0;
+}
+/* Siguiente ejercicio sin acabar, dando la vuelta a la lista. Si solo queda
+   el actual, devuelve el actual; si no queda ninguno, -1. */
+function siguientePendiente(desde){
+  const n = S.lista.length;
+  for(let k = 1; k <= n; k++){
+    const i = (desde + k) % n;
+    if(!completo(i)) return i;
+  }
+  return -1;
+}
+function pendientes(){ return S.lista.map((e, i) => i).filter(i => !completo(i)); }
+
 function serieHecha(){
   const ej = S.lista[S.iEj];
   const nSeries = seriesDe(ej, S.iEj);
+  if(S.serie >= nSeries) return pintarSesion();
   S.serie++;
+  S.historial.push(S.iEj);
   /* Primera serie completada de este ejercicio: el peso ya se ha usado. */
   if(S.serie === 1 && !ej.sinPeso) registrarPeso(ej.id, getPesos()[ej.id]);
-  if(S.serie >= nSeries) S.hechos++;
-  if(S.serie >= nSeries && S.iEj + 1 >= S.lista.length){
-    S.iEj++; S.serie = 0;
-    pito('fin');
-    pintarSesion();
-    return;
+  anotarSerieActual();
+  if(S.serie >= nSeries){
+    S.hechos++;
+    S.ultimoCompletado = S.iEj;
+    if(siguientePendiente(S.iEj) === -1){
+      S.terminada = true;
+      pito('fin');
+      pintarSesion();
+      return;
+    }
   }
   S.descansando = true;
   S.finDescanso = Date.now() + descansoActual() * 1000;
@@ -2994,27 +3144,134 @@ function serieHecha(){
   pintarSesion();
 }
 
+/* "Está ocupada": se pasa al siguiente sin acabar y este se queda esperando.
+   Si ya no queda otro, es saltarlo de verdad y se va al final. */
 function saltarEjercicio(){
-  S.iEj++; S.serie = 0; S.descansando = false; S.aguantando = false;
   pararTick();
+  S.descansando = false; S.aguantando = false; S.viendoLista = false;
+  const sig = siguientePendiente(S.iEj);
+  if(sig === -1 || sig === S.iEj) S.terminada = true;
+  else irAEjercicio(sig);
   pintarSesion();
 }
 
-/* Deshacer: quita la última serie marcada. Si era la primera del ejercicio,
-   retrocede al anterior y lo deja en su última serie. No toca el peso ni
-   nada guardado: solo el contador de la sesión que está en marcha. */
-function puedeDeshacer(){ return S.serie > 0 || S.iEj > 0; }
+/* Deshacer: quita la última serie que se marcó, esté en el ejercicio que esté.
+   No toca el peso ni nada guardado: solo la cuenta de la sesión en marcha. */
+function puedeDeshacer(){ return Array.isArray(S.historial) && S.historial.length > 0; }
 function deshacerSerie(){
+  if(!puedeDeshacer()) return;
   pararTick();
-  S.descansando = false;
-  S.aguantando = false;
-  if(S.serie > 0){
-    S.serie--;
-  } else if(S.iEj > 0){
-    S.iEj--;
-    S.serie = Math.max(0, seriesDe(S.lista[S.iEj], S.iEj) - 1);
-    S.hechos = Math.max(0, S.hechos - 1);
+  S.descansando = false; S.aguantando = false; S.terminada = false; S.viendoLista = false;
+  const i = S.historial.pop();
+  if(i !== S.iEj) irAEjercicio(i);
+  if(S.serie >= seriesDe(S.lista[i], i)) S.hechos = Math.max(0, S.hechos - 1);
+  S.serie = Math.max(0, S.serie - 1);
+  anotarSerieActual();
+  pintarSesion();
+}
+
+/* ---------- Lista de ejercicios dentro de la sesión ---------- */
+function verListaEjercicios(){
+  if(S.tipo === 'cinta' || S.terminada) return;
+  if(S.aguantando){ pararTick(); S.aguantando = false; }
+  S.viendoLista = !S.viendoLista;
+  pintarSesion();
+}
+function elegirEjercicio(i){
+  pararTick();
+  S.descansando = false; S.aguantando = false; S.viendoLista = false;
+  irAEjercicio(i);
+  pintarSesion();
+}
+function volverAEjercicio(i){
+  S.terminada = false;
+  elegirEjercicio(i);
+}
+function pintarListaEjercicios(){
+  const body = document.getElementById('sesBody');
+  const pesos = getPesos();
+  anotarSerieActual();
+  const hechos = S.lista.filter((e, i) => completo(i)).length;
+  document.getElementById('sesCuenta').textContent = hechos + ' de ' + S.lista.length + ' hechos';
+  body.innerHTML =
+    '<h2 class="ses-nombre">Elige máquina</h2>' +
+    '<p class="ses-alias">Si la que toca está ocupada, ve a otra que esté libre. Las que dejes a medias te esperan aquí.</p>' +
+    '<div class="ses-lista-ej">' +
+      S.lista.map((e, i) => {
+        const n = seriesDe(e, i);
+        const h = Math.min(S.hechasPor[i] || 0, n);
+        const hecho = h >= n;
+        const estado = hecho ? 'Hecho' : (h ? h + ' de ' + n + ' series' : n + ' × ' + e.reps);
+        const peso = !e.sinPeso && pesos[e.id] ? ' · ' + pesos[e.id] + ' kg' : '';
+        return '<button class="ses-ej' + (hecho ? ' hecho' : '') + (i === S.iEj ? ' actual' : '') + '"' +
+                 (hecho ? ' disabled' : ' onclick="elegirEjercicio(' + i + ')"') + '>' +
+          '<span class="ses-ej-marca">' + (hecho ? ic('i-check') : (i + 1)) + '</span>' +
+          '<span class="ses-ej-txt"><b>' + esc(e.nombre) + '</b><span>' + esc(estado) + peso + '</span></span>' +
+        '</button>';
+      }).join('') +
+    '</div>' +
+    '<div class="ses-foot"><button class="btn-second" onclick="verListaEjercicios()">Volver a ' +
+      esc(S.lista[S.iEj].nombre.toLowerCase()) + '</button></div>';
+}
+function bloqueFinPendientes(){
+  const quedan = pendientes();
+  if(!quedan.length) return '';
+  return '<div class="ses-quedan"><b>' + (quedan.length === 1 ? 'Te ha quedado uno:' : 'Te han quedado ' + quedan.length + ':') + '</b>' +
+    quedan.map(i => '<button class="btn-second" onclick="volverAEjercicio(' + i + ')">' + esc(S.lista[i].nombre) + '</button>').join('') +
+    '<span>Si ya no te apetece, guárdala así: cuenta como sesión igual.</span></div>';
+}
+function ajustarCabecera(){
+  const b = document.getElementById('sesListaBtn');
+  if(!b) return;
+  b.hidden = S.tipo === 'cinta' || S.terminada || S.lista.length < 2;
+  b.textContent = S.viendoLista ? 'Cerrar lista' : 'Ejercicios';
+}
+
+/* ---------- ¿Cómo ha ido? → cuánto poner la próxima vez ----------
+   La forma de ponerse fuerte en máquinas es simple: cuando las 3×10 te
+   sobran, subes. El problema es acordarse la semana siguiente de si te
+   sobró o no. Se pregunta al acabar cada máquina (tres botones, opcional) y
+   la próxima vez la propia sesión te dice qué peso poner. */
+function getSensaciones(){ const s = loadJSON(K.sensacion, {}); return (s && typeof s === 'object') ? s : {}; }
+function valorar(i, v){
+  const e = S.lista[i];
+  if(!e || e.sinPeso) return;
+  const s = getSensaciones();
+  s[e.id] = { v: v, kg: getPesos()[e.id] || 0, f: hoyKey() };
+  saveJSON(K.sensacion, s);
+  S.valorados[i] = v;
+  pintarSesion();
+}
+/* Rango 10-15, no un 10 fijo. En su primera vuelta al gimnasio hizo 3×15 casi
+   siempre: el 3×10 se le quedaba corto, y parar en 10 cuando salen 15 es tirar
+   el entreno. La regla es la de siempre en máquinas: mismo peso sumando
+   repeticiones, y cuando salen 15 en las tres series, +5 kg y otra vez desde 10. */
+function preguntaSensacion(i){
+  const e = (i === undefined || i === null) ? null : S.lista[i];
+  if(!e || e.sinPeso || !getPesos()[e.id]) return '';
+  const v = S.valorados[i];
+  const op = (clave, txt) => '<button class="' + (v === clave ? 'on' : '') + '" onclick="valorar(' + i + ',&quot;' + clave + '&quot;)">' + txt + '</button>';
+  return '<div class="ses-sensacion"><p>' +
+      (v ? 'Apuntado. La próxima vez te digo qué peso poner.'
+         : '¿Cuántas te han salido en ' + esc(e.nombre.toLowerCase()) + ' con ' + getPesos()[e.id] + ' kg?') + '</p>' +
+    '<div class="ses-sensacion-ops">' + op('sobra', '15 en las tres') + op('justo', 'Entre 10 y 15') + op('corto', 'Menos de 10') + '</div></div>';
+}
+function sugerenciaPeso(e){
+  const s = getSensaciones()[e.id];
+  const actual = getPesos()[e.id];
+  if(!s || !actual || s.kg !== actual) return '';
+  if(s.v === 'sobra'){
+    const nuevo = actual + 5;
+    return '<div class="ses-sugerencia">La última vez sacaste <b>15 en las tres series</b> con ' + actual + ' kg. Toca subir: <b>' + nuevo + ' kg</b>, y vuelves a empezar desde 10.' +
+      '<button class="btn-undo" onclick="aplicarPeso(&quot;' + e.id + '&quot;,' + nuevo + ')">Poner ' + nuevo + ' kg</button></div>';
   }
+  if(s.v === 'corto'){
+    return '<div class="ses-sugerencia">La última vez <b>no llegaste a 10</b> con ' + actual + ' kg. Mismo peso: es normal tardar dos o tres sesiones en sacarlo.</div>';
+  }
+  return '<div class="ses-sugerencia">La última vez hiciste <b>entre 10 y 15</b> con ' + actual + ' kg. Mismo peso, intentando sumar alguna repetición. Cuando salgan 15 en las tres, subes.</div>';
+}
+function aplicarPeso(id, kg){
+  fijarPeso(id, kg);
   pintarSesion();
 }
 
@@ -3022,7 +3279,7 @@ function deshacerSerie(){
    normal deja de ser la salida rápida que pretende ser. */
 function descansoActual(){ return serieUnica() ? 30 : getDescanso(); }
 
-function masDescanso(){ S.finDescanso += 15000; actualizarRing(); }
+function masDescanso(){ S.finDescanso += 15000; actualizarRing(); guardarSesion(); }
 
 function finDescanso(){
   pararTick();
@@ -3034,7 +3291,10 @@ function finDescanso(){
     return;
   }
   const ej = S.lista[S.iEj];
-  if(S.serie >= seriesDe(ej, S.iEj)){ S.iEj++; S.serie = 0; }
+  if(S.serie >= seriesDe(ej, S.iEj)){
+    const sig = siguientePendiente(S.iEj);
+    if(sig === -1) S.terminada = true; else irAEjercicio(sig);
+  }
   pintarSesion();
 }
 
@@ -3091,6 +3351,8 @@ function actualizarRing(forzar){
 function cerrarSesion(){
   S.activa = false;
   pararTick();
+  borrarSesionGuardada();
+  pantallaEncendida(false);
   document.getElementById('sesion').classList.remove('show');
   document.body.classList.remove('sesion-abierta');
 }
@@ -3210,7 +3472,7 @@ function ejercicioHTML(ej, i){
       '</ol></div>' +
       '<div class="ex-check"><b>Va bien si:</b> ' + esc(ej.bien) + '</div>' +
       '<div class="ex-cross"><b>Ojo si:</b> ' + esc(ej.mal) + '</div>' +
-      (!ej.sinPeso ? '<div class="ex-sube"><b>Sube de peso cuando:</b> si en la serie 2 las últimas repeticiones ya no te cuestan, dos sesiones seguidas, pon la siguiente placa o pin la próxima vez. No te quedes parado en el mismo peso solo por costumbre.</div>' : '') +
+      (!ej.sinPeso ? '<div class="ex-sube"><b>Sube de peso cuando:</b> cuando saques 15 repeticiones en las tres series. La próxima vez, la siguiente placa, y otra vez desde 10. No te quedes parado en el mismo peso solo por costumbre.</div>' : '') +
       (ej.alternativa ? '<div class="quiet" style="margin:0;">' + ej.alternativa + '</div>' : '') +
     '</div>' +
   '</details>';
@@ -3463,14 +3725,307 @@ function renderAjustes(){
   renderSyncEstado();
 }
 
-/* Antes esto enseñaba el estado del sync. Ya no hay sync, así que dice lo
-   único que importa saber: dónde están tus datos y cómo moverlos. */
-function renderSyncEstado(){
+/* ---------- Fusión entre dispositivos (funciones puras, sin DOM) ----------
+   `local` y `remoto` tienen la forma { datos: {clave: textoJSON}, marcas: {...} }.
+   Las marcas dicen CUÁNDO se tocó cada cosa:
+     - claves de objeto (registro, pesos, check-in, sensaciones): una hora por
+       subclave → { 'planEjercicioLog': { '2026-09-12': 1757680000000 } }
+     - claves sueltas (días de la semana, descanso, color…): una hora por clave.
+   Una subclave que tiene marca pero ya no tiene valor es un BORRADO: así, si
+   desmarcas un día en el móvil, no vuelve a aparecer al abrir el PC. */
+function jsonEstable(v){
+  if(Array.isArray(v)) return '[' + v.map(jsonEstable).join(',') + ']';
+  if(v && typeof v === 'object'){
+    return '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + jsonEstable(v[k])).join(',') + '}';
+  }
+  return JSON.stringify(v === undefined ? null : v);
+}
+function parsearSeguro(raw, def){
+  if(raw == null) return def;
+  try{ const v = JSON.parse(raw); return v == null ? def : v; }catch(e){ return def; }
+}
+/* Las dos claves que solo crecen: se juntan sin mirar horas. */
+function unirClave(tipo, lr, rr){
+  if(lr == null && rr == null) return null;
+  if(tipo === 'fechas'){
+    const a = parsearSeguro(lr, []), b = parsearSeguro(rr, []);
+    const todas = (Array.isArray(a) ? a : []).concat(Array.isArray(b) ? b : []);
+    return JSON.stringify(Array.from(new Set(todas)).sort());
+  }
+  if(tipo === 'historial'){
+    const a = parsearSeguro(lr, {}), b = parsearSeguro(rr, {});
+    const out = {};
+    new Set(Object.keys(a).concat(Object.keys(b))).forEach(id => {
+      const vistos = {};
+      const lista = [].concat(Array.isArray(a[id]) ? a[id] : [], Array.isArray(b[id]) ? b[id] : [])
+        .filter(p => p && p.f && typeof p.kg === 'number')
+        .filter(p => { const k = p.f + '|' + p.kg; if(vistos[k]) return false; vistos[k] = true; return true; })
+        .sort((x, y) => x.f < y.f ? -1 : x.f > y.f ? 1 : 0);
+      const limpia = lista.filter((p, i) => i === 0 || p.kg !== lista[i - 1].kg).slice(-60);
+      if(limpia.length) out[id] = limpia;
+    });
+    return jsonEstable(out);
+  }
+  return lr != null ? lr : rr;
+}
+function fusionarEstado(local, remoto, cfg){
+  const L = local || {}, R = remoto || {};
+  const ld = L.datos || {}, rd = R.datos || {}, lm = L.marcas || {}, rm = R.marcas || {};
+  const out = { datos:{}, marcas:{} };
+  cfg.todas.forEach(key => {
+    const lr = ld[key], rr = rd[key];
+    if(cfg.union[key]){
+      const v = unirClave(cfg.union[key], lr, rr);
+      if(v != null) out.datos[key] = v;
+      return;
+    }
+    if(cfg.objeto.indexOf(key) !== -1){
+      const lms = (lm[key] && typeof lm[key] === 'object') ? lm[key] : {};
+      const rms = (rm[key] && typeof rm[key] === 'object') ? rm[key] : {};
+      if(lr == null && rr == null && !Object.keys(lms).length && !Object.keys(rms).length) return;
+      const lo = parsearSeguro(lr, {}), ro = parsearSeguro(rr, {});
+      const res = {}, marcas = {};
+      new Set([].concat(Object.keys(lo), Object.keys(ro), Object.keys(lms), Object.keys(rms))).forEach(k => {
+        const lt = lms[k] || 0, rt = rms[k] || 0;
+        const enL = Object.prototype.hasOwnProperty.call(lo, k);
+        const enR = Object.prototype.hasOwnProperty.call(ro, k);
+        if(!lt && !rt){
+          /* Datos de antes de que hubiera marcas: se juntan, y si chocan, gana este dispositivo. */
+          if(enL) res[k] = lo[k]; else if(enR) res[k] = ro[k];
+        } else {
+          const ganaRemoto = rt > lt;
+          if(ganaRemoto ? enR : enL) res[k] = ganaRemoto ? ro[k] : lo[k];
+          marcas[k] = Math.max(lt, rt);
+        }
+      });
+      out.datos[key] = jsonEstable(res);
+      if(Object.keys(marcas).length) out.marcas[key] = marcas;
+      return;
+    }
+    const lt = typeof lm[key] === 'number' ? lm[key] : 0;
+    const rt = typeof rm[key] === 'number' ? rm[key] : 0;
+    const v = rt > lt ? (rr != null ? rr : lr) : (lr != null ? lr : rr);
+    if(v != null) out.datos[key] = v;
+    if(Math.max(lt, rt)) out.marcas[key] = Math.max(lt, rt);
+  });
+  return out;
+}
+/* Sella lo que acaba de cambiar en una escritura: solo las subclaves distintas. */
+function sellarCambio(marcas, key, antesRaw, nuevoRaw, cfg, ahora){
+  if(cfg.todas.indexOf(key) === -1 || cfg.union[key]) return marcas;
+  if(cfg.objeto.indexOf(key) !== -1){
+    const a = parsearSeguro(antesRaw, {}), b = parsearSeguro(nuevoRaw, {});
+    const sub = (marcas[key] && typeof marcas[key] === 'object') ? marcas[key] : {};
+    new Set(Object.keys(a).concat(Object.keys(b))).forEach(k => {
+      if(jsonEstable(a[k]) !== jsonEstable(b[k])) sub[k] = ahora;
+    });
+    marcas[key] = sub;
+  } else if(antesRaw !== nuevoRaw){
+    marcas[key] = ahora;
+  }
+  return marcas;
+}
+
+/* ===================== MÓVIL Y ORDENADOR A LA VEZ =====================
+   Lo que marcabas en el iPhone no aparecía en el PC ni al revés: el sync de
+   Supabase llevaba tiempo muerto y se quitó. Esto lo sustituye con algo que
+   no hay que mantener: un gist secreto de tu cuenta de GitHub, leído y
+   escrito con un token que SOLO tiene permiso sobre gists.
+
+   Cada cambio se sella con la hora: por día en el registro, por máquina en
+   los pesos y por semana en el check-in. Si lo mismo se ha tocado en los dos
+   sitios gana lo más reciente, y borrar también cuenta como cambio. Tema,
+   tamaño de letra y contraste no viajan: cada pantalla tiene los suyos. */
+function estadoLocal(){
+  const datos = {};
+  SYNC_CFG.todas.forEach(k => {
+    try{ const v = localStorage.getItem(k); if(v !== null) datos[k] = v; }catch(e){}
+  });
+  return { datos: datos, marcas: getMarcas() };
+}
+/* Escribe lo fusionado sin volver a sellarlo (si no, cada sincronización
+   marcaría todo como "tocado ahora" y ganaría siempre el último en abrir). */
+function aplicarEstado(est){
+  let cambia = false;
+  sincronizando = true;
+  try{
+    Object.keys(est.datos).forEach(k => {
+      let actual = null;
+      try{ actual = localStorage.getItem(k); }catch(e){}
+      if(actual !== est.datos[k]){ setRaw(k, est.datos[k]); cambia = true; }
+    });
+    setRaw(K.marcas, JSON.stringify(est.marcas || {}));
+  }finally{
+    sincronizando = false;
+  }
+  return cambia;
+}
+function docSync(est){
+  return JSON.stringify({ app:'plan-ejercicio', v:1, actualizado:new Date().toISOString(),
+                          datos: est.datos, marcas: est.marcas }, null, 1);
+}
+async function gh(ruta, opciones){
+  const op = opciones || {};
+  const token = (localStorage.getItem(K.ghToken) || '').trim();
+  const res = await fetch('https://api.github.com' + ruta, {
+    method: op.method || 'GET',
+    cache: 'no-store',
+    keepalive: !!op.keepalive,
+    headers: Object.assign({ 'Accept':'application/vnd.github+json', 'Authorization':'Bearer ' + token },
+                           op.body ? { 'Content-Type':'application/json' } : {}),
+    body: op.body
+  });
+  if(!res.ok){ const e = new Error('GitHub ' + res.status); e.status = res.status; throw e; }
+  return res.status === 204 ? null : res.json();
+}
+/* El primer dispositivo que se conecta crea el gist; los demás lo encuentran
+   buscando el nombre del archivo entre tus gists. */
+async function buscarGist(){
+  let id = null;
+  try{ id = localStorage.getItem(K.gistId); }catch(e){}
+  if(id) return id;
+  for(let pagina = 1; pagina <= 5 && !id; pagina++){
+    const lista = await gh('/gists?per_page=100&page=' + pagina);
+    const g = (lista || []).find(x => x.files && x.files[GIST_ARCHIVO]);
+    if(g) id = g.id;
+    if(!lista || lista.length < 100) break;
+  }
+  if(!id){
+    const g = await gh('/gists', { method:'POST', body: JSON.stringify({
+      description:'Plan de Ejercicio · sincronización entre el móvil y el ordenador',
+      public:false,
+      files:{ [GIST_ARCHIVO]: { content: docSync(estadoLocal()) } }
+    }) });
+    id = g.id;
+  }
+  setRaw(K.gistId, id);
+  return id;
+}
+async function leerRemoto(id){
+  const g = await gh('/gists/' + id);
+  const f = g && g.files && g.files[GIST_ARCHIVO];
+  if(!f) return { datos:{}, marcas:{} };
+  let txt = f.content;
+  if(f.truncated && f.raw_url) txt = await (await fetch(f.raw_url, { cache:'no-store' })).text();
+  const d = parsearSeguro(txt, {});
+  return { datos: d.datos || {}, marcas: d.marcas || {} };
+}
+async function sincronizar(motivo){
+  try{ if(!localStorage.getItem(K.ghToken)) return; }catch(e){ return; }
+  if(sincEnCurso){ subidaPendiente = true; return sincEnCurso; }
+  ultimaSincro = Date.now();
+  sincEnCurso = (async () => {
+    try{
+      const id = await buscarGist();
+      const remoto = await leerRemoto(id);
+      /* Lo local se lee DESPUÉS de la red y sin esperas por medio: si has
+         tocado algo mientras llegaba la respuesta, entra en la fusión. */
+      const fusion = fusionarEstado(estadoLocal(), remoto, SYNC_CFG);
+      const cambiaLocal = aplicarEstado(fusion);
+      if(jsonEstable({ d: remoto.datos, m: remoto.marcas }) !== jsonEstable({ d: fusion.datos, m: fusion.marcas })){
+        await gh('/gists/' + id, { method:'PATCH', keepalive: motivo === 'salir',
+          body: JSON.stringify({ files:{ [GIST_ARCHIVO]: { content: docSync(fusion) } } }) });
+      }
+      setRaw(K.syncOk, String(Date.now()));
+      setRaw(K.syncError, '');
+      if(cambiaLocal) renderTodo();
+    }catch(e){
+      if(e.status === 401 || e.status === 403) setRaw(K.syncError, 'token');
+      else if(e.status === 404){ try{ localStorage.removeItem(K.gistId); }catch(_){} setRaw(K.syncError, 'gist'); }
+      else setRaw(K.syncError, navigator.onLine ? 'red' : 'offline');
+    }finally{
+      sincEnCurso = null;
+      renderSyncEstado();
+      if(subidaPendiente){ subidaPendiente = false; programarSubida(); }
+    }
+  })();
+  return sincEnCurso;
+}
+/* Los cambios se suben un par de segundos después del último toque, para no
+   hacer una petición por cada serie marcada. */
+function programarSubida(){
+  try{ if(!localStorage.getItem(K.ghToken)) return; }catch(e){ return; }
+  clearTimeout(timerSubida);
+  timerSubida = setTimeout(() => { timerSubida = null; sincronizar('cambio'); }, 2500);
+}
+async function conectarSync(){
+  const inp = document.getElementById('inpToken');
+  const t = inp ? inp.value.trim() : '';
+  if(!t){ toast('Pega primero el token'); return; }
+  setRaw(K.ghToken, t);
+  try{ localStorage.removeItem(K.gistId); }catch(e){}
+  setRaw(K.syncError, '');
+  renderSyncEstado('conectando');
+  await sincronizar('conectar');
+  const err = localStorage.getItem(K.syncError);
+  if(err === 'token'){
+    try{ localStorage.removeItem(K.ghToken); }catch(e){}
+    renderSyncEstado();
+    toast('Ese token no funciona');
+  } else if(err){
+    toast('No se ha podido conectar. Mira la conexión');
+  } else {
+    toast('Conectado. A partir de ahora se sincroniza solo');
+  }
+}
+function desconectarSync(){
+  if(!confirm('¿Dejar de sincronizar este dispositivo? Tus datos se quedan aquí igual.')) return;
+  [K.ghToken, K.gistId, K.syncOk, K.syncError].forEach(k => { try{ localStorage.removeItem(k); }catch(e){} });
+  renderSyncEstado();
+}
+async function sincronizarAhora(){
+  await sincronizar('manual');
+  toast(localStorage.getItem(K.syncError) ? 'No se ha podido sincronizar' : 'Sincronizado');
+}
+function haceCuanto(ts){
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if(s < 60) return 'ahora mismo';
+  if(s < 3600) return 'hace ' + Math.floor(s / 60) + ' min';
+  if(s < 86400) return 'hace ' + Math.floor(s / 3600) + ' h';
+  return 'hace ' + Math.floor(s / 86400) + ' días';
+}
+function renderSyncEstado(estado){
   const el = document.getElementById('syncEstado');
   if(!el) return;
-  el.className = 'sync-estado';
-  el.innerHTML = 'Todo lo que marcas se guarda <b>en este dispositivo</b> y no se pierde al cerrar la app. ' +
-    'Para pasarlo a otro móvil o al ordenador, descárgate una copia aquí abajo.';
+  let token = null, err = '', ok = NaN;
+  try{
+    token = localStorage.getItem(K.ghToken);
+    err = localStorage.getItem(K.syncError) || '';
+    ok = parseInt(localStorage.getItem(K.syncOk), 10);
+  }catch(e){}
+
+  if(estado === 'conectando'){
+    el.className = 'sync-estado';
+    el.innerHTML = 'Conectando con GitHub…';
+    return;
+  }
+  if(!token || err === 'token'){
+    el.className = 'sync-estado' + (err === 'token' ? ' mal' : '');
+    el.innerHTML =
+      (err === 'token'
+        ? '<b>El token ya no funciona.</b> Puede que haya caducado o que lo hayas borrado en GitHub. Crea otro y pégalo aquí.'
+        : 'Ahora mismo lo que marcas en el móvil <b>no aparece en el ordenador</b>, ni al revés. Para juntarlos hay que conectar cada dispositivo una vez:') +
+      '<ol class="sync-pasos">' +
+        '<li>En el ordenador, entra en <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a>.</li>' +
+        '<li>Nombre: <b>Plan de Ejercicio</b>. Caducidad: la más larga que te deje.</li>' +
+        '<li>En <b>Permissions → Account permissions</b>, busca <b>Gists</b> y ponlo en <b>Read and write</b>. Nada más.</li>' +
+        '<li>Dale a generar, copia el token y pégalo aquí. Luego pega el mismo en el móvil.</li>' +
+      '</ol>' +
+      '<input type="password" id="inpToken" class="sync-token" placeholder="github_pat_…" autocomplete="off" autocapitalize="off" spellcheck="false">' +
+      '<button class="btn-second" onclick="conectarSync()">' + ic('i-cambiar') + 'Conectar este dispositivo</button>' +
+      '<div class="settings-hint">Ese token solo puede leer y escribir gists: no toca tus repositorios ni nada más de la cuenta. Los datos van a un gist secreto que no sale en tu perfil.</div>';
+    return;
+  }
+  el.className = 'sync-estado' + (err ? ' mal' : '');
+  el.innerHTML =
+    (err === 'offline' ? '<b>Sin conexión.</b> Se sincroniza solo en cuanto vuelva la red.'
+      : err === 'red'  ? '<b>La última sincronización ha fallado.</b> Lo vuelve a intentar solo.'
+      : err === 'gist' ? '<b>No encuentro el archivo de sincronización.</b> Se vuelve a crear en la próxima.'
+      : 'Móvil y ordenador <b>sincronizados</b>' + (isNaN(ok) ? '' : ' · ' + haceCuanto(ok)) + '.') +
+    '<div class="sync-botones">' +
+      '<button class="btn-second" onclick="sincronizarAhora()">Sincronizar ahora</button>' +
+      '<button class="btn-second" onclick="desconectarSync()">Desconectar</button>' +
+    '</div>';
 }
 
 function importarDatos(input){
@@ -3482,7 +4037,7 @@ function importarDatos(input){
     let datos;
     try{ datos = JSON.parse(lector.result); }catch(e){ toast('Ese archivo no se puede leer'); return; }
     if(!datos || typeof datos !== 'object'){ toast('Ese archivo no vale'); return; }
-    const validas = Object.keys(K).map(k => K[k]);
+    const validas = Object.keys(K).map(k => K[k]).filter(v => NO_SE_EXPORTA.indexOf(v) === -1);
     let n = 0;
     /* Se fusiona igual que el sync: restaurar una copia no borra lo de ahora. */
     Object.keys(datos).forEach(clave => {
@@ -3556,7 +4111,8 @@ function compartirProgreso(){
 
 function exportarDatos(){
   const datos = {};
-  Object.keys(K).forEach(k => { const v = localStorage.getItem(K[k]); if(v !== null) datos[K[k]] = v; });
+  Object.keys(K).filter(k => NO_SE_EXPORTA.indexOf(K[k]) === -1)
+    .forEach(k => { const v = localStorage.getItem(K[k]); if(v !== null) datos[K[k]] = v; });
   const blob = new Blob([JSON.stringify(datos, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -3583,6 +4139,108 @@ function toggleTheme(){ toggleThemeManual(); }
     if(localStorage.getItem(K.contraste) === 'si') document.documentElement.classList.add('contraste');
   }catch(e){}
 })();
+
+/* ===================== QUE LA APP NO SE REINICIE =====================
+   Dos cosas te sacaban de la app a mitad de entreno:
+   1. Cada versión nueva se activaba sola y recargaba la página. Arreglado en
+      el service worker: ahora espera a que toques "Actualizar", o a la
+      próxima vez que abras la app desde cero.
+   2. iOS cierra las apps web que llevan un rato en segundo plano, y la sesión
+      en curso vivía solo en memoria. Ahora se guarda en cada cambio y se
+      recupera al volver. Los temporizadores van contra una hora absoluta: un
+      descanso que acabó con la app cerrada se da por acabado al volver.
+   Y fuera de la sesión, si iOS la cerró hace poco, vuelves a la misma pestaña
+   y a la misma altura en vez de aparecer en Hoy. */
+const CAMPOS_SESION = ['activa','tipo','modo','iEj','serie','descansando','finDescanso','hechos',
+  'tanda','tandaObjetivo','cintaExtra','finTanda','pausada','restante',
+  'aguantando','finAguante','segAguante','hechasPor','historial','terminada','valorados','ultimoCompletado'];
+
+function guardarSesion(){
+  if(!S.activa) return;
+  const foto = { guardada: Date.now(), dia: hoyKey(), ids: S.lista.map(e => e.id) };
+  CAMPOS_SESION.forEach(c => { foto[c] = S[c]; });
+  setRaw(K.sesion, JSON.stringify(foto));
+}
+function borrarSesionGuardada(){ try{ localStorage.removeItem(K.sesion); }catch(e){} }
+function restaurarSesion(){
+  const foto = loadJSON(K.sesion, null);
+  if(!foto || !foto.activa) return false;
+  /* Una sesión de ayer, o de hace más de cuatro horas, ya no es "la de ahora". */
+  if(foto.dia !== hoyKey() || Date.now() - foto.guardada > 4 * 3600000){ borrarSesionGuardada(); return false; }
+  const todos = EJERCICIOS_GYM.concat(EJERCICIOS_CASA);
+  const lista = (foto.ids || []).map(id => todos.find(e => e.id === id)).filter(Boolean);
+  if(foto.tipo !== 'cinta' && !lista.length){ borrarSesionGuardada(); return false; }
+  CAMPOS_SESION.forEach(c => { if(foto[c] !== undefined) S[c] = foto[c]; });
+  S.lista = lista;
+  if(!Array.isArray(S.hechasPor) || S.hechasPor.length !== lista.length){
+    S.hechasPor = lista.map((e, i) => i < S.iEj ? seriesDe(e, i) : (i === S.iEj ? S.serie : 0));
+  }
+  if(!Array.isArray(S.historial)) S.historial = [];
+  if(!S.valorados || typeof S.valorados !== 'object') S.valorados = {};
+  S.viendoLista = false; S.tick = null; S.ultimoSeg = -1;
+  abrirSesion();
+  const cintaEnMarcha = S.tipo === 'cinta' && !S.pausada && S.tanda < (S.tandaObjetivo || 2);
+  if(S.aguantando || S.descansando || cintaEnMarcha) arrancarTick();
+  toast('Seguimos donde lo dejaste');
+  return true;
+}
+
+/* Pantalla encendida mientras dura la sesión: con el móvil en la mano entre
+   máquina y máquina, que se apague a los 30 segundos es lo que hace que
+   acabes cerrando la app. iOS la suelta al irse a segundo plano, así que se
+   vuelve a pedir al volver. */
+let wakeLock = null;
+async function pantallaEncendida(encender){
+  try{
+    if(encender){
+      if(wakeLock || !('wakeLock' in navigator) || document.visibilityState !== 'visible') return;
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    } else if(wakeLock){
+      const w = wakeLock;
+      wakeLock = null;
+      await w.release();
+    }
+  }catch(e){ wakeLock = null; }
+}
+
+function guardarVuelta(){
+  if(S.activa) return;
+  let tab = 'hoy';
+  try{ tab = localStorage.getItem(K.tab) || 'hoy'; }catch(e){}
+  setRaw(K.vuelta, JSON.stringify({ tab: tab, y: Math.round(window.scrollY), t: Date.now() }));
+}
+function restaurarVuelta(){
+  const v = loadJSON(K.vuelta, null);
+  if(!v || !v.t || Date.now() - v.t > 30 * 60000 || TABS.indexOf(v.tab) === -1) return false;
+  showTabByName(v.tab);
+  /* Tres intentos a propósito: ya (la pestaña está pintada), en la siguiente
+     vuelta del bucle, y al acabar de cargar (las fuentes pueden cambiar la
+     altura). Con requestAnimationFrame no bastaba: si la página aún no se
+     está pintando, no se ejecuta y te quedabas arriba del todo. */
+  const bajar = () => window.scrollTo(0, v.y || 0);
+  bajar();
+  setTimeout(bajar, 0);
+  window.addEventListener('load', bajar, { once: true });
+  return true;
+}
+/* El navegador intenta restaurar el scroll por su cuenta al recargar y se
+   pelea con lo de arriba. Aquí manda la app. */
+if('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+/* Al irse a segundo plano: guardar todo, y si había cambios esperando para
+   subir, intentarlo ya — puede que iOS no deje hacerlo después. */
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'hidden'){
+    guardarSesion();
+    guardarVuelta();
+    if(timerSubida){ clearTimeout(timerSubida); timerSubida = null; sincronizar('salir'); }
+  } else {
+    if(S.activa) pantallaEncendida(true);
+    if(Date.now() - ultimaSincro > 15000) sincronizar('volver');
+  }
+});
+window.addEventListener('pagehide', () => { guardarSesion(); guardarVuelta(); });
 
 /* ===================== NAVEGACIÓN ===================== */
 function scrollBehavior(){
@@ -3661,12 +4319,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   renderTodo();
+  const sesionRecuperada = restaurarSesion();
 
   /* Prioridad al abrir: lo que diga la dirección (#rutina) por encima de todo,
      porque es lo que permite tener un segundo icono en la pantalla de inicio. */
   const hash = (location.hash || '').replace('#','');
   if(TABS.indexOf(hash) !== -1){
     showTabByName(hash);
+  } else if(!sesionRecuperada && restaurarVuelta()){
+    /* iOS la había cerrado por detrás hace un rato: vuelves adonde estabas. */
   } else if(getInicio() === 'ultima'){
     let tab = 'hoy';
     try{ tab = localStorage.getItem(K.tab) || 'hoy'; }catch(e){}
@@ -3674,6 +4335,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if(!navigator.onLine) showBanner('offlineBanner');
+  sincronizar('abrir');
 });
 
 /* Escape cierra lo que esté abierto, de dentro a fuera. En el móvil no se usa,
@@ -3706,7 +4368,12 @@ function hideBanner(id){ document.getElementById(id).classList.remove('show'); }
 window.addEventListener('online', () => hideBanner('offlineBanner'));
 window.addEventListener('offline', () => showBanner('offlineBanner'));
 
+/* Solo se recarga cuando lo pides tú tocando "Actualizar". Antes cualquier
+   versión nueva recargaba la página sola, también con una sesión a medias. */
+let actualizacionPedida = false;
 function applyUpdate(){
+  actualizacionPedida = true;
+  guardarSesion();
   if(swRegistration && swRegistration.waiting) swRegistration.waiting.postMessage({type:'SKIP_WAITING'});
 }
 if('serviceWorker' in navigator){
@@ -3723,7 +4390,7 @@ if('serviceWorker' in navigator){
   });
   let refreshing = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if(refreshing) return;
+    if(refreshing || !actualizacionPedida) return;
     refreshing = true;
     window.location.reload();
   });

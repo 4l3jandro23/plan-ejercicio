@@ -1,6 +1,6 @@
 /* Al cambiar el contenido de la app, sube este número:
    es lo que hace saltar el aviso de "hay una versión nueva". */
-const CACHE_VERSION = 'plan-ejercicio-v14';
+const CACHE_VERSION = 'plan-ejercicio-v15';
 
 const APP_SHELL = [
   './',
@@ -21,7 +21,9 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_VERSION)
       .then(cache => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
+      /* Sin skipWaiting aquí: la versión nueva espera a que toques "Actualizar"
+         o a que abras la app desde cero. Antes se activaba sola y la página
+         se recargaba en mitad de una sesión. */
   );
 });
 
@@ -42,9 +44,10 @@ self.addEventListener('message', event => {
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
 
-  // Las llamadas a Supabase nunca se cachean: si no hay red, que fallen y
-  // la app siga con los datos locales.
-  if (event.request.url.indexOf('supabase.co') !== -1) return;
+  // Solo se cachea lo de la propia app. Las peticiones a GitHub (la
+  // sincronización) nunca pasan por la caché: una respuesta vieja pisaría
+  // datos nuevos.
+  if (new URL(event.request.url).origin !== self.location.origin) return;
 
   event.respondWith(
     caches.match(event.request).then(cached => {
