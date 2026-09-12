@@ -1197,6 +1197,14 @@
     <div class="quiet" style="margin-top:22px;">
       <b>Descanso entre series:</b> de 60 a 90 segundos. Si usas la sesión guiada, el tiempo lo cuenta ella y no tienes que pensarlo.
     </div>
+
+    <h3 style="margin-top:26px;">Cerrar con cinta — 15 minutos</h3>
+    <p style="font-size:var(--t-base); margin-top:0;">
+      Al acabar los 6 ejercicios, cuesta arriba en la cinta 15 minutos. Con tu base aeróbica de sobra te lo permite, y así una sola visita al gimnasio hace fuerza y cardio a la vez, en vez de repartirlo en dos días distintos. En la sesión guiada te sale el botón nada más terminar el último ejercicio — no hay que hacer nada aparte, solo seguir.
+    </p>
+    <div class="quiet">
+      Este cierre es aparte de los días marcados como "cinta" en tu semana: esos son días sin fuerza, para cuando no tienes el rato entero. Aquí es al revés — fuerza completa y cinta el mismo día, porque puedes con las dos.
+    </div>
   </div>
 
   <div id="vistaCasa" style="display:none;">
@@ -1656,7 +1664,8 @@ const K = {
   log:'planEjercicioLog', check:'planEjercicioCheckins', lugar:'planEjercicioLugar',
   pesos:'planEjercicioPesos', descanso:'planEjercicioDescanso', tab:'planEjercicioTab',
   sonido:'planEjercicioSonido', tam:'planEjercicioTam', contraste:'planEjercicioContraste',
-  tono:'planEjercicioTono', inicio:'planEjercicioInicio', sync:'planEjercicioUltimoSync'
+  tono:'planEjercicioTono', inicio:'planEjercicioInicio', sync:'planEjercicioUltimoSync',
+  cintaExtra:'planEjercicioCintaExtra'
 };
 const DIAS_CORTOS = ['D','L','M','X','J','V','S'];
 const DIAS_LARGOS = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
@@ -1719,7 +1728,14 @@ function contarTipo(tipos){
   return Object.keys(log).filter(k => tipos.indexOf(log[k]) !== -1).length;
 }
 function sesionesFuerza(){ return contarTipo(['fuerza','minima']); }
-function sesionesCinta(){ return contarTipo(['cinta']); }
+/* Un día en el log solo lleva UNA etiqueta, y la cinta pegada al final de la
+   fuerza se guarda como 'fuerza' (así cuenta para la progresión de series).
+   Si sesionesCinta() solo mirara esa etiqueta, alguien que siempre cierra con
+   cinta se quedaría en nivel 1 para siempre — "no es el entreno de verdad
+   todavía" — aunque lleve meses haciendo los 15 minutos cuesta arriba de
+   verdad. Por eso se lleva aparte un contador de esas cintas "de propina". */
+function diasCintaExtra(){ const l = loadJSON(K.cintaExtra, []); return Array.isArray(l) ? l : []; }
+function sesionesCinta(){ return contarTipo(['cinta']) + diasCintaExtra().length; }
 
 /* Series: 2 al principio, 3 en los tres ejercicios grandes a partir de la 5ª
    sesión. El salto de intensidad de verdad no está aquí, está en el peso. */
@@ -2573,7 +2589,7 @@ function cerrarRespira(){
 const S = {
   activa:false, tipo:'fuerza', modo:'fuerza', lista:[], iEj:0, serie:0,
   descansando:false, finDescanso:0, tick:null, hechos:0,
-  tanda:0, finTanda:0, pausada:false, restante:0, ultimoSeg:-1
+  tanda:0, tandaObjetivo:2, cintaExtra:false, finTanda:0, pausada:false, restante:0, ultimoSeg:-1
 };
 const TANDA_MIN = 15;
 const DESCANSO_TANDAS = 120;   // 2 min entre las dos tandas de cinta
@@ -2595,9 +2611,24 @@ function serieUnica(){ return S.modo === 'express' || S.modo === 'viaje'; }
 
 function empezarCinta(){
   S.tipo = 'cinta'; S.modo = 'cinta'; S.activa = true; S.hechos = 0;
-  S.tanda = 0; S.descansando = false; S.pausada = false;
+  S.tanda = 0; S.tandaObjetivo = 2; S.cintaExtra = false;
+  S.descansando = false; S.pausada = false;
   S.finTanda = Date.now() + TANDA_MIN * 60000;
   abrirSesion();
+  arrancarTick();
+}
+
+/* Seguir con cinta justo al acabar la fuerza, en la misma visita al gimnasio.
+   No es un día de cinta aparte: es una tanda de 15 minutos pegada al final de
+   la sesión de fuerza, y al guardar sigue contando como sesión de fuerza (la
+   progresión de series se basa en sesiones de fuerza, no se pierde nada). */
+function seguirConCinta(){
+  S.tipo = 'cinta'; S.cintaExtra = true;
+  S.tanda = 0; S.tandaObjetivo = 1;
+  S.descansando = false; S.pausada = false;
+  S.finTanda = Date.now() + TANDA_MIN * 60000;
+  pito('tanda');
+  pintarSesion();
   arrancarTick();
 }
 
@@ -2612,8 +2643,12 @@ function abrirSesion(){
 function salirSesion(){
   pararTick();
   if(S.hechos > 0 && !getLog()[hoyKey()]){
-    /* Salió a medias pero hizo algo: cuenta, y cuenta sin preguntar nada. */
-    const tipo = S.tipo === 'cinta' ? 'cinta'
+    /* Salió a medias pero hizo algo: cuenta, y cuenta sin preguntar nada.
+       Si ya había acabado los 6 ejercicios y se fue a media cinta de propina,
+       los 6 ejercicios siguen siendo lo que se guarda: es sesión de fuerza,
+       no cinta a medias. */
+    const tipo = S.cintaExtra ? 'fuerza'
+               : S.tipo === 'cinta' ? 'cinta'
                : (S.hechos >= S.lista.length ? tipoDeModo() : 'minima');
     marcar(tipo, true);
     toast('Guardado. Lo que has hecho cuenta.');
@@ -2648,6 +2683,12 @@ function pintarSesion(){
           ? 'Ocho minutos en un día malo valen más que una sesión perfecta dentro de dos semanas. Cuenta igual que cualquier otra.'
           : T('Ya está. No hay nada más que rellenar ni que apuntar en ningún sitio.', 'Guardado.')) + '</p>' +
         '<button class="btn-main" onclick="terminarSesion()">Guardar y salir</button>' +
+        /* Solo en sesión completa y en el gimnasio: es donde de verdad hay
+           cinta. Lo pidió él directamente — quiere cinta y fuerza en la misma
+           visita, no repartidas en días separados. */
+        (S.modo === 'fuerza' && getLugar() === 'gym'
+          ? '<button class="btn-second" onclick="seguirConCinta()">' + ic('i-cinta') + ' Seguir con 15 min de cinta</button>'
+          : '') +
       '</div>';
     return;
   }
@@ -2737,21 +2778,27 @@ function anilloHTML(valor){
 function pintarCinta(){
   const body = document.getElementById('sesBody');
   const niv = nivelCinta();
+  const objetivo = S.tandaObjetivo || 2;
 
-  if(S.tanda >= 2){
+  if(S.tanda >= objetivo){
     document.getElementById('sesCuenta').textContent = '';
     document.getElementById('sesBarra').style.width = '100%';
-    body.innerHTML =
-      '<div class="ses-fin">' +
-        '<span class="emo">' + ic('i-check','ic-lg') + '</span><h3>30 minutos de cinta</h3>' +
-        '<p>Media hora andando en cuesta. Eso es exactamente lo que más le conviene ahora mismo a tu colesterol.</p>' +
-        '<button class="btn-main" onclick="terminarCinta()">Guardar y salir</button>' +
-      '</div>';
+    body.innerHTML = S.cintaExtra
+      ? '<div class="ses-fin">' +
+          '<span class="emo">' + ic('i-check','ic-lg') + '</span><h3>Fuerza + cinta hechas</h3>' +
+          '<p>La rutina completa y 15 minutos de cuesta encima. Esta es tu sesión de verdad, no una versión reducida.</p>' +
+          '<button class="btn-main" onclick="terminarCintaExtra()">Guardar y salir</button>' +
+        '</div>'
+      : '<div class="ses-fin">' +
+          '<span class="emo">' + ic('i-check','ic-lg') + '</span><h3>30 minutos de cinta</h3>' +
+          '<p>Media hora andando en cuesta. Eso es exactamente lo que más le conviene ahora mismo a tu colesterol.</p>' +
+          '<button class="btn-main" onclick="terminarCinta()">Guardar y salir</button>' +
+        '</div>';
     return;
   }
 
-  document.getElementById('sesCuenta').textContent = 'Tanda ' + (S.tanda+1) + ' de 2 · nivel ' + niv.n;
-  const hechoAntes = S.tanda * 50;
+  document.getElementById('sesCuenta').textContent = 'Tanda ' + (S.tanda+1) + ' de ' + objetivo + ' · nivel ' + niv.n;
+  const hechoAntes = Math.round(S.tanda / objetivo * 100);
   document.getElementById('sesBarra').style.width = hechoAntes + '%';
 
   if(S.descansando){
@@ -2803,7 +2850,7 @@ function finTanda(){
   S.pausada = false;
   S.tanda++;
   S.hechos++;
-  if(S.tanda >= 2){ pintarCinta(); return; }
+  if(S.tanda >= (S.tandaObjetivo || 2)){ pintarCinta(); return; }
   S.descansando = true;
   S.finDescanso = Date.now() + DESCANSO_TANDAS * 1000;
   arrancarTick();
@@ -2815,6 +2862,24 @@ function terminarCinta(){
   marcar('cinta', true);
   cerrarSesion();
   toast('Cinta hecha');
+  showTabByName('hoy');
+}
+
+/* Cierre de la cinta pegada al final de la fuerza: el día se guarda como
+   'fuerza', no como 'cinta' — la sesión ya se ganó ese tipo con los 6
+   ejercicios, y es lo que cuenta para la progresión a 4 series tras 12
+   sesiones. La cinta hecha de verdad se apunta aparte, para que también
+   cuente en la progresión de nivel de cinta (ver sesionesCinta()). */
+function registrarCintaExtra(){
+  const key = hoyKey();
+  const dias = diasCintaExtra();
+  if(dias.indexOf(key) === -1){ dias.push(key); saveJSON(K.cintaExtra, dias); }
+}
+function terminarCintaExtra(){
+  registrarCintaExtra();
+  marcar('fuerza', true);
+  cerrarSesion();
+  toast('Fuerza + cinta hechas');
   showTabByName('hoy');
 }
 
