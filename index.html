@@ -702,6 +702,10 @@
   .ses-prepara{margin-top:6px; font-size:var(--t-xs); color:var(--muted); text-align:center;}
   .ses-prepara b{color:var(--ink);}
   .pesos-lista .sube{font-size:var(--t-xs); color:var(--muted); font-weight:700;}
+  .entrenos-total{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; margin:0 0 14px;}
+  .entrenos-total div{background:var(--card); border:1px solid var(--border); border-radius:var(--r-sm); padding:10px 6px; display:flex; flex-direction:column; align-items:center; text-align:center;}
+  .entrenos-total b{font-family:var(--font-mono); font-size:var(--t-md); color:var(--accent); line-height:1.15;}
+  .entrenos-total span{font-size:var(--t-2xs); color:var(--muted);}
   .spark{display:block; width:100%; max-width:150px; height:20px; margin-top:5px; overflow:visible;}
   .spark polyline{fill:none; stroke:var(--accent); stroke-width:2; vector-effect:non-scaling-stroke; stroke-linejoin:round; stroke-linecap:round;}
   .pesos-lista td small{display:block; font-size:var(--t-2xs); color:var(--muted); font-weight:400; margin-top:1px;}
@@ -3453,7 +3457,7 @@ function guardarEntreno(tipo){
   }
   todos[hoyKey()] = foto;
   const fechas = Object.keys(todos).sort();
-  while(fechas.length > 150) delete todos[fechas.shift()];
+  while(fechas.length > 1000) delete todos[fechas.shift()];
   saveJSON(K.entrenos, todos);
 }
 /* Peso de la vez anterior en esa máquina (de antes de hoy). */
@@ -3484,6 +3488,23 @@ function resumenFinHTML(){
 
 /* En Semana: las últimas sesiones con lo que hiciste en cada una. */
 const REPS_TXT = { sobra:'15 en las tres', justo:'entre 10 y 15', corto:'menos de 10' };
+/* Lo acumulado desde que se apunta el registro. Son números que solo crecen. */
+function totalesEntrenosHTML(todos){
+  let min = 0, series = 0, n = 0;
+  Object.keys(todos).forEach(f => {
+    const e = todos[f] || {};
+    n++;
+    min += (e.min || 0) + (e.cinta && !e.min ? e.cinta : 0);
+    (Array.isArray(e.ej) ? e.ej : []).forEach(x => { series += (x.s || 0); });
+  });
+  if(!n) return '';
+  const horas = Math.floor(min / 60), resto = min % 60;
+  const tiempo = horas ? horas + ' h' + (resto ? ' ' + resto + ' min' : '') : resto + ' min';
+  const dato = (b, txt) => '<div><b>' + b + '</b><span>' + txt + '</span></div>';
+  return '<div class="entrenos-total">' +
+    dato(tiempo, 'entrenando') + dato(series, 'series') + dato(n, n === 1 ? 'sesión' : 'sesiones') +
+  '</div>';
+}
 function renderEntrenos(){
   const el = document.getElementById('ultimosEntrenos');
   if(!el) return;
@@ -3495,6 +3516,7 @@ function renderEntrenos(){
   el.innerHTML =
     '<h2 style="margin-top:36px;"><span class="h2-badge">' + ic('i-nota') + '</span>Tus últimas sesiones</h2>' +
     '<p class="lead">Qué hiciste y con cuánto peso. Se apunta solo al cerrar cada sesión.</p>' +
+    totalesEntrenosHTML(todos) +
     fechas.map(f => {
       const e = todos[f] || {};
       const d = desdeKey(f);
@@ -3559,6 +3581,11 @@ function arrancarTick(){
       }
       return;
     }
+    /* Tres tics cortos en los últimos segundos del descanso: da tiempo a
+       coger el agarre antes del pitido de seguir, sin mirar la pantalla. */
+    const quedanSeg = Math.ceil((objetivo - Date.now()) / 1000);
+    if(quedanSeg > 3) S.ultimoAviso = 0;
+    else if(S.descansando && S.tipo !== 'cinta' && quedanSeg !== S.ultimoAviso){ S.ultimoAviso = quedanSeg; pito('cuenta'); }
     actualizarRing();
   }, 250);
 }
@@ -3668,13 +3695,15 @@ function prepararSonido(){
 const PITOS = {
   seguir: [{f:880, t:0, d:0.14}, {f:880, t:0.18, d:0.14}],
   tanda:  [{f:660, t:0, d:0.13}, {f:880, t:0.16, d:0.13}, {f:1100, t:0.32, d:0.20}],
-  fin:    [{f:1100, t:0, d:0.18}, {f:880, t:0.22, d:0.18}, {f:587, t:0.46, d:0.42}]
+  fin:    [{f:1100, t:0, d:0.18}, {f:880, t:0.22, d:0.18}, {f:587, t:0.46, d:0.42}],
+  cuenta: [{f:660, t:0, d:0.07}]
 };
 function pito(cual){
   const notas = PITOS[cual] || PITOS.seguir;
   /* Si no hay sonido, el aviso tiene que ser visible: la pantalla parpadea. */
-  if(getSonido() === 'no'){ destello(); return; }
-  try{ if(navigator.vibrate) navigator.vibrate([120,60,120]); }catch(e){}
+  /* La cuenta atrás es un tic suave: ni vibra ni hace parpadear la pantalla. */
+  if(getSonido() === 'no'){ if(cual !== 'cuenta') destello(); return; }
+  try{ if(cual !== 'cuenta' && navigator.vibrate) navigator.vibrate([120,60,120]); }catch(e){}
   if(!audioCtx){ destello(); return; }
   try{
     const t0 = audioCtx.currentTime;
