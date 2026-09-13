@@ -723,6 +723,8 @@
   .ses-body{flex:1; display:flex; flex-direction:column;}
   .ses-nombre{font-family:var(--font-display); font-weight:600; font-size:var(--t-2xl); letter-spacing:-.5px; line-height:1.15; margin:0 0 4px;}
   .ses-alias{font-family:var(--font-mono); font-size:var(--t-xs); color:var(--muted); margin:0 0 20px;}
+  .ses-ultima{margin:-12px 0 18px; font-size:var(--t-xs); color:var(--muted);}
+  .ses-ultima b{color:var(--ink);}
   .ses-pasos{margin:0 0 20px; padding-left:20px; font-size:var(--t-base);}
   .ses-pasos li{margin-bottom:8px;}
   .ses-recuerda{border-left:3px solid var(--accent); background:var(--accent-soft); border-radius:var(--r-sm); padding:11px 14px; font-size:var(--t-sm); margin:0 0 20px;}
@@ -2383,6 +2385,13 @@ function renderHoy(){
   const primeraVez = totalSesiones() === 0;
   const reentrada = enReentrada();
   const enCasa = getLugar() === 'casa';
+  /* Ya ha entrenado hoy: el aviso de aforo y los botones de "está lleno /
+     hoy no voy" ya no le sirven de nada, y empujaban lo importante abajo. */
+  const yaEntreno = esSesion(marcado);
+  const cajaAforo = document.getElementById('hoyAforo');
+  if(cajaAforo && yaEntreno) cajaAforo.innerHTML = '';
+  const filaSos = document.getElementById('sosRow');
+  if(filaSos) filaSos.style.display = yaEntreno ? 'none' : '';
 
   const fechaTxt = DIAS_LARGOS[hoy.getDay()] + ', ' + hoy.getDate() + ' de ' + MESES[hoy.getMonth()];
 
@@ -2411,6 +2420,13 @@ function renderHoy(){
   } else if(reentrada && tipo !== 'libre'){
     titulo = 'Qué bien verte';
     sub = 'Empezamos por la sesión mínima: los 3 primeros ejercicios, peso bajo, 15 minutos. Sin más.';
+  }
+
+  /* Antes, un domingo en que había entrenado seguía diciendo "Hoy no toca
+     nada · Día libre" encima de "Sesión de fuerza hecha". */
+  if(yaEntreno){
+    titulo = 'Hoy ya has entrenado';
+    sub = resumenEntrenoTxt(getEntrenos()[key]) || 'Lo de hoy ya está guardado. Descansar ahora también es parte del plan.';
   }
 
   document.getElementById('hoyHero').innerHTML =
@@ -2905,6 +2921,7 @@ function pintarSesionDentro(){
   body.innerHTML =
     '<h2 class="ses-nombre">' + esc(ej.nombre) + '</h2>' +
     '<p class="ses-alias">' + esc(ej.alias) + ' · ' + esc(ej.reps) + '</p>' +
+    ultimaVezHTML(ej) +
     '<div class="ses-recuerda"><b>Lo único que importa:</b> ' + esc(ej.clave) + '</div>' +
     '<ol class="ses-pasos">' + ej.pasos.map(p => '<li>' + esc(p) + '</li>').join('') + '</ol>' +
     alt + bloquePeso +
@@ -3308,6 +3325,33 @@ function sugerenciaPeso(e){
 function aplicarPeso(id, kg){
   fijarPeso(id, kg);
   pintarSesion();
+}
+
+/* Qué hiciste en esta máquina la vez anterior, sacado del registro de
+   sesiones. Delante de la máquina es el dato que de verdad hace falta. */
+function ultimaVezHTML(ej){
+  if(!ej) return '';
+  const todos = getEntrenos();
+  const hoy = hoyKey();
+  const fechas = Object.keys(todos).filter(f => f < hoy).sort().reverse();
+  for(const f of fechas){
+    const x = (Array.isArray(todos[f].ej) ? todos[f].ej : []).find(y => y.id === ej.id);
+    if(!x) continue;
+    const d = desdeKey(f);
+    const partes = [x.kg ? x.kg + ' kg' : '', x.s + (x.s === 1 ? ' serie' : ' series'),
+                    x.v && REPS_TXT[x.v] ? REPS_TXT[x.v] : ''].filter(Boolean);
+    return '<div class="ses-ultima">La última vez (' + DIAS_LARGOS[d.getDay()] + ' ' + d.getDate() + '): <b>' +
+      esc(partes.join(' · ')) + '</b></div>';
+  }
+  return '';
+}
+function resumenEntrenoTxt(e){
+  if(!e) return '';
+  const lista = Array.isArray(e.ej) ? e.ej : [];
+  const series = lista.reduce((a, x) => a + (x.s || 0), 0);
+  const partes = [e.min ? e.min + ' minutos' : '', series ? series + ' series' : '', e.cinta ? e.cinta + ' min de cinta' : ''];
+  const txt = partes.filter(Boolean).join(' · ');
+  return txt ? txt + '. Lo tienes entero en Semana.' : '';
 }
 
 /* ---------- Cómo dejas cada máquina ----------
