@@ -699,6 +699,8 @@
   .ses-subidas{margin:10px 0 4px; padding:11px 13px; border-radius:var(--r-sm); background:var(--accent-soft); text-align:left; font-size:var(--t-sm);}
   .ses-subidas ul{margin:6px 0 0; padding-left:18px;}
   .ses-subidas li{margin:2px 0;}
+  .spark{display:block; width:100%; max-width:150px; height:20px; margin-top:5px; overflow:visible;}
+  .spark polyline{fill:none; stroke:var(--accent); stroke-width:2; vector-effect:non-scaling-stroke; stroke-linejoin:round; stroke-linecap:round;}
   .pesos-lista td small{display:block; font-size:var(--t-2xs); color:var(--muted); font-weight:400; margin-top:1px;}
   details.entreno{margin-bottom:8px;}
 
@@ -2542,6 +2544,19 @@ function avisosHTML(tipo, marcado){
 /* Lo único de la app que mide fuerza en bruto. Solo números que no bajan:
    con cuánto empezaste y tu mejor marca. Si un día bajas el peso (vuelta de un
    parón, mal día, lo que sea) esto no se entera y no te lo recuerda. */
+/* Una línea pequeña por máquina con la MEJOR marca hasta cada fecha: solo
+   sube o se queda plana, nunca baja. Misma regla que la tabla. */
+function lineaProgresoSVG(lista){
+  if(!Array.isArray(lista) || lista.length < 2) return '';
+  let mejor = 0;
+  const vals = lista.map(p => (mejor = Math.max(mejor, p.kg)));
+  const min = vals[0], max = vals[vals.length - 1];
+  if(max <= min) return '';
+  const puntos = vals.map((v, i) =>
+    (i / (vals.length - 1) * 100).toFixed(1) + ',' + (21 - (v - min) / (max - min) * 18).toFixed(1)).join(' ');
+  return '<svg class="spark" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true">' +
+    '<polyline points="' + puntos + '"></polyline></svg>';
+}
 function renderProgresoPesos(){
   const el = document.getElementById('progresoPesos');
   if(!el) return;
@@ -2552,7 +2567,7 @@ function renderProgresoPesos(){
     const primero = lista[0].kg;
     const mejor = lista.reduce((m, p) => Math.max(m, p.kg), 0);
     if(mejor <= primero) return '';
-    return '<tr><td>' + esc(e.nombre) + '</td>' +
+    return '<tr><td>' + esc(e.nombre) + lineaProgresoSVG(lista) + '</td>' +
            '<td><span style="color:var(--muted); font-weight:400;">' + primero + '</span> → ' + mejor + ' kg</td></tr>';
   }).filter(Boolean).join('');
 
