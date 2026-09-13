@@ -685,6 +685,22 @@
     font-size:var(--t-sm); color:var(--ink); line-height:1.45; text-align:left;
   }
   .ses-sugerencia .btn-undo{display:block; padding:8px 0 0;}
+  .ses-ajuste{display:flex; align-items:center; gap:10px; margin:-10px 0 20px; padding:0 4px;}
+  .ses-ajuste span{font-size:var(--t-2xs); color:var(--muted); text-transform:uppercase; letter-spacing:.7px; font-weight:700; white-space:nowrap;}
+  .ses-ajuste input{
+    flex:1; min-width:0; font-family:inherit; font-size:16px; color:var(--ink); background:transparent;
+    border:none; border-bottom:1px dashed var(--border); padding:8px 2px; border-radius:0;
+  }
+  .ses-ajuste input:focus{outline:none; border-bottom:1px solid var(--accent);}
+  .ses-resumen{display:grid; grid-template-columns:repeat(auto-fit, minmax(0, 1fr)); gap:8px; margin:16px 0 4px;}
+  .ses-resumen div{background:var(--card); border:1px solid var(--border); border-radius:var(--r-sm); padding:10px 4px; display:flex; flex-direction:column; align-items:center;}
+  .ses-resumen b{font-family:var(--font-mono); font-size:var(--t-lg); color:var(--accent); line-height:1.1;}
+  .ses-resumen span{font-size:var(--t-2xs); color:var(--muted);}
+  .ses-subidas{margin:10px 0 4px; padding:11px 13px; border-radius:var(--r-sm); background:var(--accent-soft); text-align:left; font-size:var(--t-sm);}
+  .ses-subidas ul{margin:6px 0 0; padding-left:18px;}
+  .ses-subidas li{margin:2px 0;}
+  .pesos-lista td small{display:block; font-size:var(--t-2xs); color:var(--muted); font-weight:400; margin-top:1px;}
+  details.entreno{margin-bottom:8px;}
 
   /* ===== Sincronización ===== */
   .sync-pasos{margin:10px 0; padding-left:20px; color:var(--ink); line-height:1.55;}
@@ -1446,6 +1462,8 @@
        sitio de la app que enseña fuerza bruta, y a propósito solo enseña
        números que no pueden bajar: con cuánto empezaste y tu mejor marca. -->
   <div id="progresoPesos"></div>
+  <!-- Registro de sesiones: se rellena solo al cerrar cada una. -->
+  <div id="ultimosEntrenos"></div>
 
   <h2 style="margin-top:36px;"><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-nota"/></svg></span>Check-in de la semana</h2>
   <p class="lead">Opcional y una vez por semana como mucho. Si lo saltas no pasa nada, no hay nada que rellenar ni recuperar.</p>
@@ -1728,15 +1746,17 @@ const K = {
   cintaExtra:'planEjercicioCintaExtra', pesosHist:'planEjercicioPesosHist',
   sensacion:'planEjercicioSensacion', sesion:'planEjercicioSesionActiva', vuelta:'planEjercicioVuelta',
   marcas:'planEjercicioMarcas', ghToken:'planEjercicioGhToken', gistId:'planEjercicioGistId',
-  syncOk:'planEjercicioSyncOk', syncError:'planEjercicioSyncError'
+  syncOk:'planEjercicioSyncOk', syncError:'planEjercicioSyncError',
+  entrenos:'planEjercicioEntrenos', ajustesMaq:'planEjercicioAjustesMaquina'
 };
 /* Qué viaja entre el móvil y el ordenador, y cómo se junta (ver fusionarEstado).
    Tema, tamaño de letra, contraste y 'al abrir la app' se quedan en cada
    dispositivo a propósito: el iPhone y el PC no tienen por qué verse igual. */
 const SYNC_CFG = {
   todas: [K.color, K.dias, K.lugar, K.descanso, K.sonido, K.tono,
-          K.log, K.pesos, K.check, K.sensacion, K.cintaExtra, K.pesosHist],
-  objeto: [K.log, K.pesos, K.check, K.sensacion],
+          K.log, K.pesos, K.check, K.sensacion, K.cintaExtra, K.pesosHist,
+          K.entrenos, K.ajustesMaq],
+  objeto: [K.log, K.pesos, K.check, K.sensacion, K.entrenos, K.ajustesMaq],
   union: { [K.cintaExtra]: 'fechas', [K.pesosHist]: 'historial' }
 };
 /* Lo que nunca sale del dispositivo, ni en la copia descargada: el token de
@@ -2534,14 +2554,16 @@ function renderPesosRapido(){
   const el = document.getElementById('hoyPesos');
   if(!el) return;
   const pesos = getPesos();
+  const ajustes = getAjustesMaq();
   const lista = EJERCICIOS_GYM.filter(e => !e.sinPeso);
-  if(getLugar() !== 'gym' || !lista.some(e => pesos[e.id])){ el.innerHTML = ''; return; }
+  if(getLugar() !== 'gym' || !lista.some(e => pesos[e.id] || ajustes[e.id])){ el.innerHTML = ''; return; }
   const filas = lista.map(e =>
-    '<tr' + (pesos[e.id] ? '' : ' class="vacio"') + '><td>' + esc(e.nombre) + '</td>' +
+    '<tr' + (pesos[e.id] ? '' : ' class="vacio"') + '><td>' + esc(e.nombre) +
+      (ajustes[e.id] ? '<small>' + esc(ajustes[e.id]) + '</small>' : '') + '</td>' +
     '<td>' + (pesos[e.id] ? pesos[e.id] + ' kg' : '—') + '</td></tr>'
   ).join('');
   el.innerHTML =
-    '<details style="margin-top:20px;"><summary><span class="ex-head">Qué peso pusiste la última vez</span></summary>' +
+    '<details style="margin-top:20px;"><summary><span class="ex-head">Pesos y ajustes de la última vez</span></summary>' +
     '<div class="content"><table class="pesos-lista">' + filas + '</table>' +
     '<p style="font-size:var(--t-xs); color:var(--muted); margin:6px 0 0;">Se cambia dentro de la sesión guiada, en cada ejercicio.</p>' +
     '</div></details>';
@@ -2716,7 +2738,8 @@ const S = {
   descansando:false, finDescanso:0, tick:null, hechos:0,
   tanda:0, tandaObjetivo:2, cintaExtra:false, finTanda:0, pausada:false, restante:0, ultimoSeg:-1,
   aguantando:false, finAguante:0, segAguante:0,
-  hechasPor:[], historial:[], terminada:false, valorados:{}, ultimoCompletado:null, viendoLista:false
+  hechasPor:[], historial:[], terminada:false, valorados:{}, ultimoCompletado:null, viendoLista:false,
+  inicio:0
 };
 const TANDA_MIN = 15;
 const DESCANSO_TANDAS = 120;   // 2 min entre las dos tandas de cinta
@@ -2732,6 +2755,7 @@ function empezarSesion(modo){
   S.modo = modo; S.iEj = 0; S.serie = 0; S.activa = true; S.descansando = false; S.aguantando = false; S.hechos = 0;
   S.hechasPor = S.lista.map(() => 0); S.historial = []; S.terminada = false;
   S.valorados = {}; S.ultimoCompletado = null; S.viendoLista = false;
+  S.inicio = Date.now();
   abrirSesion();
 }
 /* En express y viaje, una sola serie por ejercicio: el objetivo es haber ido,
@@ -2743,6 +2767,7 @@ function empezarCinta(){
   S.tanda = 0; S.tandaObjetivo = 2; S.cintaExtra = false;
   S.descansando = false; S.pausada = false;
   S.finTanda = Date.now() + TANDA_MIN * 60000;
+  S.inicio = Date.now();
   abrirSesion();
   arrancarTick();
 }
@@ -2772,14 +2797,16 @@ function abrirSesion(){
 
 function salirSesion(){
   pararTick();
+  /* Si ya había acabado los 6 ejercicios y se fue a media cinta de propina,
+     los 6 ejercicios siguen siendo lo que se guarda: es sesión de fuerza,
+     no cinta a medias. */
+  const tipo = S.cintaExtra ? 'fuerza'
+             : S.tipo === 'cinta' ? 'cinta'
+             : (S.hechos >= S.lista.length ? tipoDeModo() : 'minima');
+  /* Lo que haya hecho queda apuntado aunque sean dos series sueltas. */
+  guardarEntreno(tipo);
   if(S.hechos > 0 && !getLog()[hoyKey()]){
-    /* Salió a medias pero hizo algo: cuenta, y cuenta sin preguntar nada.
-       Si ya había acabado los 6 ejercicios y se fue a media cinta de propina,
-       los 6 ejercicios siguen siendo lo que se guarda: es sesión de fuerza,
-       no cinta a medias. */
-    const tipo = S.cintaExtra ? 'fuerza'
-               : S.tipo === 'cinta' ? 'cinta'
-               : (S.hechos >= S.lista.length ? tipoDeModo() : 'minima');
+    /* Salió a medias pero hizo algo: cuenta, y cuenta sin preguntar nada. */
     marcar(tipo, true);
     toast('Guardado. Lo que has hecho cuenta.');
   }
@@ -2820,6 +2847,7 @@ function pintarSesionDentro(){
         '<p>' + (S.modo === 'express'
           ? 'Ocho minutos en un día malo valen más que una sesión perfecta dentro de dos semanas. Cuenta igual que cualquier otra.'
           : T('Ya está. No hay nada más que rellenar ni que apuntar en ningún sitio.', 'Guardado.')) + '</p>' +
+        resumenFinHTML() +
         bloqueFinPendientes() + preguntaSensacion(S.ultimoCompletado) +
         '<button class="btn-main" onclick="terminarSesion()">Guardar y salir</button>' +
         /* Solo en sesión completa y en el gimnasio: es donde de verdad hay
@@ -2869,7 +2897,7 @@ function pintarSesionDentro(){
           'placeholder="kg" onchange="fijarPeso(\'' + ej.id + '\', this.value)" aria-label="Peso en kilos">' +
         '<button onclick="cambiarPeso(\'' + ej.id + '\',1)" aria-label="Subir peso">' + ic('i-mas') + '</button>' +
       '</div>' +
-    '</div>' + sugerenciaPeso(ej);
+    '</div>' + ajusteMaquinaHTML(ej) + sugerenciaPeso(ej);
 
   const alt = ej.alternativa ?
     '<details class="ses-alt"><summary>¿Está ocupada?</summary><div class="content">' + ej.alternativa + '</div></details>' : '';
@@ -2968,6 +2996,7 @@ function pintarCintaDentro(){
       ? '<div class="ses-fin">' +
           '<span class="emo">' + ic('i-check','ic-lg') + '</span><h3>Fuerza + cinta hechas</h3>' +
           '<p>La rutina completa y 15 minutos de cuesta encima. Esta es tu sesión de verdad, no una versión reducida.</p>' +
+          resumenFinHTML() +
           '<button class="btn-main" onclick="terminarCintaExtra()">Guardar y salir</button>' +
         '</div>'
       : '<div class="ses-fin">' +
@@ -3041,6 +3070,7 @@ function finTanda(){
 
 function terminarCinta(){
   S.hechos = 2;
+  guardarEntreno('cinta');
   marcar('cinta', true);
   cerrarSesion();
   toast('Cinta hecha');
@@ -3059,6 +3089,7 @@ function registrarCintaExtra(){
 }
 function terminarCintaExtra(){
   registrarCintaExtra();
+  guardarEntreno('fuerza');
   marcar('fuerza', true);
   cerrarSesion();
   toast('Fuerza + cinta hechas');
@@ -3221,6 +3252,10 @@ function bloqueFinPendientes(){
     '<span>Si ya no te apetece, guárdala así: cuenta como sesión igual.</span></div>';
 }
 function ajustarCabecera(){
+  /* Cuánto llevas. Se pinta con cada toque, no con un reloj aparte: entre
+     serie y serie ya se toca la pantalla cada minuto o dos. */
+  const cuenta = document.getElementById('sesCuenta');
+  if(cuenta && cuenta.textContent && S.inicio && !S.terminada) cuenta.textContent += ' · ' + minutosSesion() + ' min';
   const b = document.getElementById('sesListaBtn');
   if(!b) return;
   b.hidden = S.tipo === 'cinta' || S.terminada || S.lista.length < 2;
@@ -3273,6 +3308,128 @@ function sugerenciaPeso(e){
 function aplicarPeso(id, kg){
   fijarPeso(id, kg);
   pintarSesion();
+}
+
+/* ---------- Cómo dejas cada máquina ----------
+   Lo que más tiempo hace perder en una máquina que no es tuya es volver a
+   encontrar la altura del asiento. Una línea de texto por máquina, escrita
+   por él, y se la enseña cada vez que llega a ella. */
+function getAjustesMaq(){ const a = loadJSON(K.ajustesMaq, {}); return (a && typeof a === 'object') ? a : {}; }
+function guardarAjusteMaq(id, txt){
+  const a = getAjustesMaq();
+  const limpio = String(txt || '').trim().slice(0, 80);
+  if(limpio === (a[id] || '')) return;
+  if(limpio) a[id] = limpio; else delete a[id];
+  saveJSON(K.ajustesMaq, a);
+  if(limpio) toast('Ajuste apuntado');
+}
+function ajusteMaquinaHTML(ej){
+  if(!ej || ej.sinPeso || !EJERCICIOS_GYM.some(e => e.id === ej.id)) return '';
+  const actual = getAjustesMaq()[ej.id] || '';
+  return '<label class="ses-ajuste"><span>Cómo la dejas</span>' +
+    '<input type="text" maxlength="80" enterkeyhint="done" autocomplete="off" value="' + esc(actual) + '" ' +
+      'placeholder="Asiento 4, respaldo 2…" onchange="guardarAjusteMaq(\'' + ej.id + '\', this.value)" ' +
+      'onkeydown="if(event.key===\'Enter\')this.blur()"></label>';
+}
+
+/* ---------- Registro de cada sesión ----------
+   Hasta ahora la app sabía QUE habías ido, pero no QUÉ hiciste: el peso de
+   la última vez se pisaba y "15 en las tres" solo servía para la sesión
+   siguiente. Aquí se apunta una foto por día, sin pedirle nada: sale de lo
+   que ya ha tocado en la sesión. */
+function getEntrenos(){ const e = loadJSON(K.entrenos, {}); return (e && typeof e === 'object') ? e : {}; }
+function minutosSesion(){ return S.inicio ? Math.max(1, Math.round((Date.now() - S.inicio) / 60000)) : 0; }
+function seriesSesion(){
+  if(S.tipo === 'cinta' && !S.cintaExtra) return 0;
+  return S.lista.reduce((a, e, i) => a + Math.min(S.hechasPor[i] || 0, seriesDe(e, i)), 0);
+}
+function fotoEntreno(tipo){
+  const pesos = getPesos();
+  const ej = (S.tipo === 'cinta' && !S.cintaExtra) ? [] : S.lista.map((e, i) => {
+    const s = Math.min(S.hechasPor[i] || 0, seriesDe(e, i));
+    if(!s) return null;
+    const o = { id: e.id, s: s };
+    if(!e.sinPeso && pesos[e.id]) o.kg = pesos[e.id];
+    if(S.valorados[i]) o.v = S.valorados[i];
+    return o;
+  }).filter(Boolean);
+  return { tipo: tipo, modo: S.modo, min: minutosSesion(), ej: ej, cinta: S.tipo === 'cinta' ? (S.tanda || 0) * TANDA_MIN : 0 };
+}
+function guardarEntreno(tipo){
+  if(!S.activa || !Array.isArray(S.hechasPor)) return;
+  const foto = fotoEntreno(tipo);
+  if(!foto.ej.length && !foto.cinta) return;
+  const todos = getEntrenos();
+  const previo = todos[hoyKey()];
+  /* Dos visitas el mismo día (cinta por la mañana, fuerza por la tarde): se
+     suman en vez de pisarse. */
+  if(previo){
+    if(!foto.ej.length && Array.isArray(previo.ej)) foto.ej = previo.ej;
+    if(!foto.cinta && previo.cinta) foto.cinta = previo.cinta;
+    if(previo.min && previo.modo !== foto.modo) foto.min += previo.min;
+    if(previo.tipo === 'fuerza') foto.tipo = 'fuerza';
+  }
+  todos[hoyKey()] = foto;
+  const fechas = Object.keys(todos).sort();
+  while(fechas.length > 150) delete todos[fechas.shift()];
+  saveJSON(K.entrenos, todos);
+}
+/* Peso de la vez anterior en esa máquina (de antes de hoy). */
+function pesoAnterior(id){
+  const lista = getPesosHist()[id];
+  if(!Array.isArray(lista)) return 0;
+  const hoy = hoyKey();
+  for(let i = lista.length - 1; i >= 0; i--) if(lista[i].f < hoy) return lista[i].kg;
+  return 0;
+}
+function resumenFinHTML(){
+  const series = seriesSesion();
+  const min = minutosSesion();
+  const pesos = getPesos();
+  const hechos = S.lista.filter((e, i) => (S.hechasPor[i] || 0) > 0);
+  const subidas = S.lista.map((e, i) => {
+    if(e.sinPeso || !(S.hechasPor[i] > 0)) return '';
+    const antes = pesoAnterior(e.id), ahora = pesos[e.id];
+    return antes && ahora > antes ? '<li>' + esc(e.nombre) + ' <b>' + antes + ' → ' + ahora + ' kg</b></li>' : '';
+  }).join('');
+  if(!series && !min) return '';
+  const dato = (n, txt) => '<div><b>' + n + '</b><span>' + txt + '</span></div>';
+  return '<div class="ses-resumen">' +
+      (min ? dato(min, 'minutos') : '') + dato(series, 'series') + dato(hechos.length, hechos.length === 1 ? 'ejercicio' : 'ejercicios') +
+    '</div>' +
+    (subidas ? '<div class="ses-subidas"><b>Hoy has subido de peso:</b><ul>' + subidas + '</ul></div>' : '');
+}
+
+/* En Semana: las últimas sesiones con lo que hiciste en cada una. */
+const REPS_TXT = { sobra:'15 en las tres', justo:'entre 10 y 15', corto:'menos de 10' };
+function renderEntrenos(){
+  const el = document.getElementById('ultimosEntrenos');
+  if(!el) return;
+  const todos = getEntrenos();
+  const fechas = Object.keys(todos).sort().reverse().slice(0, 12);
+  if(!fechas.length){ el.innerHTML = ''; return; }
+  const catalogo = EJERCICIOS_GYM.concat(EJERCICIOS_CASA);
+  const nombre = id => (catalogo.find(e => e.id === id) || { nombre: id }).nombre;
+  el.innerHTML =
+    '<h2 style="margin-top:36px;"><span class="h2-badge">' + ic('i-nota') + '</span>Tus últimas sesiones</h2>' +
+    '<p class="lead">Qué hiciste y con cuánto peso. Se apunta solo al cerrar cada sesión.</p>' +
+    fechas.map(f => {
+      const e = todos[f] || {};
+      const d = desdeKey(f);
+      const lista = Array.isArray(e.ej) ? e.ej : [];
+      const series = lista.reduce((a, x) => a + (x.s || 0), 0);
+      const meta = [e.min ? e.min + ' min' : '', series ? series + ' series' : '', e.cinta ? e.cinta + ' min cinta' : '']
+        .filter(Boolean).join(' · ');
+      const filas = lista.map(x =>
+        '<tr><td>' + esc(nombre(x.id)) + '<small>' + x.s + (x.s === 1 ? ' serie' : ' series') +
+          (x.v && REPS_TXT[x.v] ? ' · ' + REPS_TXT[x.v] : '') + '</small></td>' +
+        '<td>' + (x.kg ? x.kg + ' kg' : '') + '</td></tr>').join('') +
+        (e.cinta ? '<tr><td>Cinta en cuesta</td><td>' + e.cinta + ' min</td></tr>' : '');
+      return '<details class="entreno"><summary><span class="ex-head">' +
+          DIAS_LARGOS[d.getDay()].replace(/^./, c => c.toUpperCase()) + ' ' + d.getDate() + ' de ' + MESES[d.getMonth()] +
+        '</span><span class="ex-series">' + esc(meta || etiqueta(e.tipo).corto) + '</span></summary>' +
+        '<div class="content"><table class="pesos-lista">' + filas + '</table></div></details>';
+    }).join('');
 }
 
 /* En express/viaje el descanso baja a 30s: si dura lo mismo que una sesión
@@ -3364,6 +3521,7 @@ function tipoDeModo(){ return (S.modo === 'fuerza' || S.modo === 'casa') ? 'fuer
 function terminarSesion(){
   const tipo = tipoDeModo();
   S.hechos = S.lista.length;
+  guardarEntreno(tipo);
   marcar(tipo, true);
   cerrarSesion();
   toast(etiqueta(tipo).txt);
@@ -3547,6 +3705,7 @@ function renderSemana(){
   renderCheckin();
   renderSemanaDias();
   renderProgresoPesos();
+  renderEntrenos();
 }
 
 function renderSemanaDias(){
@@ -4153,7 +4312,7 @@ function toggleTheme(){ toggleThemeManual(); }
    y a la misma altura en vez de aparecer en Hoy. */
 const CAMPOS_SESION = ['activa','tipo','modo','iEj','serie','descansando','finDescanso','hechos',
   'tanda','tandaObjetivo','cintaExtra','finTanda','pausada','restante',
-  'aguantando','finAguante','segAguante','hechasPor','historial','terminada','valorados','ultimoCompletado'];
+  'aguantando','finAguante','segAguante','hechasPor','historial','terminada','valorados','ultimoCompletado','inicio'];
 
 function guardarSesion(){
   if(!S.activa) return;
@@ -4286,7 +4445,7 @@ function toast(msg){
    Lo que queda es lo que sí funciona: todo vive en este dispositivo, y para
    llevártelo a otro está la copia manual. La fusión clave a clave sigue aquí
    porque restaurar una copia no debe borrar lo que hayas hecho desde entonces. */
-const FUSIONABLES = [K.log, K.pesos];
+const FUSIONABLES = [K.log, K.pesos, K.sensacion, K.entrenos, K.ajustesMaq];
 
 function fusionarObjetos(localRaw, remotoRaw){
   let local = {}, remoto = {};
