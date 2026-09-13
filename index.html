@@ -3963,7 +3963,9 @@ function fusionarEstado(local, remoto, cfg){
     }
     const lt = typeof lm[key] === 'number' ? lm[key] : 0;
     const rt = typeof rm[key] === 'number' ? rm[key] : 0;
-    const v = rt > lt ? (rr != null ? rr : lr) : (lr != null ? lr : rr);
+    /* Gana el lado tocado más tarde, tenga valor o no: si lo más reciente fue
+       borrarlo, se queda borrado. Sin marcas en ninguno, se junta. */
+    const v = rt > lt ? rr : lt > rt ? lr : (lr != null ? lr : rr);
     if(v != null) out.datos[key] = v;
     if(Math.max(lt, rt)) out.marcas[key] = Math.max(lt, rt);
   });
