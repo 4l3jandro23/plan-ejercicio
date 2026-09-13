@@ -699,6 +699,9 @@
   .ses-subidas{margin:10px 0 4px; padding:11px 13px; border-radius:var(--r-sm); background:var(--accent-soft); text-align:left; font-size:var(--t-sm);}
   .ses-subidas ul{margin:6px 0 0; padding-left:18px;}
   .ses-subidas li{margin:2px 0;}
+  .ses-prepara{margin-top:6px; font-size:var(--t-xs); color:var(--muted); text-align:center;}
+  .ses-prepara b{color:var(--ink);}
+  .pesos-lista .sube{font-size:var(--t-xs); color:var(--muted); font-weight:700;}
   .spark{display:block; width:100%; max-width:150px; height:20px; margin-top:5px; overflow:visible;}
   .spark polyline{fill:none; stroke:var(--accent); stroke-width:2; vector-effect:non-scaling-stroke; stroke-linejoin:round; stroke-linecap:round;}
   .pesos-lista td small{display:block; font-size:var(--t-2xs); color:var(--muted); font-weight:400; margin-top:1px;}
@@ -2546,6 +2549,25 @@ function avisosHTML(tipo, marcado){
    parón, mal día, lo que sea) esto no se entera y no te lo recuerda. */
 /* Una línea pequeña por máquina con la MEJOR marca hasta cada fecha: solo
    sube o se queda plana, nunca baja. Misma regla que la tabla. */
+/* Peso que toca la próxima vez en esa máquina: solo si la última vez sacó
+   15 en las tres con el peso que tiene puesto ahora. Si no, 0. */
+function proximoPeso(e){
+  if(!e || e.sinPeso) return 0;
+  const s = getSensaciones()[e.id];
+  const kg = getPesos()[e.id];
+  return (s && kg && s.kg === kg && s.v === 'sobra') ? kg + 5 : 0;
+}
+/* En el descanso antes de cambiar de máquina: qué peso y qué ajuste poner,
+   para llegar a ella sabiéndolo en vez de abrir la app delante de la gente. */
+function siguienteMaquinaHTML(i){
+  const e = S.lista[i];
+  if(!e || e.sinPeso) return '';
+  const kg = getPesos()[e.id];
+  const prox = proximoPeso(e);
+  const aj = getAjustesMaq()[e.id];
+  const partes = [kg ? (prox ? prox + ' kg (toca subir)' : kg + ' kg') : '', aj || ''].filter(Boolean);
+  return partes.length ? '<div class="ses-prepara">Ve preparándola: <b>' + esc(partes.join(' · ')) + '</b></div>' : '';
+}
 function lineaProgresoSVG(lista){
   if(!Array.isArray(lista) || lista.length < 2) return '';
   let mejor = 0;
@@ -2591,12 +2613,12 @@ function renderPesosRapido(){
   const filas = lista.map(e =>
     '<tr' + (pesos[e.id] ? '' : ' class="vacio"') + '><td>' + esc(e.nombre) +
       (ajustes[e.id] ? '<small>' + esc(ajustes[e.id]) + '</small>' : '') + '</td>' +
-    '<td>' + (pesos[e.id] ? pesos[e.id] + ' kg' : '—') + '</td></tr>'
+    '<td>' + (pesos[e.id] ? pesos[e.id] + ' kg' + (proximoPeso(e) ? ' <span class="sube">→ ' + proximoPeso(e) + '</span>' : '') : '—') + '</td></tr>'
   ).join('');
   el.innerHTML =
     '<details style="margin-top:20px;"><summary><span class="ex-head">Pesos y ajustes de la última vez</span></summary>' +
     '<div class="content"><table class="pesos-lista">' + filas + '</table>' +
-    '<p style="font-size:var(--t-xs); color:var(--muted); margin:6px 0 0;">Se cambia dentro de la sesión guiada, en cada ejercicio.</p>' +
+    '<p style="font-size:var(--t-xs); color:var(--muted); margin:6px 0 0;">' + (lista.some(e => proximoPeso(e)) ? 'La flecha es lo que toca la próxima vez: sacaste 15 en las tres. ' : '') + 'Se cambia dentro de la sesión guiada, en cada ejercicio.</p>' +
     '</div></details>';
 }
 
@@ -2993,6 +3015,7 @@ function pintarDescanso(ej, nSeries){
         '<button class="btn-timer" onclick="finDescanso()">Seguir ya</button>' +
       '</div>' +
       '<div class="ses-siguiente">Siguiente: <b>' + esc(siguiente) + '</b></div>' +
+      (S.serie >= nSeries && sigIdx !== -1 ? siguienteMaquinaHTML(sigIdx) : '') +
       /* El descanso es justo cuando te das cuenta de que has tocado el botón
          sin querer, así que el deshacer también tiene que estar aquí. */
       (S.serie >= nSeries ? preguntaSensacion(S.iEj) : '') +
