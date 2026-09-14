@@ -835,6 +835,11 @@
   .cal-dias button.on{background:var(--accent); border-color:var(--accent); color:#fff;}
   .cal-fila{display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 14px; font-size:var(--t-sm);}
   .cal-fila input, .cal-fila select{font-family:var(--font-mono); font-size:16px; padding:8px 10px; border:1px solid var(--border); border-radius:var(--r-sm); background:var(--card); color:var(--ink);}
+  .variante-fila{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--border);}
+  .variante-fila:last-child{border-bottom:none;}
+  .variante-fila b{display:block; font-size:var(--t-sm);}
+  .variante-fila span{font-size:var(--t-xs); color:var(--muted);}
+  .variante-fila .btn-undo{padding:8px 0; min-height:40px; white-space:nowrap; flex-shrink:0;}
   .ses-descanso{text-align:center; padding:16px 0 8px;}
   .ring{width:190px; height:190px; margin:0 auto 6px; display:block; filter:drop-shadow(0 4px 14px rgba(0,0,0,.08));}
   .ring circle{fill:none; stroke-width:8; stroke-linecap:round;}
@@ -1410,6 +1415,7 @@
   <div id="vistaCasa" style="display:none;">
     <p class="lead">Sin material, sin salir de casa, unos 20 minutos. Esto no es "la versión mala": los días que el gimnasio no va a pasar, esto es lo que evita que la semana entera se vaya a cero.</p>
     <div id="listaCasa"></div>
+    <div id="casaVariantes"></div>
     <button class="btn-second" style="margin-top:12px;" onclick="abrirEstira()"><svg class="ic-v" aria-hidden="true"><use href="#i-respirar"/></svg>Y después, estirar 7 minutos</button>
 
     <h3 style="margin-top:32px;">Versión viaje — 10 minutos</h3>
@@ -2027,6 +2033,64 @@ const EJERCICIOS_CASA = [
   }
 ];
 
+/* ===== Casa: la versión difícil de cada ejercicio =====
+   En el gimnasio se sube de peso y la plancha sube sola de segundos, pero los
+   de casa se quedaban igual para siempre. Cada uno tiene un paso más, que se
+   propone cuando las repeticiones apuntadas dicen que sobra. El id no cambia,
+   así que el historial y las marcas siguen siendo del mismo ejercicio. */
+const VARIANTES_CASA = {
+  sentadilla: {
+    nombre:'Sentadilla sin silla', alias:'Ya sin la silla detrás', reps:'12 repeticiones',
+    pasos:[
+      'De pie, pies separados como tus hombros y las puntas un poco hacia fuera.',
+      'Baja sacando el culo hacia atrás, como si hubiera una silla, hasta que los muslos queden paralelos al suelo.',
+      'Sube empujando el suelo con los talones.',
+      'Si se te levantan los talones, baja un poco menos.'
+    ],
+    clave:'Talones en el suelo y el pecho alto.'
+  },
+  flexiones: {
+    nombre:'Flexiones con las rodillas en el suelo', alias:'En el suelo, apoyando las rodillas', reps:'10 repeticiones',
+    pasos:[
+      'Manos en el suelo, algo más separadas que los hombros, y rodillas apoyadas encima de una toalla.',
+      'Cuerpo recto de las rodillas a la cabeza.',
+      'Baja el pecho hasta casi tocar el suelo doblando los codos.',
+      'Empuja para volver arriba.'
+    ],
+    clave:'Recto de rodillas a cabeza, sin doblarte por la cadera.'
+  },
+  puente: {
+    nombre:'Puente de glúteos a una pierna', alias:'Con una pierna estirada', reps:'10 por pierna',
+    pasos:[
+      'Túmbate boca arriba con las rodillas dobladas y los pies en el suelo.',
+      'Estira una pierna en línea con el muslo.',
+      'Aprieta el culo y sube la cadera empujando con el talón del pie que está apoyado.',
+      'Baja despacio. Haz 10 y cambia de pierna.'
+    ],
+    clave:'Empuja con el talón y que la cadera no se tuerza.'
+  },
+  zancada: {
+    nombre:'Zancada atrás sin apoyo', alias:'Sin la mano en la pared', reps:'10 por pierna',
+    pasos:[
+      'De pie, pies juntos y manos en la cintura.',
+      'Da un paso largo hacia atrás con una pierna.',
+      'Baja la rodilla de atrás hacia el suelo, sin llegar a tocarlo.',
+      'Empuja con la pierna de delante para volver. Haz 10 y cambia.'
+    ],
+    clave:'El peso en la pierna de delante. Si pierdes el equilibrio, apóyate otra vez.'
+  },
+  superman: {
+    nombre:'Superman con pausa', alias:'Brazos en Y y aguantando arriba', reps:'10 repeticiones',
+    pasos:[
+      'Túmbate boca abajo con los brazos estirados hacia delante, abiertos en forma de Y.',
+      'Levanta a la vez brazos, pecho y piernas unos centímetros.',
+      'Aguanta arriba 3 segundos apretando la espalda y el culo.',
+      'Baja despacio y repite.'
+    ],
+    clave:'Tres segundos arriba. Si molesta la lumbar, solo los brazos.'
+  }
+};
+
 /* ===================== ESTADO ===================== */
 const K = {
   theme:'planEjercicioTheme', color:'planEjercicioColor', dias:'planEjercicioDias',
@@ -2039,7 +2103,7 @@ const K = {
   marcas:'planEjercicioMarcas', ghToken:'planEjercicioGhToken', gistId:'planEjercicioGistId',
   syncOk:'planEjercicioSyncOk', syncError:'planEjercicioSyncError',
   entrenos:'planEjercicioEntrenos', ajustesMaq:'planEjercicioAjustesMaquina',
-  aguante:'planEjercicioAguante', voz:'planEjercicioVoz'
+  aguante:'planEjercicioAguante', voz:'planEjercicioVoz', casaVariante:'planEjercicioCasaVariante'
 };
 /* Qué viaja entre el móvil y el ordenador, y cómo se junta (ver fusionarEstado).
    Tema, tamaño de letra, contraste y 'al abrir la app' se quedan en cada
@@ -2047,8 +2111,8 @@ const K = {
 const SYNC_CFG = {
   todas: [K.color, K.dias, K.lugar, K.descanso, K.sonido, K.tono,
           K.log, K.pesos, K.check, K.sensacion, K.cintaExtra, K.pesosHist,
-          K.entrenos, K.ajustesMaq, K.aguante],
-  objeto: [K.log, K.pesos, K.check, K.sensacion, K.entrenos, K.ajustesMaq, K.aguante],
+          K.entrenos, K.ajustesMaq, K.aguante, K.casaVariante],
+  objeto: [K.log, K.pesos, K.check, K.sensacion, K.entrenos, K.ajustesMaq, K.aguante, K.casaVariante],
   union: { [K.cintaExtra]: 'fechas', [K.pesosHist]: 'historial' }
 };
 /* Lo que nunca sale del dispositivo, ni en la copia descargada: el token de
@@ -3296,6 +3360,7 @@ function empezarSesion(modo){
   if(modo === 'minima' || modo === 'express') S.lista = todos.slice(0,3);
   else if(modo === 'viaje') S.lista = todos.slice(0,4);
   else S.lista = (modo === 'fuerza' && todos === EJERCICIOS_GYM) ? conExtras(todos.slice()) : todos.slice();
+  S.lista = S.lista.map(conVariante);
   S.modo = modo; S.iEj = 0; S.serie = 0; S.activa = true; S.descansando = false; S.aguantando = false; S.hechos = 0;
   S.hechasPor = S.lista.map(() => 0); S.historial = []; S.terminada = false;
   S.valorados = {}; S.ultimoCompletado = null; S.viendoLista = false;
@@ -3474,7 +3539,7 @@ function pintarSesionDentro(){
     ultimaVezHTML(ej) +
     '<div class="ses-recuerda"><b>Lo único que importa:</b> ' + esc(ej.clave) + '</div>' +
     '<ol class="ses-pasos">' + ej.pasos.map(p => '<li>' + esc(p) + '</li>').join('') + '</ol>' +
-    alt + bloquePeso + bloqueReps +
+    alt + bloquePeso + varianteHTML(ej) + bloqueReps +
     '<div class="ses-series">' + series + '</div>' +
     '<div class="ses-foot">' +
       (segundosDe(ej)
@@ -3870,6 +3935,69 @@ function estancamientoHTML(e){
     '</ul></div></details>';
 }
 
+/* ---------- Casa: versión difícil ---------- */
+function getCasaVariante(){ const v = loadJSON(K.casaVariante, {}); return (v && typeof v === 'object') ? v : {}; }
+function conVariante(e){
+  const v = e && VARIANTES_CASA[e.id];
+  return (v && getCasaVariante()[e.id]) ? Object.assign({}, e, v, { variante: true }) : e;
+}
+/* "Sobra" = en las dos últimas veces, todas las series con al menos 5 más de
+   las que pide la versión fácil (15 en vez de 10, por ejemplo). */
+function sobraEnCasa(e){
+  const base = EJERCICIOS_CASA.find(x => x.id === e.id);
+  const m = base && /(\d+)/.exec(base.reps || '');
+  if(!m || segundosDe(base)) return false;
+  const objetivo = parseInt(m[1], 10) + 5;
+  const todos = getEntrenos();
+  const hoy = hoyKey();
+  const veces = Object.keys(todos).filter(f => f < hoy).sort()
+    .map(f => (Array.isArray(todos[f].ej) ? todos[f].ej : []).find(x => x.id === e.id && Array.isArray(x.r) && x.r.length))
+    .filter(Boolean).slice(-2);
+  return veces.length === 2 && veces.every(x => x.r.every(n => n >= objetivo));
+}
+function varianteHTML(ej){
+  const v = VARIANTES_CASA[ej.id];
+  if(!v) return '';
+  if(ej.variante){
+    return '<details class="ses-alt"><summary>Estás en la versión difícil</summary><div class="content">' +
+      'Si hoy no sale, vuelve a la de siempre: cuenta exactamente igual.' +
+      '<button class="btn-undo" style="display:block;" onclick="setCasaVariante(\'' + ej.id + '\', false)">Volver a la versión fácil</button></div></details>';
+  }
+  if(sobraEnCasa(ej)){
+    return '<div class="ses-sugerencia">Las dos últimas veces te <b>sobraron repeticiones</b>. Toca un paso más: <b>' + esc(v.nombre.toLowerCase()) + '</b>.' +
+      '<button class="btn-undo" onclick="setCasaVariante(\'' + ej.id + '\', true)">Pasar a esta versión</button></div>';
+  }
+  return '<details class="ses-alt"><summary>¿Te sabe a poco?</summary><div class="content">' +
+    'La versión difícil: <b>' + esc(v.nombre) + '</b>. ' + esc(v.pasos[1]) +
+    '<button class="btn-undo" style="display:block;" onclick="setCasaVariante(\'' + ej.id + '\', true)">Pasar a esta versión</button></div></details>';
+}
+function setCasaVariante(id, on){
+  const v = getCasaVariante();
+  if(on) v[id] = true; else delete v[id];
+  saveJSON(K.casaVariante, v);
+  if(S.activa && Array.isArray(S.lista)){
+    const base = EJERCICIOS_CASA.find(x => x.id === id);
+    if(base) S.lista = S.lista.map(e => e.id === id ? conVariante(base) : e);
+    S.repsSel = {};
+    pintarSesion();
+  }
+  renderCasaVariantes();
+  toast(on ? 'Versión difícil: ' + VARIANTES_CASA[id].nombre.toLowerCase() : 'Vuelves a la versión de siempre');
+}
+function renderCasaVariantes(){
+  const el = document.getElementById('casaVariantes');
+  if(!el) return;
+  const activas = getCasaVariante();
+  el.innerHTML = '<div class="card" style="margin-top:16px;"><h3 style="margin-top:0;">Cuando te sepan a poco</h3>' +
+    '<p style="font-size:var(--t-sm); margin:0 0 6px;">Cada uno tiene un paso más. La sesión te lo propone sola cuando te sobran repeticiones, o lo eliges aquí.</p>' +
+    EJERCICIOS_CASA.filter(e => VARIANTES_CASA[e.id]).map(e => {
+      const on = !!activas[e.id];
+      return '<div class="variante-fila"><div><b>' + esc(on ? VARIANTES_CASA[e.id].nombre : e.nombre) + '</b>' +
+        '<span>' + (on ? 'Versión difícil · antes: ' + esc(e.nombre.toLowerCase()) : 'Siguiente paso: ' + esc(VARIANTES_CASA[e.id].nombre.toLowerCase())) + '</span></div>' +
+        '<button class="btn-undo" onclick="setCasaVariante(\'' + e.id + '\', ' + !on + ')">' + (on ? 'Volver a la fácil' : 'Usar la difícil') + '</button></div>';
+    }).join('') + '</div>';
+}
+
 /* ---------- Entrenos en el calendario ----------
    La app no puede mandar avisos, pero el calendario del iPhone sí. Se genera
    un archivo .ics con un evento semanal por cada día elegido y su aviso: al
@@ -3992,15 +4120,16 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-09-14b'; }
+function novedadesId(){ return '2026-09-14c'; }
 function novedadesNuevas(){
   return [
-    '<b>Tus entrenos en el calendario del iPhone:</b> eliges días y hora y te avisa antes, aunque no abras la app. Guía → Que te avise el iPhone.',
-    '<b>Hoy más corto:</b> el botón de empezar sale antes, y «Cuándo ir hoy» va plegado al final.'
+    '<b>En casa también se sube de nivel:</b> cuando te sobran repeticiones, la sesión te propone la versión difícil de cada ejercicio. También en Rutina → En casa.'
   ];
 }
 function novedades(){
   return [
+    '<b>Tus entrenos en el calendario del iPhone:</b> Guía → Que te avise el iPhone.',
+    '<b>Hoy más corto:</b> el botón de empezar sale antes, y «Cuándo ir hoy» va plegado.',
     '<b>Cuánto dura:</b> los botones de empezar dicen cuánto vas a tardar, y en el descanso ves lo que te queda.',
     '<b>Avisos por voz</b> con los AirPods: cuánto descansas y a qué máquina vas después. Ajustes → Avisos por voz.',
     '<b>Descanso automático:</b> 90 s en prensa, jalón, pecho y remo; 60 en el resto.',
@@ -5099,6 +5228,7 @@ function ejercicioHTML(ej, i, marca){
 }
 let rutinaPintada = false;
 function renderRutina(){
+  renderCasaVariantes();
   /* El contenido no depende de ningún dato guardado, así que se construye una
      vez. Repintarlo en cada sync cerraba las fichas que tuvieras abiertas. */
   if(rutinaPintada) return;
@@ -5823,7 +5953,7 @@ function restaurarSesion(){
   /* Una sesión de ayer, o de hace más de cuatro horas, ya no es "la de ahora". */
   if(foto.dia !== hoyKey() || Date.now() - foto.guardada > 4 * 3600000){ borrarSesionGuardada(); return false; }
   const todos = catalogo();
-  const lista = (foto.ids || []).map(id => todos.find(e => e.id === id)).filter(Boolean);
+  const lista = (foto.ids || []).map(id => todos.find(e => e.id === id)).filter(Boolean).map(conVariante);
   if(foto.tipo !== 'cinta' && !lista.length){ borrarSesionGuardada(); return false; }
   CAMPOS_SESION.forEach(c => { if(foto[c] !== undefined) S[c] = foto[c]; });
   S.lista = lista;
@@ -5943,7 +6073,7 @@ function toast(msg){
    Lo que queda es lo que sí funciona: todo vive en este dispositivo, y para
    llevártelo a otro está la copia manual. La fusión clave a clave sigue aquí
    porque restaurar una copia no debe borrar lo que hayas hecho desde entonces. */
-const FUSIONABLES = [K.log, K.pesos, K.sensacion, K.entrenos, K.ajustesMaq, K.aguante];
+const FUSIONABLES = [K.log, K.pesos, K.sensacion, K.entrenos, K.ajustesMaq, K.aguante, K.casaVariante];
 
 function fusionarObjetos(localRaw, remotoRaw){
   let local = {}, remoto = {};
