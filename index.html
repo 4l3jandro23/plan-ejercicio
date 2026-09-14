@@ -44,10 +44,10 @@
     --t-md:1.05rem; --t-lg:1.25rem; --t-xl:1.5rem; --t-2xl:2rem; --t-3xl:3.2rem;
 
     --bg:#eef1f6; --bg2:#f8fafc; --card:#ffffff;
-    --ink:#1e2329; --muted:#666f7a;
+    --ink:#1e2329; --muted:#5a626c;
     --accent:#2b6cb0; --accent2:#4a8fd1; --accent-soft:#e3ecf7;
-    --warn:#b5651d; --warn-soft:#fbeee2;
-    --ok:#3f7d4a; --ok-soft:#e6f0e5;
+    --warn:#9a5214; --warn-soft:#fbeee2;
+    --ok:#356b3f; --ok-soft:#e6f0e5;
     --border:rgba(30,35,41,.10);
 
     /* Vidrio */
@@ -795,6 +795,16 @@
   .corr-botones{display:flex; gap:8px;}
   .corr-botones > *{flex:1;}
   .corr-nota{font-size:var(--t-xs); color:var(--muted); margin:0;}
+  /* Medido en móvil: "Salir" era de 36×30, los −/+ de 37 y "Deshacer" de 28 de
+     alto. Dentro del gimnasio, con las manos sudadas, eso es fallar el toque. */
+  .ses-salir{min-height:44px; padding:10px 14px 10px 0;}
+  .ses-lista{min-height:40px; padding:10px 16px;}
+  .ses-peso-ctrl button{width:44px; height:44px;}
+  .sesion .btn-undo, .estira .btn-undo{min-height:40px; padding:10px 4px;}
+  /* En Semana, con "52 min · 12 series · 15 min cinta" la fecha se quedaba en
+     43 px y se partía letra a letra. Ahora el que cede es el resumen. */
+  details.entreno summary .ex-head{flex:0 1 auto;}
+  details.entreno summary .ex-series{flex-shrink:1; min-width:0; text-align:right;}
   .ses-descanso{text-align:center; padding:16px 0 8px;}
   .ring{width:190px; height:190px; margin:0 auto 6px; display:block; filter:drop-shadow(0 4px 14px rgba(0,0,0,.08));}
   .ring circle{fill:none; stroke-width:8; stroke-linecap:round;}
@@ -2947,7 +2957,7 @@ function renderHorario(){
   const entreSemana = dow >= 1 && dow <= 5;
 
   let filas = '';
-  if(entreSemana && hora >= 18 && hora < 22){
+  if(entreSemana && ((hora >= 18 && hora < 22) || (hora === 22 && ahora.getMinutes() < 30))){
     filas += '<div class="horario-row bad"><span><b>Ahora mismo está a reventar. Mejor no.</b></span><span>hasta 22:30</span></div>';
   }
   if(dow === 5){
@@ -3788,6 +3798,7 @@ function serieHecha(){
   S.descansando = true;
   S.finDescanso = Date.now() + descansoActual() * 1000;
   arrancarTick();
+  programarPitos(descansoActual());
   pintarSesion();
 }
 
@@ -4378,7 +4389,7 @@ function renderEntrenos(){
    normal deja de ser la salida rápida que pretende ser. */
 function descansoActual(){ return serieUnica() ? 30 : getDescanso(); }
 
-function masDescanso(){ S.finDescanso += 15000; actualizarRing(); guardarSesion(); }
+function masDescanso(){ S.finDescanso += 15000; programarPitos((S.finDescanso - Date.now()) / 1000); actualizarRing(); guardarSesion(); }
 
 function finDescanso(){
   pararTick();
@@ -4418,7 +4429,7 @@ function arrancarTick(){
         pito(S.tanda + 1 >= 2 ? 'fin' : 'tanda');
         finTanda();
       } else {
-        pito('seguir');
+        if(pitosProgramados.length) avisoYaProgramado(); else pito('seguir');
         finDescanso();
       }
       return;
@@ -4427,11 +4438,11 @@ function arrancarTick(){
        coger el agarre antes del pitido de seguir, sin mirar la pantalla. */
     const quedanSeg = Math.ceil((objetivo - Date.now()) / 1000);
     if(quedanSeg > 3) S.ultimoAviso = 0;
-    else if(S.descansando && S.tipo !== 'cinta' && quedanSeg !== S.ultimoAviso){ S.ultimoAviso = quedanSeg; pito('cuenta'); }
+    else if(S.descansando && S.tipo !== 'cinta' && quedanSeg !== S.ultimoAviso){ S.ultimoAviso = quedanSeg; if(!pitosProgramados.length) pito('cuenta'); }
     actualizarRing();
   }, 250);
 }
-function pararTick(){ if(S.tick){ clearInterval(S.tick); S.tick = null; } }
+function pararTick(){ if(S.tick){ clearInterval(S.tick); S.tick = null; } cancelarPitos(); }
 
 function actualizarRing(forzar){
   const txt = document.getElementById('ringTxt');
@@ -4560,6 +4571,42 @@ function pito(cual){
       osc.start(t0 + n.t); osc.stop(t0 + n.t + n.d + 0.02);
     });
   }catch(e){ destello(); }
+}
+/* El pitido de fin de descanso se deja programado en el audio del sistema en
+   cuanto empieza el descanso. Antes dependía del temporizador de la página, y
+   con el móvil en el bolsillo o Spotify delante iOS lo congela: el descanso
+   acababa en silencio. Si la página sigue viva, el temporizador ya no pita
+   por su cuenta, para que no suene dos veces. */
+let pitosProgramados = [];
+function sonarEn(notas, t){
+  notas.forEach(n => {
+    const osc = audioCtx.createOscillator(), gan = audioCtx.createGain();
+    osc.frequency.value = n.f; osc.type = 'sine';
+    gan.gain.setValueAtTime(0.0001, t + n.t);
+    gan.gain.exponentialRampToValueAtTime(0.25, t + n.t + 0.02);
+    gan.gain.exponentialRampToValueAtTime(0.0001, t + n.t + n.d);
+    osc.connect(gan); gan.connect(audioCtx.destination);
+    osc.start(t + n.t); osc.stop(t + n.t + n.d + 0.02);
+    pitosProgramados.push(osc);
+  });
+}
+function programarPitos(segundos){
+  cancelarPitos();
+  if(getSonido() === 'no' || !(segundos > 0)) return;
+  prepararSonido();
+  if(!audioCtx || audioCtx.state !== 'running') return;
+  try{
+    const t0 = audioCtx.currentTime + segundos;
+    [3, 2, 1].forEach(d => { if(segundos - d > 0.3) sonarEn(PITOS.cuenta, t0 - d); });
+    sonarEn(PITOS.seguir, t0);
+  }catch(e){ cancelarPitos(); }
+}
+function cancelarPitos(){
+  pitosProgramados.forEach(o => { try{ o.stop(); }catch(e){} });
+  pitosProgramados = [];
+}
+function avisoYaProgramado(){
+  try{ if(navigator.vibrate) navigator.vibrate([120, 60, 120]); }catch(e){}
 }
 function destello(){
   const el = S.activa ? document.getElementById('sesion') : document.body;
