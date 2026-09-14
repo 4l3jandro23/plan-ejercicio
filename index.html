@@ -1188,6 +1188,15 @@
     </div>
 
     <div class="settings-row">
+      <div class="lbl">Avisos por voz</div>
+      <div class="style-options" id="vozOpts">
+        <button class="style-opt" data-voz="si" onclick="setVoz('si')">Sí</button>
+        <button class="style-opt" data-voz="no" onclick="setVoz('no')">No</button>
+      </div>
+      <div class="settings-hint">Al empezar cada descanso te dice cuánto descansas y, si toca cambiar de máquina, cuál es, con qué peso y cómo la dejaste. Con los auriculares puestos no hace falta mirar el móvil. Es de este móvil: no pasa al ordenador. Con la pantalla bloqueada puede que el iPhone no lo diga.</div>
+    </div>
+
+    <div class="settings-row">
       <div class="lbl">Tamaño de letra</div>
       <div class="style-options" id="tamOpts">
         <button class="style-opt" data-tam="n" onclick="setTam('n')">Normal</button>
@@ -2005,7 +2014,7 @@ const K = {
   marcas:'planEjercicioMarcas', ghToken:'planEjercicioGhToken', gistId:'planEjercicioGistId',
   syncOk:'planEjercicioSyncOk', syncError:'planEjercicioSyncError',
   entrenos:'planEjercicioEntrenos', ajustesMaq:'planEjercicioAjustesMaquina',
-  aguante:'planEjercicioAguante'
+  aguante:'planEjercicioAguante', voz:'planEjercicioVoz'
 };
 /* Qué viaja entre el móvil y el ordenador, y cómo se junta (ver fusionarEstado).
    Tema, tamaño de letra, contraste y 'al abrir la app' se quedan en cada
@@ -2106,6 +2115,7 @@ function getContraste(){ return getPref(K.contraste, ['si','no'],            'no
 function getTono(){      return getPref(K.tono,      ['normal','seco'],      'normal'); }
 function getInicio(){    return getPref(K.inicio,    ['ultima','hoy'],       'ultima'); }
 function getTema(){      return getPref(K.theme,     ['light','dark','auto'],'auto'); }
+function getVoz(){       return getPref(K.voz,       ['si','no'],            'no'); }
 
 /* Modo seco: mismo contenido, menos palabras. No cambia lo que la app permite
    hacer, solo cuánto texto hay que leer para hacerlo. */
@@ -2727,9 +2737,9 @@ function renderHoy(){
     '</div>';
 
   const acciones = document.getElementById('hoyActions');
-  const bEmpezar  = '<button class="btn-main" onclick="empezarSesion(\'fuerza\')">' + ic('i-play') + 'Empezar la sesión</button>';
-  const bEmpezarM = '<button class="btn-main" onclick="empezarSesion(\'minima\')">' + ic('i-play') + 'Empezar la sesión mínima</button>';
-  const bMinima   = '<button class="btn-second" onclick="empezarSesion(\'minima\')">Solo los 3 primeros (15 min)</button>';
+  const bEmpezar  = '<button class="btn-main" onclick="empezarSesion(\'fuerza\')">' + ic('i-play') + 'Empezar la sesión · unos ' + minutosPlan('fuerza') + ' min</button>';
+  const bEmpezarM = '<button class="btn-main" onclick="empezarSesion(\'minima\')">' + ic('i-play') + 'Empezar la sesión mínima · unos ' + minutosPlan('minima') + ' min</button>';
+  const bMinima   = '<button class="btn-second" onclick="empezarSesion(\'minima\')">Solo los 3 primeros (unos ' + minutosPlan('minima') + ' min)</button>';
   const bCompleta = '<button class="btn-second" onclick="empezarSesion(\'fuerza\')">Hacer la sesión completa</button>';
   const bCaminar  = '<button class="btn-second" onclick="marcar(\'caminar\')">' + ic('i-andar') + 'He caminado</button>';
   const bEscape   = '<button class="btn-escape" onclick="toggleEscape()">' + ic('i-agobio') + 'Hoy no tengo fuerzas para esto</button>';
@@ -3411,7 +3421,7 @@ function pintarSesionDentro(){
           'placeholder="kg" onchange="fijarPeso(\'' + ej.id + '\', this.value)" aria-label="Peso en kilos">' +
         '<button onclick="cambiarPeso(\'' + ej.id + '\',1)" aria-label="Subir peso">' + ic('i-mas') + '</button>' +
       '</div>' +
-    '</div>' + ajusteMaquinaHTML(ej) + sugerenciaPeso(ej);
+    '</div>' + ajusteMaquinaHTML(ej) + sugerenciaPeso(ej) + estancamientoHTML(ej);
 
   const bloqueReps = segundosDe(ej) ? '' :
     '<div class="ses-reps">' +
@@ -3487,6 +3497,7 @@ function pintarDescanso(ej, nSeries){
         '<button class="btn-timer" onclick="finDescanso()">Seguir ya</button>' +
       '</div>' +
       '<div class="ses-siguiente">Siguiente: <b>' + esc(siguiente) + '</b></div>' +
+      quedaHTML() +
       (S.serie >= nSeries && sigIdx !== -1 ? siguienteMaquinaHTML(sigIdx) : '') +
       /* El descanso es justo cuando te das cuenta de que has tocado el botón
          sin querer, así que el deshacer también tiene que estar aquí. */
@@ -3710,6 +3721,124 @@ function detalleSeries(x){
   return x.s + (x.s === 1 ? ' serie' : ' series') + (x.v && REPS_TXT[x.v] ? ' · ' + REPS_TXT[x.v] : '');
 }
 
+/* ---------- Avisos por voz ----------
+   Va casi siempre con AirPods. El pitido dice "sigue", pero no dice qué toca:
+   eso obligaba a sacar el móvil delante de la gente. Con la voz, al empezar el
+   descanso ya sabe cuánto descansa y a qué máquina va después, con qué peso y
+   cómo la dejó. Apagado por defecto: hay quien prefiere solo la música. */
+function decir(txt){
+  if(!txt || getVoz() !== 'si' || !('speechSynthesis' in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(txt);
+    u.lang = 'es-ES';
+    u.rate = 1.05;
+    const voces = window.speechSynthesis.getVoices() || [];
+    const v = voces.find(x => /^es[-_]ES/i.test(x.lang)) || voces.find(x => /^es/i.test(x.lang));
+    if(v) u.voice = v;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+function avisarPorVoz(ej, nSeries){
+  if(getVoz() !== 'si') return;
+  const seg = descansoActual();
+  if(S.serie < nSeries){
+    const quedan = nSeries - S.serie;
+    decir('Descansa ' + seg + ' segundos. ' + (quedan === 1 ? 'Te queda una serie.' : 'Te quedan ' + quedan + ' series.'));
+    return;
+  }
+  const sig = siguientePendiente(S.iEj);
+  const e = sig !== -1 ? S.lista[sig] : null;
+  if(!e) return;
+  const kg = e.sinPeso ? 0 : (proximoPeso(e) || getPesos()[e.id] || 0);
+  const aj = getAjustesMaq()[e.id];
+  decir('Hecho. Descansa ' + seg + ' segundos. Luego, ' + e.nombre.toLowerCase() +
+    (kg ? ', ' + String(kg).replace('.', ',') + ' kilos' : '') + (aj ? '. ' + aj : '') + '.');
+}
+
+/* ---------- Cuánto dura ----------
+   "¿Me da tiempo antes de las 17h?" era una pregunta sin respuesta. La cuenta
+   sale del propio plan: series × (45 s de serie + descanso de ese ejercicio)
+   más un minuto para cambiar de máquina y los 5 de calentar. Se redondea a 5
+   minutos porque la precisión aquí sería mentir. */
+function segundosDeSerie(e){ const s = segundosDe(e); return s ? s + 15 : 45; }
+function descansoPara(e, unica){
+  if(unica) return 30;
+  const d = getDescanso();
+  if(d !== 'auto') return d;
+  return (e && DESCANSO_LARGO.indexOf(e.id) !== -1) ? 90 : 60;
+}
+function seriesPlan(e, i, unica){
+  if(unica) return 1;
+  if(e.sinPeso) return e.series;
+  return (sesionesFuerza() >= 12 && i < 4) ? 4 : e.series;
+}
+/* Misma lista que monta empezarSesion() para ese modo. */
+function minutosPlan(modo){
+  const todos = (modo === 'viaje' || modo === 'casa') ? EJERCICIOS_CASA : ejerciciosActuales();
+  const lista = (modo === 'minima' || modo === 'express') ? todos.slice(0, 3)
+              : modo === 'viaje' ? todos.slice(0, 4)
+              : (modo === 'fuerza' && todos === EJERCICIOS_GYM) ? conExtras(todos.slice()) : todos.slice();
+  const unica = modo === 'express' || modo === 'viaje';
+  let seg = (todos === EJERCICIOS_GYM && (modo === 'fuerza' || modo === 'minima')) ? CALENTAR_SEG : 0;
+  lista.forEach((e, i) => {
+    const n = seriesPlan(e, i, unica);
+    seg += n * segundosDeSerie(e) + (n - 1) * descansoPara(e, unica) + (i < lista.length - 1 ? 60 : 0);
+  });
+  return Math.max(5, Math.round(seg / 300) * 5);
+}
+function minutosRestantes(){
+  if(!S.activa || S.tipo === 'cinta' || S.terminada) return 0;
+  const unica = serieUnica();
+  let seg = 0;
+  if(S.calentando) seg += S.finCalentar ? Math.max(0, (S.finCalentar - Date.now()) / 1000) : CALENTAR_SEG;
+  if(S.descansando) seg += Math.max(0, (S.finDescanso - Date.now()) / 1000);
+  const pend = S.lista.map((e, i) => i).filter(i => !completo(i));
+  pend.forEach((i, k) => {
+    const e = S.lista[i];
+    const total = seriesDe(e, i);
+    const n = total - Math.min(S.hechasPor[i] || 0, total);
+    seg += n * segundosDeSerie(e) + Math.max(0, n - 1) * descansoPara(e, unica) + (k < pend.length - 1 ? 60 : 0);
+  });
+  return Math.round(seg / 60);
+}
+function quedaHTML(){
+  const m = minutosRestantes();
+  if(m < 2) return '';
+  return '<div class="ses-prepara">Te quedan unos <b>' + (m < 10 ? m : Math.round(m / 5) * 5) + ' min</b></div>';
+}
+
+/* ---------- Cuando una máquina se atasca ----------
+   Cuatro sesiones seguidas con el mismo peso y sin sumar repeticiones. No es
+   un aviso rojo ni un "estás fallando": un desplegable cerrado, como el de
+   "¿Está ocupada?", con tres salidas concretas. Si ya le tocaba subir de
+   peso, o ya lo ha cambiado, no sale. */
+function estancamiento(e){
+  if(!e || e.sinPeso) return null;
+  const todos = getEntrenos();
+  const hoy = hoyKey();
+  const veces = Object.keys(todos).filter(f => f < hoy).sort()
+    .map(f => (Array.isArray(todos[f].ej) ? todos[f].ej : []).find(x => x.id === e.id && x.kg > 0 && Array.isArray(x.r) && x.r.length))
+    .filter(Boolean).slice(-4);
+  if(veces.length < 4) return null;
+  const kg = veces[0].kg;
+  if(!veces.every(x => x.kg === kg) || getPesos()[e.id] !== kg) return null;
+  const suma = x => x.r.reduce((a, b) => a + b, 0);
+  if(suma(veces[3]) > suma(veces[0]) || veces[3].r.every(n => n >= 15)) return null;
+  return { kg: kg };
+}
+function estancamientoHTML(e){
+  const s = estancamiento(e);
+  if(!s) return '';
+  return '<details class="ses-alt"><summary>Llevas 4 sesiones con ' + String(s.kg).replace('.', ',') + ' kg sin sumar repeticiones</summary><div class="content">' +
+    T('Es de lo más normal: el progreso no va en línea recta y le pasa a todo el mundo. Para desbloquearlo, elige solo una:', 'Elige una:') +
+    '<ul style="margin:8px 0 0; padding-left:18px;">' +
+      '<li><b>Mismo peso, más lento:</b> baja contando 3 segundos. Saldrán menos al principio, pero es más estímulo.</li>' +
+      '<li><b>Un paso atrás:</b> quita 5 kg, haz 3 × 15 limpias dos sesiones y vuelve a este peso.</li>' +
+      '<li><b>Mira el sueño:</b> si esta semana has dormido mal, no es el músculo. Un par de noches buenas y suele salir solo.</li>' +
+    '</ul></div></details>';
+}
+
 /* ---------- Nota de la sesión ----------
    "Me molestaba el hombro", "la prensa del fondo tiene el pin roto". Lo que
    se olvida en una semana y hace falta justo al volver. Opcional: el campo
@@ -3895,6 +4024,7 @@ function serieHecha(){
     if(siguientePendiente(S.iEj) === -1){
       S.terminada = true;
       pito('fin');
+      decir('Sesión completa.');
       pintarSesion();
       return;
     }
@@ -3903,6 +4033,7 @@ function serieHecha(){
   S.finDescanso = Date.now() + descansoActual() * 1000;
   arrancarTick();
   programarPitos(descansoActual());
+  avisarPorVoz(ej, nSeries);
   pintarSesion();
 }
 
@@ -3969,6 +4100,7 @@ function pintarListaEjercicios(){
   body.innerHTML =
     '<h2 class="ses-nombre">Tu entreno de hoy</h2>' +
     '<p class="ses-alias">Toca cualquiera para ir a ella. Si la que toca está ocupada, ve a otra: las que dejes a medias te esperan aquí.</p>' +
+    quedaHTML() +
     '<div class="ses-lista-ej">' +
       S.lista.map((e, i) => {
         const n = seriesDe(e, i);
@@ -4981,6 +5113,7 @@ function marcarOpts(sel, attr, valor){
   });
 }
 function setSonido(v){ setLS(K.sonido, v); renderAjustes(); if(v === 'si') prepararSonido(); }
+function setVoz(v){ setRaw(K.voz, v); renderAjustes(); if(v === 'si') decir('Así sonarán los avisos entre series.'); }
 function setTam(v){ setLS(K.tam, v); aplicarTam(); renderAjustes(); }
 function setContraste(v){ setLS(K.contraste, v); aplicarContraste(); renderAjustes(); }
 function setTono(v){ setLS(K.tono, v); renderAjustes(); renderHoy(); }
@@ -5018,6 +5151,7 @@ function toggleThemeManual(){
 
 function renderAjustes(){
   marcarOpts('#sonidoOpts .style-opt',    'sonido',    getSonido());
+  marcarOpts('#vozOpts .style-opt',       'voz',       getVoz());
   marcarOpts('#tamOpts .style-opt',       'tam',       getTam());
   marcarOpts('#contrasteOpts .style-opt', 'contraste', getContraste());
   marcarOpts('#tonoOpts .style-opt',      'tono',      getTono());
