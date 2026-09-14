@@ -786,6 +786,15 @@
   .fase.actual{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent);}
   .fase.actual small{color:var(--accent);}
   .fase.hecha{opacity:.72;}
+  .corr{display:flex; flex-direction:column; gap:12px;}
+  .corr-fila b{display:block; font-size:var(--t-sm); margin-bottom:4px;}
+  .corr-campos{display:flex; gap:8px;}
+  .corr-campos label{display:flex; flex-direction:column; gap:3px; flex:1; min-width:0; font-size:var(--t-2xs); color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.5px;}
+  .corr-campos label.kg{flex:0 0 86px;}
+  .corr-campos input{width:100%; box-sizing:border-box; font-family:var(--font-mono); font-size:16px; padding:8px; border:1px solid var(--border); border-radius:var(--r-sm); background:var(--bg); color:var(--ink);}
+  .corr-botones{display:flex; gap:8px;}
+  .corr-botones > *{flex:1;}
+  .corr-nota{font-size:var(--t-xs); color:var(--muted); margin:0;}
   .ses-descanso{text-align:center; padding:16px 0 8px;}
   .ring{width:190px; height:190px; margin:0 auto 6px; display:block; filter:drop-shadow(0 4px 14px rgba(0,0,0,.08));}
   .ring circle{fill:none; stroke-width:8; stroke-linecap:round;}
@@ -1205,6 +1214,14 @@
     <div class="settings-row">
       <div class="lbl">Móvil y ordenador</div>
       <div class="sync-estado" id="syncEstado"></div>
+    </div>
+
+    <div class="settings-row">
+      <div class="lbl">Traer tu historial de Hevy</div>
+      <div class="settings-hint">En Hevy, en Ajustes, busca «Exportar datos» y exporta los entrenos: te da un archivo <b>.csv</b>. Elígelo aquí. Se traen las fechas, los pesos y las repeticiones de las máquinas que están en tu rutina, y lo que ya tengas apuntado en esta app no se toca.</div>
+      <button class="settings-danger" onclick="document.getElementById('inpHevy').click()">Elegir el archivo de Hevy</button>
+      <input type="file" id="inpHevy" accept=".csv,text/csv,text/plain" style="display:none" onchange="importarHevy(this)">
+      <div class="sync-estado" id="hevyEstado"></div>
     </div>
 
     <button class="settings-close" onclick="closeSettings()">Listo</button>
@@ -3195,7 +3212,7 @@ const S = {
   tanda:0, tandaObjetivo:2, cintaExtra:false, finTanda:0, pausada:false, restante:0, ultimoSeg:-1,
   aguantando:false, finAguante:0, segAguante:0,
   hechasPor:[], historial:[], terminada:false, valorados:{}, ultimoCompletado:null, viendoLista:false,
-  inicio:0, reg:{}, repsSel:{}, calentando:false, finCalentar:0, subeAguante:{}, segHecho:null
+  inicio:0, reg:{}, repsSel:{}, calentando:false, finCalentar:0, subeAguante:{}, segHecho:null, marcasHoy:{}
 };
 const TANDA_MIN = 15;
 const DESCANSO_TANDAS = 120;   // 2 min entre las dos tandas de cinta
@@ -3211,7 +3228,7 @@ function empezarSesion(modo){
   S.modo = modo; S.iEj = 0; S.serie = 0; S.activa = true; S.descansando = false; S.aguantando = false; S.hechos = 0;
   S.hechasPor = S.lista.map(() => 0); S.historial = []; S.terminada = false;
   S.valorados = {}; S.ultimoCompletado = null; S.viendoLista = false;
-  S.reg = {}; S.repsSel = {}; S.subeAguante = {}; S.segHecho = null;
+  S.reg = {}; S.repsSel = {}; S.subeAguante = {}; S.segHecho = null; S.marcasHoy = {};
   /* En el gimnasio, la sesión empieza calentando. En express y viaje no:
      son la salida rápida y tienen que empezar ya. */
   S.calentando = todos === EJERCICIOS_GYM && (modo === 'fuerza' || modo === 'minima');
@@ -3750,6 +3767,7 @@ function serieHecha(){
   if(!ej.sinPeso) apunte.kg = getPesos()[ej.id] || 0;
   S.reg[S.iEj] = (S.reg[S.iEj] || []).concat([apunte]);
   S.segHecho = null;
+  comprobarMarca(ej, apunte);
   S.serie++;
   S.historial.push(S.iEj);
   /* Primera serie completada de este ejercicio: el peso ya se ha usado. */
@@ -3794,6 +3812,7 @@ function deshacerSerie(){
   const i = S.historial.pop();
   if(i !== S.iEj) irAEjercicio(i);
   if(S.reg && Array.isArray(S.reg[i])) S.reg[i] = S.reg[i].slice(0, -1);
+  recalcularMarcaHoy(i);
   const eDes = S.lista[i];
   if(eDes && S.subeAguante && S.subeAguante[eDes.id]){
     /* Si deshace la serie que hizo subir la plancha, la subida se deshace con ella. */
@@ -4038,7 +4057,7 @@ function resumenFinHTML(){
   return '<div class="ses-resumen">' +
       (min ? dato(min, 'minutos') : '') + dato(series, 'series') + dato(hechos.length, hechos.length === 1 ? 'ejercicio' : 'ejercicios') +
     '</div>' +
-    (subidas ? '<div class="ses-subidas"><b>Hoy has subido:</b><ul>' + subidas + '</ul></div>' : '');
+    (subidas ? '<div class="ses-subidas"><b>Hoy has subido:</b><ul>' + subidas + '</ul></div>' : '') + marcasHoyHTML();
 }
 
 /* En Semana: las últimas sesiones con lo que hiciste en cada una. */
@@ -4060,6 +4079,270 @@ function totalesEntrenosHTML(todos){
     dato(tiempo, 'entrenando') + dato(series, 'series') + dato(n, n === 1 ? 'sesión' : 'sesiones') +
   '</div>';
 }
+/* ---------- Mejores marcas ----------
+   Lo mejor que has hecho en cada máquina: más kilos, o más repeticiones con
+   los mismos kilos (en la plancha, más segundos). Por definición solo sube.
+   Dentro de la sesión avisa en el momento en que la superas; la primera vez
+   con una máquina no avisa, porque no hay nada que batir todavía. */
+function marcaDeApunte(x){
+  if(Array.isArray(x.seg) && x.seg.length) return { seg: Math.max.apply(null, x.seg) };
+  const r = Array.isArray(x.r) && x.r.length ? Math.max.apply(null, x.r) : 0;
+  if(x.kg > 0 || r > 0) return { kg: x.kg > 0 ? x.kg : 0, r: r };
+  return null;
+}
+function mejorQue(a, b){
+  if(!a) return false;
+  if(!b) return true;
+  if(a.seg != null || b.seg != null) return (a.seg || 0) > (b.seg || 0);
+  return a.kg > b.kg || (a.kg === b.kg && a.r > b.r);
+}
+function textoMarca(m){
+  if(m.seg != null) return m.seg + ' s';
+  if(m.kg) return m.kg + ' kg' + (m.r ? ' × ' + m.r : '');
+  return m.r + ' repeticiones';
+}
+/* hasta: si se pasa una fecha, solo cuenta lo de ANTES de ella. */
+function mejoresMarcas(hasta){
+  const todos = getEntrenos();
+  const best = {};
+  Object.keys(todos).sort().forEach(f => {
+    if(hasta && f >= hasta) return;
+    (Array.isArray(todos[f].ej) ? todos[f].ej : []).forEach(x => {
+      const m = marcaDeApunte(x);
+      if(m && mejorQue(m, best[x.id])) best[x.id] = Object.assign({ f: f }, m);
+    });
+  });
+  return best;
+}
+function marcaDeSerie(a){ return a.seg != null ? { seg: a.seg } : { kg: a.kg || 0, r: a.r || 0 }; }
+function comprobarMarca(ej, apunte){
+  const previa = mejoresMarcas(hoyKey())[ej.id];
+  if(!previa) return;
+  const actual = marcaDeSerie(apunte);
+  const yaHoy = S.marcasHoy[ej.id];
+  if(!mejorQue(actual, previa) || (yaHoy && !mejorQue(actual, yaHoy))) return;
+  S.marcasHoy[ej.id] = actual;
+  toast('Mejor marca en ' + ej.nombre.toLowerCase() + ': ' + textoMarca(actual));
+}
+function recalcularMarcaHoy(i){
+  const e = S.lista[i];
+  if(!e || !S.marcasHoy) return;
+  delete S.marcasHoy[e.id];
+  const previa = mejoresMarcas(hoyKey())[e.id];
+  if(!previa) return;
+  (S.reg[i] || []).forEach(a => {
+    const act = marcaDeSerie(a);
+    if(mejorQue(act, previa) && mejorQue(act, S.marcasHoy[e.id])) S.marcasHoy[e.id] = act;
+  });
+}
+function marcasHoyHTML(){
+  const ids = Object.keys(S.marcasHoy || {});
+  if(!ids.length) return '';
+  return '<div class="ses-subidas"><b>' + (ids.length === 1 ? 'Mejor marca de hoy:' : 'Mejores marcas de hoy:') + '</b><ul>' +
+    ids.map(id => '<li>' + esc(nombreEj(id)) + ' <b>' + textoMarca(S.marcasHoy[id]) + '</b></li>').join('') + '</ul></div>';
+}
+function marcasHTML(){
+  const best = mejoresMarcas(null);
+  const lista = catalogo().filter(e => best[e.id]);
+  if(!lista.length) return '';
+  const filas = lista.map(e => {
+    const d = desdeKey(best[e.id].f);
+    return '<tr><td>' + esc(e.nombre) + '<small>' + d.getDate() + ' de ' + MESES[d.getMonth()] + '</small></td>' +
+      '<td>' + textoMarca(best[e.id]) + '</td></tr>';
+  }).join('');
+  return '<details class="entreno"><summary><span class="ex-head">Tus mejores marcas</span>' +
+    '<span class="ex-series">' + lista.length + (lista.length === 1 ? ' ejercicio' : ' ejercicios') + '</span></summary>' +
+    '<div class="content"><table class="pesos-lista">' + filas + '</table>' +
+    '<p style="font-size:var(--t-xs); color:var(--muted); margin:8px 0 0;">Más kilos, o más repeticiones con los mismos kilos. Esta lista solo puede subir.</p></div></details>';
+}
+
+/* ---------- Corregir una sesión guardada ----------
+   Con las manos sudadas se marca 10 cuando eran 12, o se olvida cambiar el
+   peso. Hasta ahora eso se quedaba mal para siempre. */
+let entrenoEditando = null, entrenoAbierto = null;
+function corregirEntreno(f){ entrenoEditando = f; entrenoAbierto = f; renderEntrenos(); }
+function cancelarCorreccion(){ entrenoAbierto = entrenoEditando; entrenoEditando = null; renderEntrenos(); }
+function formCorreccionHTML(f, lista){
+  return '<div class="corr">' + lista.map((x, i) => {
+    const tiempo = Array.isArray(x.seg) && x.seg.length > 0;
+    const conPeso = !tiempo && catalogo().some(e => e.id === x.id && !e.sinPeso);
+    const valores = tiempo ? x.seg.join(' ') : (Array.isArray(x.r) ? x.r.join(' ') : '');
+    return '<div class="corr-fila"><b>' + esc(nombreEj(x.id)) + '</b><div class="corr-campos">' +
+      (conPeso ? '<label class="kg">kg<input type="number" inputmode="decimal" id="corrKg' + i + '" value="' + (x.kg || '') + '"></label>' : '') +
+      '<label>' + (tiempo ? 'Segundos de cada serie' : 'Repeticiones de cada serie') +
+        '<input type="text" inputmode="numeric" autocomplete="off" id="corrR' + i + '" value="' + esc(valores) + '" placeholder="' + (tiempo ? '30 30 30' : '15 14 12') + '"></label>' +
+    '</div></div>';
+  }).join('') +
+  '<div class="corr-botones"><button class="btn-main" onclick="guardarCorreccion(\'' + f + '\')">Guardar</button>' +
+    '<button class="btn-second" onclick="cancelarCorreccion()">Cancelar</button></div>' +
+  '<p class="corr-nota">Separa las series con espacios: «15 14 12» son tres series.</p></div>';
+}
+function guardarCorreccion(f){
+  const todos = getEntrenos();
+  const e = todos[f];
+  if(!e || !Array.isArray(e.ej)) return;
+  e.ej.forEach((x, i) => {
+    const kgEl = document.getElementById('corrKg' + i);
+    const rEl = document.getElementById('corrR' + i);
+    if(kgEl){
+      const n = parseFloat(String(kgEl.value).replace(',', '.'));
+      if(n > 0) x.kg = Math.round(n * 10) / 10; else delete x.kg;
+    }
+    if(rEl){
+      const nums = (String(rEl.value).match(/\d+/g) || []).map(Number).filter(n => n > 0 && n < 1000).slice(0, 10);
+      const campo = Array.isArray(x.seg) && x.seg.length ? 'seg' : 'r';
+      if(nums.length){ x[campo] = nums; x.s = nums.length; }
+    }
+  });
+  saveJSON(K.entrenos, todos);
+  entrenoEditando = null; entrenoAbierto = f;
+  renderEntrenos(); renderHoyEntreno();
+  toast('Corregido');
+}
+
+/* ---------- Traer el historial de Hevy ----------
+   Quiere dejar Hevy, pero ahí están meses de pesos. La exportación de Hevy es
+   un CSV con una fila por serie (start_time, exercise_title, set_type,
+   weight_kg, reps, duration_seconds…). Se traen solo las máquinas que están
+   en su rutina; lo que ya haya apuntado en esta app manda y no se pisa. */
+const HEVY_MAPA = [
+  ['femoral',   /leg curl|curl femoral|hamstring/],
+  ['prensa',    /leg press|prensa/],
+  ['laterales', /lateral raise|elevaci[oó]n(es)? lateral/],
+  ['hombros',   /shoulder press|overhead press|press de hombro|press militar/],
+  ['jalon',     /pulldown|pull down|jal[oó]n/],
+  ['pecho',     /chest press|press de pecho|bench press|press banca/],
+  ['remo',      /\brow\b|remo/],
+  ['triceps',   /tricep|tr[ií]cep/],
+  ['biceps',    /bicep|b[ií]cep|arm curl/],
+  ['plancha',   /plank|plancha/]
+];
+const MESES_CSV = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11, ene:0, abr:3, ago:7, dic:11, set:8 };
+function parsearCSV(texto){
+  const filas = [];
+  let fila = [], campo = '', comillas = false;
+  for(let i = 0; i < texto.length; i++){
+    const c = texto[i];
+    if(comillas){
+      if(c === '"'){ if(texto[i + 1] === '"'){ campo += '"'; i++; } else comillas = false; }
+      else campo += c;
+    } else if(c === '"') comillas = true;
+    else if(c === ','){ fila.push(campo); campo = ''; }
+    else if(c === '\n' || c === '\r'){
+      if(c === '\r' && texto[i + 1] === '\n') i++;
+      fila.push(campo); campo = '';
+      if(fila.length > 1 || fila[0] !== '') filas.push(fila);
+      fila = [];
+    } else campo += c;
+  }
+  if(campo !== '' || fila.length){ fila.push(campo); filas.push(fila); }
+  return filas;
+}
+function fechaCSV(txt){
+  const s = String(txt || '').trim();
+  let m = /(\d{4})-(\d{2})-(\d{2})/.exec(s);
+  if(m) return m[1] + '-' + m[2] + '-' + m[3];
+  const mes = t => MESES_CSV[String(t).slice(0, 3).toLowerCase()];
+  m = /(\d{1,2})\s+([A-Za-z]{3,})\.?,?\s+(\d{4})/.exec(s);
+  if(m && mes(m[2]) != null) return m[3] + '-' + String(mes(m[2]) + 1).padStart(2, '0') + '-' + m[1].padStart(2, '0');
+  m = /([A-Za-z]{3,})\.?\s+(\d{1,2}),?\s+(\d{4})/.exec(s);
+  if(m && mes(m[1]) != null) return m[3] + '-' + String(mes(m[1]) + 1).padStart(2, '0') + '-' + m[2].padStart(2, '0');
+  return null;
+}
+function minutosCSV(txt){
+  const m = /(\d{1,2}):(\d{2})\s*([AaPp][Mm])?/.exec(String(txt || ''));
+  if(!m) return null;
+  let hora = +m[1];
+  if(m[3]){ const pm = /p/i.test(m[3]); if(pm && hora < 12) hora += 12; if(!pm && hora === 12) hora = 0; }
+  return hora * 60 + (+m[2]);
+}
+function importarHevyTexto(texto){
+  const filas = parsearCSV(String(texto || '').replace(/^\uFEFF/, ''));
+  if(filas.length < 2) return { error: 'El archivo está vacío o no es un CSV.' };
+  const cab = filas[0].map(c => c.trim().toLowerCase());
+  const col = n => cab.indexOf(n);
+  const iT = col('start_time'), iF = col('end_time'), iE = col('exercise_title'), iTipo = col('set_type'),
+        iKg = col('weight_kg'), iR = col('reps'), iD = col('duration_seconds');
+  if(iT < 0 || iE < 0) return { error: 'No parece la exportación de Hevy: faltan las columnas start_time y exercise_title.' };
+  const num = v => { const n = parseFloat(String(v || '').replace(',', '.')); return isNaN(n) ? 0 : n; };
+  const dias = {}, fuera = {};
+  filas.slice(1).forEach(c => {
+    const fecha = fechaCSV(c[iT]);
+    if(!fecha) return;
+    const titulo = String(c[iE] || '').trim();
+    const d = dias[fecha] || (dias[fecha] = { ej: {}, orden: [], ini: minutosCSV(c[iT]), fin: iF >= 0 ? minutosCSV(c[iF]) : null });
+    if(iTipo >= 0 && /warm/i.test(c[iTipo] || '')) return;
+    const par = HEVY_MAPA.find(p => p[1].test(titulo.toLowerCase()));
+    if(!par){ if(titulo) fuera[titulo] = true; return; }
+    const id = par[0];
+    if(!d.ej[id]){ d.ej[id] = { s: 0, kg: 0, r: [], seg: [] }; d.orden.push(id); }
+    const x = d.ej[id];
+    x.s++;
+    const kg = iKg >= 0 ? num(c[iKg]) : 0, r = iR >= 0 ? Math.round(num(c[iR])) : 0, seg = iD >= 0 ? Math.round(num(c[iD])) : 0;
+    if(kg > x.kg) x.kg = Math.round(kg * 10) / 10;
+    if(r > 0) x.r.push(r);
+    if(seg > 0) x.seg.push(seg);
+  });
+  const fechas = Object.keys(dias).sort();
+  if(!fechas.length) return { error: 'No he encontrado entrenos con fecha en ese archivo.' };
+  const entrenos = getEntrenos(), log = getLog(), hist = getPesosHist(), pesos = getPesos();
+  let nuevas = 0;
+  fechas.forEach(fecha => {
+    const d = dias[fecha];
+    const ej = d.orden.map(id => {
+      const x = d.ej[id], o = { id: id, s: x.s };
+      if(x.kg > 0) o.kg = x.kg;
+      if(x.r.length) o.r = x.r.slice(0, 10);
+      else if(x.seg.length) o.seg = x.seg.slice(0, 10);
+      return o;
+    });
+    if(!entrenos[fecha]){
+      const min = (d.ini != null && d.fin != null && d.fin > d.ini) ? d.fin - d.ini : 0;
+      entrenos[fecha] = { tipo: 'fuerza', modo: 'fuerza', min: min, ej: ej, cinta: 0, hevy: true };
+      nuevas++;
+    }
+    if(!log[fecha]) log[fecha] = 'fuerza';
+    ej.forEach(o => {
+      if(!o.kg) return;
+      const l = Array.isArray(hist[o.id]) ? hist[o.id] : [];
+      if(!l.some(p => p.f === fecha)) l.push({ f: fecha, kg: o.kg });
+      hist[o.id] = l;
+    });
+  });
+  Object.keys(hist).forEach(id => {
+    const orden = hist[id].slice().sort((a, b) => a.f < b.f ? -1 : a.f > b.f ? 1 : 0);
+    const limpia = orden.filter((p, i) => i === 0 || p.kg !== orden[i - 1].kg).slice(-60);
+    hist[id] = limpia;
+    if(!pesos[id] && limpia.length) pesos[id] = limpia[limpia.length - 1].kg;
+  });
+  const claves = Object.keys(entrenos).sort();
+  while(claves.length > 1000) delete entrenos[claves.shift()];
+  saveJSON(K.entrenos, entrenos);
+  saveJSON(K.log, log);
+  saveJSON(K.pesosHist, hist);
+  saveJSON(K.pesos, pesos);
+  return { sesiones: fechas.length, nuevas: nuevas, desde: fechas[0], hasta: fechas[fechas.length - 1], fuera: Object.keys(fuera) };
+}
+function importarHevy(input){
+  const f = input.files && input.files[0];
+  input.value = '';
+  if(!f) return;
+  const lector = new FileReader();
+  lector.onload = () => {
+    let res;
+    try{ res = importarHevyTexto(lector.result); }catch(e){ res = { error: 'No he podido leer ese archivo.' }; }
+    const el = document.getElementById('hevyEstado');
+    if(res.error){ if(el) el.textContent = res.error; toast('No se ha importado nada'); return; }
+    const fecha = k => { const d = desdeKey(k); return d.getDate() + ' de ' + MESES[d.getMonth()] + ' de ' + d.getFullYear(); };
+    if(el) el.innerHTML = '<b>' + res.nuevas + (res.nuevas === 1 ? ' sesión nueva' : ' sesiones nuevas') + '</b> (del ' + fecha(res.desde) + ' al ' + fecha(res.hasta) + ').' +
+      (res.sesiones > res.nuevas ? ' ' + (res.sesiones - res.nuevas) + ' ya estaban apuntadas aquí y se han dejado como estaban.' : '') +
+      (res.fuera.length ? ' No son de tu rutina y no se han traído: ' + esc(res.fuera.slice(0, 6).join(', ')) + (res.fuera.length > 6 ? '…' : '') + '.' : '');
+    renderTodo();
+    toast(res.nuevas ? 'Historial de Hevy importado' : 'Nada nuevo que importar');
+  };
+  lector.readAsText(f);
+}
+
 function renderEntrenos(){
   const el = document.getElementById('ultimosEntrenos');
   if(!el) return;
@@ -4069,7 +4352,7 @@ function renderEntrenos(){
   el.innerHTML =
     '<h2 style="margin-top:36px;"><span class="h2-badge">' + ic('i-nota') + '</span>Tus últimas sesiones</h2>' +
     '<p class="lead">Qué hiciste, con cuánto peso y cuántas repeticiones. Se apunta solo al cerrar cada sesión.</p>' +
-    totalesEntrenosHTML(todos) +
+    totalesEntrenosHTML(todos) + marcasHTML() +
     fechas.map(f => {
       const e = todos[f] || {};
       const d = desdeKey(f);
@@ -4081,10 +4364,13 @@ function renderEntrenos(){
         '<tr><td>' + esc(nombreEj(x.id)) + '<small>' + esc(detalleSeries(x)) + '</small></td>' +
         '<td>' + (x.kg ? x.kg + ' kg' : '') + '</td></tr>').join('') +
         (e.cinta ? '<tr><td>Cinta en cuesta</td><td>' + e.cinta + ' min</td></tr>' : '');
-      return '<details class="entreno"><summary><span class="ex-head">' +
+      return '<details class="entreno"' + (f === entrenoAbierto ? ' open' : '') + '><summary><span class="ex-head">' +
           DIAS_LARGOS[d.getDay()].replace(/^./, c => c.toUpperCase()) + ' ' + d.getDate() + ' de ' + MESES[d.getMonth()] +
         '</span><span class="ex-series">' + esc(meta || etiqueta(e.tipo).corto) + '</span></summary>' +
-        '<div class="content"><table class="pesos-lista">' + filas + '</table></div></details>';
+        '<div class="content">' + (entrenoEditando === f ? formCorreccionHTML(f, lista) :
+          '<table class="pesos-lista">' + filas + '</table>' +
+          (lista.length ? '<button class="btn-undo" onclick="corregirEntreno(\'' + f + '\')">Corregir pesos o repeticiones</button>' : '')) +
+        '</div></details>';
     }).join('');
 }
 
@@ -5009,7 +5295,7 @@ function toggleTheme(){ toggleThemeManual(); }
 const CAMPOS_SESION = ['activa','tipo','modo','iEj','serie','descansando','finDescanso','hechos',
   'tanda','tandaObjetivo','cintaExtra','finTanda','pausada','restante',
   'aguantando','finAguante','segAguante','hechasPor','historial','terminada','valorados','ultimoCompletado','inicio',
-  'reg','repsSel','calentando','finCalentar','subeAguante'];
+  'reg','repsSel','calentando','finCalentar','subeAguante','marcasHoy'];
 
 function guardarSesion(){
   if(!S.activa) return;
@@ -5033,7 +5319,7 @@ function restaurarSesion(){
   }
   if(!Array.isArray(S.historial)) S.historial = [];
   if(!S.valorados || typeof S.valorados !== 'object') S.valorados = {};
-  ['reg','repsSel','subeAguante'].forEach(c => { if(!S[c] || typeof S[c] !== 'object') S[c] = {}; });
+  ['reg','repsSel','subeAguante','marcasHoy'].forEach(c => { if(!S[c] || typeof S[c] !== 'object') S[c] = {}; });
   S.segHecho = null;
   S.viendoLista = false; S.tick = null; S.ultimoSeg = -1;
   abrirSesion();
