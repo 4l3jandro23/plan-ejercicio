@@ -805,6 +805,17 @@
      43 px y se partía letra a letra. Ahora el que cede es el resumen. */
   details.entreno summary .ex-head{flex:0 1 auto;}
   details.entreno summary .ex-series{flex-shrink:1; min-width:0; text-align:right;}
+  .ses-nota{display:block; text-align:left; margin:16px 0 12px;}
+  .ses-nota span{display:block; font-size:var(--t-xs); color:var(--muted); font-weight:700; margin-bottom:6px;}
+  .ses-nota textarea{width:100%; box-sizing:border-box; font-family:inherit; font-size:16px; line-height:1.4; padding:10px 12px; border:1px solid var(--border); border-radius:var(--r-sm); background:var(--card); color:var(--ink); resize:vertical;}
+  .ses-nota textarea:focus{outline:none; border-color:var(--accent);}
+  .nota-entreno{margin:10px 0 0; font-size:var(--t-sm); color:var(--muted); line-height:1.45;}
+  .nota-entreno b{color:var(--ink);}
+  .resumen-semana{margin:14px 0 0;}
+  .resumen-semana h3{margin:0 0 10px;}
+  .resumen-semana ul{margin:10px 0 0; padding-left:18px; font-size:var(--t-sm);}
+  .resumen-semana li{margin:3px 0;}
+  .resumen-semana .btn-undo{padding-top:10px;}
   .ses-descanso{text-align:center; padding:16px 0 8px;}
   .ring{width:190px; height:190px; margin:0 auto 6px; display:block; filter:drop-shadow(0 4px 14px rgba(0,0,0,.08));}
   .ring circle{fill:none; stroke-width:8; stroke-linecap:round;}
@@ -1140,11 +1151,12 @@
     <div class="settings-row">
       <div class="lbl">Descanso entre series</div>
       <div class="style-options" id="descansoOpts">
+        <button class="style-opt" data-seg="auto" onclick="setDescanso('auto')">Auto</button>
         <button class="style-opt" data-seg="60" onclick="setDescanso(60)">60s</button>
         <button class="style-opt" data-seg="75" onclick="setDescanso(75)">75s</button>
         <button class="style-opt" data-seg="90" onclick="setDescanso(90)">90s</button>
       </div>
-      <div class="settings-hint">Si dudas, déjalo en 75. Para lo que haces tú, cualquiera de los tres vale.</div>
+      <div class="settings-hint"><b>Auto:</b> 90 segundos en prensa, jalón, pecho y remo, que son los que mueven más peso, y 60 en el resto. Descansar más en los grandes ayuda a sacar más repeticiones; en los pequeños no hace falta, y la sesión se acorta.</div>
     </div>
 
     <div class="settings-row">
@@ -1258,6 +1270,7 @@
   <div class="sos-row" id="sosRow"></div>
 
   <div id="hoyEntreno"></div>
+  <div id="hoyResumenSemana"></div>
   <div id="hoyActions"></div>
 
   <div class="escape-card" id="escapeCard">
@@ -2014,7 +2027,10 @@ const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto'
 
 /* Por defecto: martes y jueves fuerza, viernes flexible, sábado cinta. Editable. */
 const DIAS_DEFECTO = { fijos:[2,4], flex:[5], cinta:[6] };
-const DESCANSO_DEFECTO = 75;
+const DESCANSO_DEFECTO = 'auto';
+/* Los que mueven más peso: con ellos, descansar 90 s en vez de 60 da más
+   repeticiones en las series siguientes. En los demás no compensa esperar. */
+const DESCANSO_LARGO = ['prensa', 'jalon', 'pecho', 'remo'];
 
 function loadJSON(key, fallback){
   try{
@@ -2055,7 +2071,9 @@ function getChecks(){ const c = loadJSON(K.check, {}); return (c && typeof c ===
 function getPesos(){ const p = loadJSON(K.pesos, {}); return (p && typeof p === 'object') ? p : {}; }
 function getLugar(){ try{ return localStorage.getItem(K.lugar) === 'casa' ? 'casa' : 'gym'; }catch(e){ return 'gym'; } }
 function getDescanso(){
-  const n = parseInt(localStorage.getItem(K.descanso), 10);
+  let raw = null;
+  try{ raw = localStorage.getItem(K.descanso); }catch(e){}
+  const n = parseInt(raw, 10);
   return (n === 60 || n === 75 || n === 90) ? n : DESCANSO_DEFECTO;
 }
 function ejerciciosActuales(){ return getLugar() === 'casa' ? EJERCICIOS_CASA : EJERCICIOS_GYM; }
@@ -2761,6 +2779,7 @@ function renderHoy(){
   renderPesosRapido();
   renderHorario();
   renderHoyEntreno();
+  renderResumenSemana();
   renderFases();
 }
 /* Lo de hoy, entero y a la vista, en cuanto se guarda la sesión. */
@@ -2778,6 +2797,7 @@ function renderHoyEntreno(){
     '<div class="card"><h3 style="margin-top:0;">Tu entreno de hoy</h3>' +
       totalesEntrenosHTML({ hoy: e }).replace(/>1<\/b><span>sesión/, '>' + lista.length + '</b><span>' + (lista.length === 1 ? 'ejercicio' : 'ejercicios')) +
       '<table class="pesos-lista">' + filas + '</table>' +
+      (e.nota ? '<p class="nota-entreno"><b>Tu nota:</b> ' + esc(e.nota) + '</p>' : '') +
     '</div>';
 }
 
@@ -3222,7 +3242,7 @@ const S = {
   tanda:0, tandaObjetivo:2, cintaExtra:false, finTanda:0, pausada:false, restante:0, ultimoSeg:-1,
   aguantando:false, finAguante:0, segAguante:0,
   hechasPor:[], historial:[], terminada:false, valorados:{}, ultimoCompletado:null, viendoLista:false,
-  inicio:0, reg:{}, repsSel:{}, calentando:false, finCalentar:0, subeAguante:{}, segHecho:null, marcasHoy:{}
+  inicio:0, reg:{}, repsSel:{}, calentando:false, finCalentar:0, subeAguante:{}, segHecho:null, marcasHoy:{}, nota:''
 };
 const TANDA_MIN = 15;
 const DESCANSO_TANDAS = 120;   // 2 min entre las dos tandas de cinta
@@ -3238,7 +3258,7 @@ function empezarSesion(modo){
   S.modo = modo; S.iEj = 0; S.serie = 0; S.activa = true; S.descansando = false; S.aguantando = false; S.hechos = 0;
   S.hechasPor = S.lista.map(() => 0); S.historial = []; S.terminada = false;
   S.valorados = {}; S.ultimoCompletado = null; S.viendoLista = false;
-  S.reg = {}; S.repsSel = {}; S.subeAguante = {}; S.segHecho = null; S.marcasHoy = {};
+  S.reg = {}; S.repsSel = {}; S.subeAguante = {}; S.segHecho = null; S.marcasHoy = {}; S.nota = '';
   /* En el gimnasio, la sesión empieza calentando. En express y viaje no:
      son la salida rápida y tienen que empezar ya. */
   S.calentando = todos === EJERCICIOS_GYM && (modo === 'fuerza' || modo === 'minima');
@@ -3254,7 +3274,7 @@ function empezarCinta(){
   S.tipo = 'cinta'; S.modo = 'cinta'; S.activa = true; S.hechos = 0;
   S.tanda = 0; S.tandaObjetivo = 2; S.cintaExtra = false;
   S.descansando = false; S.pausada = false; S.calentando = false;
-  S.reg = {}; S.repsSel = {}; S.subeAguante = {};
+  S.reg = {}; S.repsSel = {}; S.subeAguante = {}; S.nota = '';
   S.finTanda = Date.now() + TANDA_MIN * 60000;
   S.inicio = Date.now();
   abrirSesion();
@@ -3338,6 +3358,7 @@ function pintarSesionDentro(){
           : T('Ya está. No hay nada más que rellenar ni que apuntar en ningún sitio.', 'Guardado.')) + '</p>' +
         resumenFinHTML() +
         bloqueFinPendientes() + preguntaSensacion(S.ultimoCompletado) +
+        notaSesionHTML() +
         '<button class="btn-main" onclick="terminarSesion()">Guardar y salir</button>' +
         /* Solo en sesión completa y en el gimnasio: es donde de verdad hay
            cinta. Lo pidió él directamente — quiere cinta y fuerza en la misma
@@ -3503,12 +3524,14 @@ function pintarCintaDentro(){
           '<span class="emo">' + ic('i-check','ic-lg') + '</span><h3>Fuerza + cinta hechas</h3>' +
           '<p>La rutina completa y 15 minutos de cuesta encima. Esta es tu sesión de verdad, no una versión reducida.</p>' +
           resumenFinHTML() +
+          notaSesionHTML() +
           '<button class="btn-main" onclick="terminarCintaExtra()">Guardar y salir</button>' +
           '<button class="btn-second" onclick="terminarCintaExtra(); abrirEstira()">' + ic('i-respirar') + ' Guardar y estirar 7 min</button>' +
         '</div>'
       : '<div class="ses-fin">' +
           '<span class="emo">' + ic('i-check','ic-lg') + '</span><h3>30 minutos de cinta</h3>' +
           '<p>Media hora andando en cuesta. Eso es exactamente lo que más le conviene ahora mismo a tu colesterol.</p>' +
+          notaSesionHTML() +
           '<button class="btn-main" onclick="terminarCinta()">Guardar y salir</button>' +
           '<button class="btn-second" onclick="terminarCinta(); abrirEstira()">' + ic('i-respirar') + ' Guardar y estirar 7 min</button>' +
         '</div>';
@@ -3687,6 +3710,86 @@ function detalleSeries(x){
   return x.s + (x.s === 1 ? ' serie' : ' series') + (x.v && REPS_TXT[x.v] ? ' · ' + REPS_TXT[x.v] : '');
 }
 
+/* ---------- Nota de la sesión ----------
+   "Me molestaba el hombro", "la prensa del fondo tiene el pin roto". Lo que
+   se olvida en una semana y hace falta justo al volver. Opcional: el campo
+   está en la pantalla final y si se deja vacío no pasa nada. */
+function notaSesionHTML(){
+  return '<label class="ses-nota"><span>¿Algo que recordar para la próxima? (opcional)</span>' +
+    '<textarea rows="2" maxlength="200" placeholder="Me molestaba el hombro, la prensa del fondo tiene el pin roto…" ' +
+      'oninput="S.nota = this.value; guardarSesion()">' + esc(S.nota || '') + '</textarea></label>';
+}
+/* La nota más reciente de antes de hoy, si es de las últimas tres semanas:
+   una nota de hace dos meses ya no dice nada de cómo estás ahora. */
+function ultimaNota(){
+  const todos = getEntrenos();
+  const hoy = hoyKey();
+  const limite = dateKey(new Date(Date.now() - 21 * 86400000));
+  const f = Object.keys(todos).filter(k => k < hoy && k >= limite && todos[k] && todos[k].nota).sort().pop();
+  return f ? { f: f, nota: todos[f].nota } : null;
+}
+function ultimaNotaHTML(){
+  const u = ultimaNota();
+  if(!u) return '';
+  const d = desdeKey(u.f);
+  return '<div class="ses-sugerencia" style="margin:-8px 0 18px;"><b>Tu nota del ' + DIAS_LARGOS[d.getDay()] + ' ' + d.getDate() + ':</b> ' + esc(u.nota) + '</div>';
+}
+/* Serie de prueba con el peso ya calculado: la mitad del que usas, redondeado
+   a la placa de 5. Delante de la máquina no hay que hacer cuentas. */
+function seriePruebaHTML(){
+  const pesos = getPesos();
+  const e = S.lista.find(x => !x.sinPeso && pesos[x.id]);
+  if(!e) return '<li>En la primera máquina, haz una serie de prueba con menos peso. Esa no la marques.</li>';
+  const kg = Math.max(5, Math.round(pesos[e.id] / 2 / 5) * 5);
+  return '<li>Serie de prueba en ' + esc(e.nombre.toLowerCase()) + ': 10 repeticiones con unos <b>' + kg + ' kg</b>, la mitad de lo tuyo. Esa no la marques.</li>';
+}
+
+/* ---------- Resumen de la semana pasada ----------
+   Lunes, martes y miércoles, en Hoy: lo que hiciste la semana anterior. Solo
+   sale si hubo al menos una sesión, y solo cuenta cosas que ya están hechas:
+   nunca lo que faltó. */
+function resumenSemanaPasada(){
+  const lunesEste = lunesDe(new Date());
+  const lunesAntes = new Date(lunesEste); lunesAntes.setDate(lunesAntes.getDate() - 7);
+  const desde = dateKey(lunesAntes), hasta = dateKey(lunesEste);
+  const enRango = k => k >= desde && k < hasta;
+  const log = getLog();
+  const sesiones = Object.keys(log).filter(k => enRango(k) && esSesion(log[k])).length;
+  if(!sesiones) return null;
+  const todos = getEntrenos();
+  let series = 0, min = 0;
+  Object.keys(todos).filter(enRango).forEach(k => {
+    const e = todos[k] || {};
+    min += (e.min || 0) + (e.cinta && !e.min ? e.cinta : 0);
+    (Array.isArray(e.ej) ? e.ej : []).forEach(x => { series += x.s || 0; });
+  });
+  const antes = mejoresMarcas(desde), despues = mejoresMarcas(hasta);
+  const marcas = Object.keys(despues).filter(id => antes[id] && mejorQue(despues[id], antes[id]) && enRango(despues[id].f))
+    .map(id => nombreEj(id) + ': ' + textoMarca(despues[id]));
+  return { semana: isoWeekKey(lunesAntes), sesiones: sesiones, series: series, min: min, marcas: marcas };
+}
+function renderResumenSemana(){
+  const el = document.getElementById('hoyResumenSemana');
+  if(!el) return;
+  const dow = new Date().getDay();
+  const r = (dow >= 1 && dow <= 3) ? resumenSemanaPasada() : null;
+  let visto = '';
+  try{ visto = localStorage.getItem('planEjercicioResumenVisto') || ''; }catch(e){}
+  if(!r || visto === r.semana){ el.innerHTML = ''; return; }
+  const horas = Math.floor(r.min / 60), resto = r.min % 60;
+  const tiempo = r.min ? (horas ? horas + ' h' + (resto ? ' ' + resto + ' min' : '') : resto + ' min') : '—';
+  const dato = (b, txt) => '<div><b>' + b + '</b><span>' + txt + '</span></div>';
+  el.innerHTML = '<div class="card resumen-semana"><h3>La semana pasada</h3>' +
+    '<div class="entrenos-total">' + dato(r.sesiones, r.sesiones === 1 ? 'sesión' : 'sesiones') + dato(r.series, 'series') + dato(tiempo, 'entrenando') + '</div>' +
+    (r.marcas.length ? '<b style="font-size:var(--t-sm);">' + (r.marcas.length === 1 ? 'Mejor marca:' : 'Mejores marcas:') + '</b><ul>' + r.marcas.map(m => '<li>' + esc(m) + '</li>').join('') + '</ul>' : '') +
+    '<p class="nota-entreno">' + T('Esto ya está hecho y no se lo lleva nadie, pase lo que pase esta semana.', 'Hecho.') + '</p>' +
+    '<button class="btn-undo" onclick="ocultarResumenSemana(\'' + r.semana + '\')">Visto</button></div>';
+}
+function ocultarResumenSemana(semana){
+  setRaw('planEjercicioResumenVisto', semana);
+  renderResumenSemana();
+}
+
 /* ---------- Calentar ---------- */
 function pintarCalentar(){
   const body = document.getElementById('sesBody');
@@ -3697,10 +3800,11 @@ function pintarCalentar(){
     '<p class="ses-alias">5 minutos · antes de la primera máquina</p>' +
     (enMarcha ? '<div class="ses-descanso" style="padding-top:0;">' + anilloHTML('5:00') + '</div>' : '') +
     '<div class="ses-recuerda"><b>Lo único que importa:</b> entrar en calor, no cansarte. Tienes que acabar pudiendo hablar sin esfuerzo.</div>' +
+    ultimaNotaHTML() +
     '<ol class="ses-pasos">' +
       '<li>Cinta andando rápido con un 5-6% de cuesta, o bici estática suave.</li>' +
       '<li>Nada de estirar ahora: en frío no previene lesiones y quita algo de fuerza. Los estiramientos van al final.</li>' +
-      '<li>En la primera máquina, haz una serie de prueba con menos peso. Esa no la marques.</li>' +
+      seriePruebaHTML() +
     '</ol>' +
     '<div class="ses-foot">' +
       (enMarcha
@@ -4023,7 +4127,10 @@ function fotoEntreno(tipo){
     if(seg.length) o.seg = seg;
     return o;
   }).filter(Boolean);
-  return { tipo: tipo, modo: S.modo, min: minutosSesion(), ej: ej, cinta: S.tipo === 'cinta' ? (S.tanda || 0) * TANDA_MIN : 0 };
+  const foto = { tipo: tipo, modo: S.modo, min: minutosSesion(), ej: ej, cinta: S.tipo === 'cinta' ? (S.tanda || 0) * TANDA_MIN : 0 };
+  const nota = String(S.nota || '').trim().slice(0, 200);
+  if(nota) foto.nota = nota;
+  return foto;
 }
 function guardarEntreno(tipo){
   if(!S.activa || !Array.isArray(S.hechasPor)) return;
@@ -4036,6 +4143,7 @@ function guardarEntreno(tipo){
   if(previo){
     if(!foto.ej.length && Array.isArray(previo.ej)) foto.ej = previo.ej;
     if(!foto.cinta && previo.cinta) foto.cinta = previo.cinta;
+    if(!foto.nota && previo.nota) foto.nota = previo.nota;
     if(previo.min && previo.modo !== foto.modo) foto.min += previo.min;
     if(previo.tipo === 'fuerza') foto.tipo = 'fuerza';
   }
@@ -4380,6 +4488,7 @@ function renderEntrenos(){
         '</span><span class="ex-series">' + esc(meta || etiqueta(e.tipo).corto) + '</span></summary>' +
         '<div class="content">' + (entrenoEditando === f ? formCorreccionHTML(f, lista) :
           '<table class="pesos-lista">' + filas + '</table>' +
+          (e.nota ? '<p class="nota-entreno"><b>Tu nota:</b> ' + esc(e.nota) + '</p>' : '') +
           (lista.length ? '<button class="btn-undo" onclick="corregirEntreno(\'' + f + '\')">Corregir pesos o repeticiones</button>' : '')) +
         '</div></details>';
     }).join('');
@@ -4387,7 +4496,13 @@ function renderEntrenos(){
 
 /* En express/viaje el descanso baja a 30s: si dura lo mismo que una sesión
    normal deja de ser la salida rápida que pretende ser. */
-function descansoActual(){ return serieUnica() ? 30 : getDescanso(); }
+function descansoActual(){
+  if(serieUnica()) return 30;
+  const d = getDescanso();
+  if(d !== 'auto') return d;
+  const e = S.lista[S.iEj];
+  return (e && DESCANSO_LARGO.indexOf(e.id) !== -1) ? 90 : 60;
+}
 
 function masDescanso(){ S.finDescanso += 15000; programarPitos((S.finDescanso - Date.now()) / 1000); actualizarRing(); guardarSesion(); }
 
@@ -5342,7 +5457,7 @@ function toggleTheme(){ toggleThemeManual(); }
 const CAMPOS_SESION = ['activa','tipo','modo','iEj','serie','descansando','finDescanso','hechos',
   'tanda','tandaObjetivo','cintaExtra','finTanda','pausada','restante',
   'aguantando','finAguante','segAguante','hechasPor','historial','terminada','valorados','ultimoCompletado','inicio',
-  'reg','repsSel','calentando','finCalentar','subeAguante','marcasHoy'];
+  'reg','repsSel','calentando','finCalentar','subeAguante','marcasHoy','nota'];
 
 function guardarSesion(){
   if(!S.activa) return;
