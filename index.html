@@ -816,6 +816,16 @@
   .resumen-semana ul{margin:10px 0 0; padding-left:18px; font-size:var(--t-sm);}
   .resumen-semana li{margin:3px 0;}
   .resumen-semana .btn-undo{padding-top:10px;}
+  .aviso-hoy{margin:14px 0 0;}
+  .aviso-hoy h3{margin:0 0 8px;}
+  .aviso-hoy ul{margin:6px 0 10px; padding-left:18px; font-size:var(--t-sm); line-height:1.5;}
+  .aviso-hoy li{margin:3px 0;}
+  .aviso-hoy p{font-size:var(--t-sm); margin:0 0 10px;}
+  .aviso-botones{display:flex; gap:8px; flex-wrap:wrap;}
+  .aviso-botones > *{flex:1; min-width:140px;}
+  .minutos-opts{display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; margin:6px 0 4px;}
+  .minutos-opts button{min-height:54px; border-radius:var(--r-md); border:1px solid var(--border); background:var(--card); color:var(--ink); font-family:var(--font-mono); font-size:var(--t-md); font-weight:700; cursor:pointer;}
+  .minutos-opts button span{display:block; font-family:inherit; font-size:var(--t-2xs); color:var(--muted); font-weight:600;}
   .ses-descanso{text-align:center; padding:16px 0 8px;}
   .ring{width:190px; height:190px; margin:0 auto 6px; display:block; filter:drop-shadow(0 4px 14px rgba(0,0,0,.08));}
   .ring circle{fill:none; stroke-width:8; stroke-linecap:round;}
@@ -1259,6 +1269,7 @@
     <button class="settings-danger" onclick="exportarDatos()"><svg class="ic-v" aria-hidden="true"><use href="#i-descarga"/></svg> Descargar una copia de mis datos</button>
     <button class="settings-danger" onclick="document.getElementById('inpImport').click()">Restaurar desde una copia</button>
     <input type="file" id="inpImport" accept="application/json,.json" style="display:none" onchange="importarDatos(this)">
+    <div class="settings-hint" id="copiaEstado" style="text-align:center;"></div>
   </div>
 </div>
 
@@ -1288,12 +1299,13 @@
     <div class="actions">
       <button class="btn-second" onclick="empezarSesion('minima')"><svg class="ic-v" aria-hidden="true"><use href="#i-pesa"/></svg>Voy, pero solo los 3 primeros (15 min)</button>
       <button class="btn-second" onclick="empezarSesion('express')"><svg class="ic-v" aria-hidden="true"><use href="#i-rayo"/></svg>Lo mínimo de lo mínimo (8 min)</button>
-      <button class="btn-second" onclick="marcar('caminar')"><svg class="ic-v" aria-hidden="true"><use href="#i-andar"/></svg>Me da para caminar 10 minutos</button>
+      <button class="btn-second" onclick="registrarCaminata(10)"><svg class="ic-v" aria-hidden="true"><use href="#i-andar"/></svg>Me da para caminar 10 minutos</button>
       <button class="btn-second" onclick="marcar('activo')"><svg class="ic-v" aria-hidden="true"><use href="#i-andar"/></svg>Me he movido, pero no fue entreno</button>
       <button class="btn-second" onclick="marcar('descanso')"><svg class="ic-v" aria-hidden="true"><use href="#i-sofa"/></svg>Hoy descanso. Punto.</button>
     </div>
   </div>
 
+  <div id="hoyAvisos"></div>
   <div id="hoyManana"></div>
   <div id="hoyPesos"></div>
   <div class="horario" id="horarioBox"></div>
@@ -2741,7 +2753,7 @@ function renderHoy(){
   const bEmpezarM = '<button class="btn-main" onclick="empezarSesion(\'minima\')">' + ic('i-play') + 'Empezar la sesión mínima · unos ' + minutosPlan('minima') + ' min</button>';
   const bMinima   = '<button class="btn-second" onclick="empezarSesion(\'minima\')">Solo los 3 primeros (unos ' + minutosPlan('minima') + ' min)</button>';
   const bCompleta = '<button class="btn-second" onclick="empezarSesion(\'fuerza\')">Hacer la sesión completa</button>';
-  const bCaminar  = '<button class="btn-second" onclick="marcar(\'caminar\')">' + ic('i-andar') + 'He caminado</button>';
+  const bCaminar  = '<button class="btn-second" onclick="abrirCaminar()">' + ic('i-andar') + 'He caminado</button>';
   const bEscape   = '<button class="btn-escape" onclick="toggleEscape()">' + ic('i-agobio') + 'Hoy no tengo fuerzas para esto</button>';
   /* Un minuto de respiración, en el momento en que aparece el agobio. No es
      terapia ni pretende serlo: es bajar el pico lo justo para poder salir. */
@@ -2791,6 +2803,7 @@ function renderHoy(){
   renderHoyEntreno();
   renderResumenSemana();
   renderFases();
+  renderAvisosHoy();
 }
 /* Lo de hoy, entero y a la vista, en cuanto se guarda la sesión. */
 function renderHoyEntreno(){
@@ -3839,6 +3852,104 @@ function estancamientoHTML(e){
     '</ul></div></details>';
 }
 
+/* ---------- Tus datos, a salvo ----------
+   Todo vive en el almacenamiento del navegador. Si iOS anda justo de espacio
+   puede borrarlo, y con él meses de pesos y sesiones. Se le pide al navegador
+   que lo trate como persistente (no pregunta nada), y si no hay sincronización
+   con GitHub ni una copia reciente, Hoy lo recuerda como mucho una vez al mes. */
+function pedirAlmacenamientoPersistente(){
+  try{
+    if(navigator.storage && navigator.storage.persist){
+      navigator.storage.persisted().then(ya => { if(!ya) navigator.storage.persist(); }).catch(() => {});
+    }
+  }catch(e){}
+}
+function diasDesdeCopia(){
+  let t = NaN;
+  try{ t = parseInt(localStorage.getItem('planEjercicioUltimaCopia'), 10); }catch(e){}
+  return isNaN(t) ? null : Math.floor((Date.now() - t) / 86400000);
+}
+function haySync(){ try{ return !!localStorage.getItem(K.ghToken); }catch(e){ return false; } }
+function renderCopiaEstado(){
+  const el = document.getElementById('copiaEstado');
+  if(!el) return;
+  const d = diasDesdeCopia();
+  el.textContent = (d === null ? 'Aún no has descargado ninguna copia.' : d === 0 ? 'Última copia: hoy.' : 'Última copia: hace ' + d + (d === 1 ? ' día.' : ' días.')) +
+    (haySync() ? ' Además se sincroniza con GitHub.' : '');
+}
+function avisoCopiaHTML(){
+  if(haySync() || totalSesiones() < 3) return '';
+  const d = diasDesdeCopia();
+  if(d !== null && d < 30) return '';
+  let hasta = 0;
+  try{ hasta = parseInt(localStorage.getItem('planEjercicioAvisoCopia'), 10) || 0; }catch(e){}
+  if(Date.now() < hasta) return '';
+  return '<div class="quiet aviso-hoy"><p><b>Tus sesiones solo están en este móvil.</b> ' +
+    T('Si algún día se borran los datos de Safari, se irían con ellos. Una copia son diez segundos.', 'Haz una copia.') + '</p>' +
+    '<div class="aviso-botones"><button class="btn-second" onclick="exportarDatos()">' + ic('i-descarga') + 'Descargar copia</button>' +
+    '<button class="btn-undo" onclick="posponerAvisoCopia()">Ahora no</button></div></div>';
+}
+function posponerAvisoCopia(){
+  setRaw('planEjercicioAvisoCopia', String(Date.now() + 30 * 86400000));
+  renderAvisosHoy();
+}
+
+/* ---------- Qué hay de nuevo ----------
+   Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
+   tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
+   Quien abre la app por primera vez no la ve: para él todo es nuevo. */
+function novedadesId(){ return '2026-09-14'; }
+function novedades(){
+  return [
+    '<b>Cuánto dura:</b> los botones de empezar dicen cuánto vas a tardar, y en el descanso ves lo que te queda.',
+    '<b>Avisos por voz</b> con los AirPods: cuánto descansas y a qué máquina vas después. Ajustes → Avisos por voz.',
+    '<b>Descanso automático:</b> 90 s en prensa, jalón, pecho y remo; 60 en el resto.',
+    '<b>Repeticiones de cada serie</b> y <b>mejores marcas</b> en el momento. Si te equivocas, se corrige en Semana.',
+    '<b>Nota al acabar</b> la sesión («me molestaba el hombro»), que te recuerda la siguiente.',
+    '<b>Estiramientos guiados</b> de 7 minutos al terminar, y la plancha empieza en 30 s y sube sola.',
+    '<b>Tu historial de Hevy</b> se puede traer desde Ajustes.'
+  ];
+}
+function novedadesHTML(){
+  let vistas = '';
+  try{ vistas = localStorage.getItem('planEjercicioNovedades') || ''; }catch(e){}
+  if(vistas === novedadesId()) return '';
+  if(totalSesiones() === 0){ setRaw('planEjercicioNovedades', novedadesId()); return ''; }
+  return '<div class="card aviso-hoy"><h3>Qué hay de nuevo</h3><ul>' + novedades().map(n => '<li>' + n + '</li>').join('') + '</ul>' +
+    '<button class="btn-second" onclick="cerrarNovedades()">Entendido</button></div>';
+}
+function cerrarNovedades(){
+  setRaw('planEjercicioNovedades', novedadesId());
+  renderAvisosHoy();
+}
+function renderAvisosHoy(){
+  const el = document.getElementById('hoyAvisos');
+  if(el) el.innerHTML = novedadesHTML() + avisoCopiaHTML();
+}
+
+/* ---------- Caminar con minutos ----------
+   "He caminado" marcaba el día y ya. Andar es lo que más hace, y sus minutos
+   no contaban en ningún total. Un toque más: cuánto, aproximado. */
+function abrirCaminar(){
+  const opciones = [10, 20, 30, 45, 60, 90].map(m =>
+    '<button onclick="registrarCaminata(' + m + ')">' + m + '<span>min</span></button>').join('');
+  abrirSheet('i-andar', 'Caminar',
+    cabSheet('¿Cuánto has caminado?', 'Aproximado vale. Suma en tus totales igual que el tiempo de gimnasio.') +
+    '<div class="minutos-opts">' + opciones + '</div>');
+}
+function registrarCaminata(min){
+  if(sheetAbierta()) cerrarSheet();
+  const todos = getEntrenos();
+  const k = hoyKey();
+  const e = todos[k] || { tipo: 'caminar', modo: 'caminar', min: 0, ej: [], cinta: 0 };
+  e.andar = (e.andar || 0) + min;
+  todos[k] = e;
+  saveJSON(K.entrenos, todos);
+  if(!esSesion(getLog()[k])) marcar('caminar', true);
+  else { renderHoy(); renderSemana(); }
+  toast('Apuntado: ' + min + ' min andando');
+}
+
 /* ---------- Nota de la sesión ----------
    "Me molestaba el hombro", "la prensa del fondo tiene el pin roto". Lo que
    se olvida en una semana y hace falta justo al volver. Opcional: el campo
@@ -3889,7 +4000,7 @@ function resumenSemanaPasada(){
   let series = 0, min = 0;
   Object.keys(todos).filter(enRango).forEach(k => {
     const e = todos[k] || {};
-    min += (e.min || 0) + (e.cinta && !e.min ? e.cinta : 0);
+    min += (e.min || 0) + (e.cinta && !e.min ? e.cinta : 0) + (e.andar || 0);
     (Array.isArray(e.ej) ? e.ej : []).forEach(x => { series += x.s || 0; });
   });
   const antes = mejoresMarcas(desde), despues = mejoresMarcas(hasta);
@@ -4206,7 +4317,7 @@ function resumenEntrenoTxt(e){
   if(!e) return '';
   const lista = Array.isArray(e.ej) ? e.ej : [];
   const series = lista.reduce((a, x) => a + (x.s || 0), 0);
-  const partes = [e.min ? e.min + ' minutos' : '', series ? series + ' series' : '', e.cinta ? e.cinta + ' min de cinta' : ''];
+  const partes = [e.min ? e.min + ' minutos' : '', series ? series + ' series' : '', e.cinta ? e.cinta + ' min de cinta' : '', e.andar ? e.andar + ' min andando' : ''];
   const txt = partes.filter(Boolean).join(' · ');
   return txt ? txt + '. Lo tienes entero en Semana.' : '';
 }
@@ -4276,6 +4387,7 @@ function guardarEntreno(tipo){
     if(!foto.ej.length && Array.isArray(previo.ej)) foto.ej = previo.ej;
     if(!foto.cinta && previo.cinta) foto.cinta = previo.cinta;
     if(!foto.nota && previo.nota) foto.nota = previo.nota;
+    if(!foto.andar && previo.andar) foto.andar = previo.andar;
     if(previo.min && previo.modo !== foto.modo) foto.min += previo.min;
     if(previo.tipo === 'fuerza') foto.tipo = 'fuerza';
   }
@@ -4319,7 +4431,7 @@ function totalesEntrenosHTML(todos){
   Object.keys(todos).forEach(f => {
     const e = todos[f] || {};
     n++;
-    min += (e.min || 0) + (e.cinta && !e.min ? e.cinta : 0);
+    min += (e.min || 0) + (e.cinta && !e.min ? e.cinta : 0) + (e.andar || 0);
     (Array.isArray(e.ej) ? e.ej : []).forEach(x => { series += (x.s || 0); });
   });
   if(!n) return '';
@@ -4609,12 +4721,13 @@ function renderEntrenos(){
       const d = desdeKey(f);
       const lista = Array.isArray(e.ej) ? e.ej : [];
       const series = lista.reduce((a, x) => a + (x.s || 0), 0);
-      const meta = [e.min ? e.min + ' min' : '', series ? series + ' series' : '', e.cinta ? e.cinta + ' min cinta' : '']
+      const meta = [e.min ? e.min + ' min' : '', series ? series + ' series' : '', e.cinta ? e.cinta + ' min cinta' : '', e.andar ? e.andar + ' min andando' : '']
         .filter(Boolean).join(' · ');
       const filas = lista.map(x =>
         '<tr><td>' + esc(nombreEj(x.id)) + '<small>' + esc(detalleSeries(x)) + '</small></td>' +
         '<td>' + (x.kg ? x.kg + ' kg' : '') + '</td></tr>').join('') +
-        (e.cinta ? '<tr><td>Cinta en cuesta</td><td>' + e.cinta + ' min</td></tr>' : '');
+        (e.cinta ? '<tr><td>Cinta en cuesta</td><td>' + e.cinta + ' min</td></tr>' : '') +
+        (e.andar ? '<tr><td>Andando</td><td>' + e.andar + ' min</td></tr>' : '');
       return '<details class="entreno"' + (f === entrenoAbierto ? ' open' : '') + '><summary><span class="ex-head">' +
           DIAS_LARGOS[d.getDay()].replace(/^./, c => c.toUpperCase()) + ' ' + d.getDate() + ' de ' + MESES[d.getMonth()] +
         '</span><span class="ex-series">' + esc(meta || etiqueta(e.tipo).corto) + '</span></summary>' +
@@ -5158,6 +5271,7 @@ function renderAjustes(){
   marcarOpts('#inicioOpts .style-opt',    'inicio',    getInicio());
   marcarOpts('#temaOpts .style-opt',      'tema',      getTema());
   renderSyncEstado();
+  renderCopiaEstado();
 }
 
 /* ---------- Fusión entre dispositivos (funciones puras, sin DOM) ----------
@@ -5556,7 +5670,9 @@ function exportarDatos(){
   a.download = 'plan-ejercicio-' + hoyKey() + '.json';
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  setRaw('planEjercicioUltimaCopia', String(Date.now()));
   toast('Copia descargada');
+  renderAjustes(); renderHoy();
 }
 
 function toggleTheme(){ toggleThemeManual(); }
@@ -5758,6 +5874,7 @@ document.addEventListener('DOMContentLoaded', () => {
     b.addEventListener('click', () => setCheck(b.dataset.campo, b.dataset.valor));
   });
 
+  pedirAlmacenamientoPersistente();
   renderTodo();
   const sesionRecuperada = restaurarSesion();
 
