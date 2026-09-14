@@ -40,7 +40,7 @@ const LLENO = [
     resumen:'Cinta en cuesta y colchoneta. Nunca hay cola para esto.',
     pasos:[
       'Cinta: 20 minutos andando en cuesta, al nivel que te toque. Si todas las cintas están pilladas, bici estática o elíptica, da igual.',
-      'Colchoneta: dos planchas de 20 segundos.',
+      'Colchoneta: dos planchas de 30 segundos.',
       'Y ya está. Fuera.'
     ],
     porQue:'La zona de cardio y la de colchonetas son las dos únicas que casi nunca se llenan del todo, porque hay muchas unidades. Además esto es literalmente lo que mejor se te da: 106 de tus 140 entrenos registrados eran caminar.',

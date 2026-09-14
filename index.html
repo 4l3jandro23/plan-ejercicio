@@ -763,6 +763,29 @@
   .ses-serie.actual{border-color:var(--accent); color:var(--accent);}
   .ses-foot{margin-top:auto; padding-top:16px; display:flex; flex-direction:column; gap:8px;}
 
+  .ses-reps{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:var(--card); border:1px solid var(--border); border-radius:var(--r-md);
+    padding:13px 15px; margin:0 0 20px;
+  }
+  .ses-reps-num{min-width:66px; text-align:center; font-family:var(--font-mono); font-weight:700; font-size:var(--t-lg); color:var(--ink);}
+  .estira{
+    display:none; position:fixed; inset:0; z-index:82; background:var(--bg2);
+    flex-direction:column; overflow-y:auto;
+    padding:calc(14px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));
+  }
+  .estira.show{display:flex; animation:entrarSesion .3s var(--ease);}
+  .est-lado{align-self:center; margin:0 0 12px; padding:5px 14px; border-radius:999px; background:var(--accent-soft); color:var(--accent); font-size:var(--t-xs); font-weight:700;}
+  .ses-descanso p.est-fase{margin:2px 0 16px; color:var(--ink); font-weight:600;}
+  .est-lista{margin:10px 0 8px;}
+  .fases{list-style:none; margin:12px 0 0; padding:0; display:flex; flex-direction:column; gap:8px;}
+  .fase{padding:11px 14px; border-radius:var(--r-md); border:1px solid var(--border); background:var(--card);}
+  .fase small{display:block; font-family:var(--font-mono); font-size:var(--t-2xs); color:var(--muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700;}
+  .fase b{display:block; font-size:var(--t-base); margin:2px 0;}
+  .fase span{font-size:var(--t-sm); color:var(--muted); line-height:1.45;}
+  .fase.actual{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent);}
+  .fase.actual small{color:var(--accent);}
+  .fase.hecha{opacity:.72;}
   .ses-descanso{text-align:center; padding:16px 0 8px;}
   .ring{width:190px; height:190px; margin:0 auto 6px; display:block; filter:drop-shadow(0 4px 14px rgba(0,0,0,.08));}
   .ring circle{fill:none; stroke-width:8; stroke-linecap:round;}
@@ -1042,6 +1065,17 @@
   <div class="ses-body" id="sesBody"></div>
 </div>
 
+<!-- ===================== ESTIRAMIENTOS =====================
+     Opaca como la sesión: se sigue desde el suelo, con el móvil a un metro. -->
+<div class="estira" id="estira" role="dialog" aria-modal="true" aria-label="Estiramientos">
+  <div class="ses-top">
+    <button class="ses-salir" onclick="cerrarEstira()">‹ Salir</button>
+    <span class="ses-cuenta" id="estCuenta"></span>
+  </div>
+  <div class="ses-barra"><i id="estBarra"></i></div>
+  <div class="ses-body" id="estBody"></div>
+</div>
+
 <!-- ===================== RESPIRACIÓN ===================== -->
 <div class="respira" id="respira" role="dialog" aria-modal="true" aria-label="Pausa de respiración">
   <div class="resp-circulo" id="respCirculo">4</div>
@@ -1196,6 +1230,7 @@
        que tiene que ver es la salida, no lo que no va a hacer. -->
   <div class="sos-row" id="sosRow"></div>
 
+  <div id="hoyEntreno"></div>
   <div id="hoyActions"></div>
 
   <div class="escape-card" id="escapeCard">
@@ -1217,7 +1252,7 @@
 <!-- ==================== RUTINA ==================== -->
 <div id="tab-rutina" class="tabpanel">
   <h2><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-pesa"/></svg></span>Tu rutina</h2>
-  <p class="lead">Una sola rutina, siempre la misma, cuerpo entero. No es por vagancia mía: si cada día haces lo mismo, a la tercera semana entras y ya no piensas. Y no pensar es exactamente lo que necesitas para no dejarlo.</p>
+  <p class="lead">La misma base siempre, cuerpo entero, y que va creciendo contigo: no con las semanas que pasan, sino con las sesiones que haces. Repetir las mismas máquinas no es vagancia: es lo que te deja ver que cada semana mueves más peso, y eso es lo que cambia el cuerpo.</p>
 
 
   <div class="style-options" style="margin:20px 0 8px;">
@@ -1260,11 +1295,13 @@
   </div>
 
   <div id="vistaGym">
+    <div id="fasesBox"></div>
     <div class="quiet">
       Las 6 son máquinas de <b>placas con pin</b> (Technogym y Gym80, la zona de "musculación guiada"). Si no tienes claro cuáles son, están explicadas en la pestaña <b>Guía</b>.
     </div>
     <h3>Calentar — 5 minutos</h3>
-    <p style="font-size:var(--t-base); margin-top:0;">Cinta andando en cuesta, o bici estática, suave. Es para que el cuerpo entre en calor, no es parte del entreno. Si un día te lo saltas tampoco se hunde nada.</p>
+    <p style="font-size:var(--t-base); margin-top:0;">Cinta andando rápido en cuesta, o bici estática, suave: tienes que acabar pudiendo hablar sin esfuerzo. Luego, en la primera máquina, una serie de prueba con menos peso que no se apunta. La sesión guiada empieza por aquí y te cuenta los 5 minutos.</p>
+    <p style="font-size:var(--t-base);"><b>Antes de las máquinas no se estira.</b> Estirar en frío no evita lesiones y quita un poco de fuerza en ese momento. Los estiramientos van al final, o en casa.</p>
 
     <h3 style="margin-top:26px;">Los 6 ejercicios</h3>
     <p class="lead" style="margin-bottom:4px;">Todos en máquina y sentado. Las máquinas te obligan a hacer el movimiento bien: es físicamente difícil hacerlo mal. Por eso empiezas aquí y no con pesas sueltas.</p>
@@ -1276,6 +1313,9 @@
       <b>La regla del peso, que es la única que importa:</b><br>
       El primer día pon <b>el peso más bajo</b> en todo: el pin, arriba del todo de la torre de placas. Haz <b>entre 10 y 15 repeticiones</b>. Cuando te salgan 15 en las tres series, la próxima vez bajas el pin una placa y vuelves a empezar desde 10. Ya está. No existe el peso "correcto" — si te quedas corto, lo subes el día siguiente y no ha pasado nada.
     </div>
+    <h3 style="margin-top:26px;">Tras 6 sesiones: dos más, que se turnan</h3>
+    <p style="font-size:var(--t-base); margin-top:0;">Los seis de arriba cubren todo el cuerpo, pero se quedan cortos en lo que más se ve: la anchura de hombros, los brazos y la parte de atrás del muslo. Cuando las seis máquinas ya no te den corte, la sesión completa añade dos de estos después del press de hombros: un día los dos primeros, el siguiente los otros dos. Lo hace sola.</p>
+    <div id="listaExtra"></div>
     <div class="quiet" style="margin-top:22px;">
       <b>Descanso entre series:</b> de 60 a 90 segundos. Si usas la sesión guiada, el tiempo lo cuenta ella y no tienes que pensarlo.
     </div>
@@ -1287,11 +1327,18 @@
     <div class="quiet">
       Este cierre es aparte de los días marcados como "cinta" en tu semana: esos son días sin fuerza, para cuando no tienes el rato entero. Aquí es al revés — fuerza completa y cinta el mismo día, porque puedes con las dos.
     </div>
+
+    <h3 style="margin-top:26px;">Estirar — 7 minutos, al final o en casa</h3>
+    <p style="font-size:var(--t-base); margin-top:0;">Seré sincero: estirar no evita las agujetas ni las lesiones, eso está bastante estudiado. Lo que sí hace es soltarte la cadera, el pecho y la espalda, que es justo lo que se acorta con ocho horas sentado delante de un ordenador, y con semanas ganas movilidad. No es obligatorio. Si lo haces, dos o tres veces por semana: al acabar la sesión o por la noche en casa, que además ayuda a bajar revoluciones.</p>
+    <div class="quiet"><b>La regla:</b> tirón suave, un 3 o 4 sobre 10. Nunca dolor, sin rebotes, respirando. 30 segundos por lado, y la app cuenta y avisa al cambiar.</div>
+    <button class="btn-main" onclick="abrirEstira()"><svg class="ic-v" aria-hidden="true"><use href="#i-respirar"/></svg>Estirar ahora (7 min)</button>
+    <div id="listaEstira" style="margin-top:14px;"></div>
   </div>
 
   <div id="vistaCasa" style="display:none;">
     <p class="lead">Sin material, sin salir de casa, unos 20 minutos. Esto no es "la versión mala": los días que el gimnasio no va a pasar, esto es lo que evita que la semana entera se vaya a cero.</p>
     <div id="listaCasa"></div>
+    <button class="btn-second" style="margin-top:12px;" onclick="abrirEstira()"><svg class="ic-v" aria-hidden="true"><use href="#i-respirar"/></svg>Y después, estirar 7 minutos</button>
 
     <h3 style="margin-top:32px;">Versión viaje — 10 minutos</h3>
     <p style="font-size:var(--t-base);">Para cuando estés fuera de Barcelona: hotel, casa de tu padre, donde sea. Los <b>cuatro primeros</b> de la lista de arriba, una sola serie de cada, sin descanso largo entre medias. Caben en el hueco entre la ducha y salir por la puerta, y no necesitas ni zapatillas.</p>
@@ -1392,6 +1439,15 @@
   <div class="quiet">
     Andar no sustituye a la fuerza — la fuerza hace cosas que caminar no hace — pero un mes andando cuatro días a la semana vale infinitamente más que un mes de gimnasio perfecto que no existe.
   </div>
+
+  <h2><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-corazon"/></svg></span>Con el Apple Watch</h2>
+  <p class="lead">Esta app no puede hablar con el reloj: una web no tiene acceso a Salud, eso solo lo pueden hacer las apps de la App Store. Pero no hace falta que hablen para usar las dos a la vez.</p>
+  <ul style="font-size:var(--t-base);">
+    <li><b>Al entrar:</b> en el reloj, app Entreno → <b>Fuerza tradicional</b>. Los días de solo cinta, <b>Caminata en interior</b>.</li>
+    <li><b>Durante:</b> el reloj mide pulso y calorías; aquí van los pesos, las repeticiones y los descansos.</li>
+    <li><b>Al salir:</b> para el entreno del reloj. Anillos e historial de Salud se llenan igual que con Hevy.</li>
+  </ul>
+  <div class="quiet">Lo que pierdes respecto a Hevy es ver las series en la muñeca. Lo que ganas es el plan para gimnasio lleno, la progresión que va sola y un registro sin culpa. Apunta solo en una de las dos: en las dos a la vez acabas dejando ambas.</div>
 
   <h2><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-nota"/></svg></span>Que te avise el iPhone</h2>
   <p class="lead">Esta app no puede mandarte notificaciones: una web necesita un servidor propio para eso, y montarlo no compensa para lo poco que aporta. Pero el iPhone ya sabe hacerlo, y mejor:</p>
@@ -1624,20 +1680,170 @@ const EJERCICIOS_GYM = [
   {
     id:'plancha', nombre:'Plancha',
     alias:'Sin máquina, en la colchoneta',
-    series:3, reps:'20 segundos', sinPeso:true,
+    series:3, reps:'30 segundos', sinPeso:true,
     musculo:'Toda la zona del abdomen y la espalda baja: lo que llaman "core", que solo quiere decir el centro del cuerpo.',
     maquina:'Ninguna. En el suelo, en la zona de colchonetas.',
     ajuste:'Ninguno.',
     pasos:[
       'Túmbate boca abajo y apóyate en los antebrazos y en las puntas de los pies.',
       'Levanta el cuerpo del suelo y mantenlo recto, como una tabla, de la cabeza a los talones.',
-      'Aguanta 20 segundos respirando normal.',
-      'Si 20 segundos es mucho, apoya las rodillas. Cuenta exactamente igual.'
+      'Aguanta lo que marque el cronómetro respirando normal: empieza en 30 segundos y sube solo.',
+      'Si se te hace mucho, apoya las rodillas. Cuenta exactamente igual.'
     ],
     bien:'Notas la barriga apretada y el cuerpo en línea recta.',
     mal:'Si se te hunde la cadera hacia el suelo o subes el culo, mejor apoya las rodillas y haz menos segundos.',
     clave:'Cuerpo recto como una tabla. Si es mucho, rodillas al suelo.',
     alternativa:'Esta no se ocupa nunca: siempre hay hueco en la zona de colchonetas.'
+  }
+];
+
+/* ===== Los que se suman con el tiempo =====
+   Los 6 de siempre cubren el cuerpo entero, pero no lo que más se ve: la
+   anchura de hombros, los brazos y la parte de atrás del muslo. Tras 6
+   sesiones de fuerza, cuando las máquinas ya no dan corte, la sesión completa
+   suma dos de estos, turnándose: día A y día B. Preguntó si siempre iban a ser
+   los mismos 6 — la base sí, porque es lo que deja ver la progresión de peso. */
+const FASE_EXTRAS = 6;
+const EJERCICIOS_EXTRA = [
+  {
+    id:'laterales', turno:'A', nombre:'Elevaciones laterales',
+    alias:'En la máquina pone "Lateral Raise"', series:3, reps:'10-15 repeticiones',
+    musculo:'La parte de fuera del hombro. Es la que da anchura y hace que la cintura parezca más estrecha: de lo que más cambia cómo te queda una camiseta.',
+    maquina:'Te sientas y subes los brazos hacia los lados empujando unas almohadillas con los codos.',
+    ajuste:'El asiento a la altura en la que tu hombro queda alineado con el eje de giro de la máquina (suele llevar un punto de color).',
+    pasos:[
+      'Siéntate con el pecho contra la almohadilla o la espalda contra el respaldo.',
+      'Apoya los codos o los antebrazos en las almohadillas de los lados.',
+      'Sube los brazos hacia los lados hasta la altura de los hombros, no más.',
+      'Baja despacio, contando dos segundos.'
+    ],
+    bien:'Notas la parte de fuera del hombro, no el cuello.',
+    mal:'Si subes los hombros hacia las orejas o das impulso con el cuerpo, sobra peso.',
+    clave:'Hasta la altura del hombro y bajando despacio. Aquí se usa muy poco peso.',
+    alternativa:'Si no hay máquina o está ocupada: <b>dos mancuernas ligeras</b> (4-6 kg), sentado en un banco, subiendo los brazos hacia los lados con los codos un poco doblados.'
+  },
+  {
+    id:'femoral', turno:'A', nombre:'Curl femoral',
+    alias:'En la máquina pone "Leg Curl"', series:3, reps:'10-15 repeticiones',
+    musculo:'La parte de atrás del muslo. La prensa trabaja sobre todo la de delante; esta equilibra la pierna y cuida la rodilla.',
+    maquina:'Sentado (o tumbado boca abajo, según la máquina), doblas las rodillas llevando una almohadilla hacia abajo.',
+    ajuste:'La rodilla alineada con el eje de giro, y la almohadilla de abajo justo encima del talón, no en la pantorrilla.',
+    pasos:[
+      'Siéntate con la espalda pegada al respaldo y baja la almohadilla de los muslos hasta que te sujete.',
+      'Apoya los tobillos encima de la almohadilla de abajo.',
+      'Dobla las rodillas llevándola hacia abajo y hacia atrás todo lo que puedas.',
+      'Vuelve despacio hasta casi estirar las piernas.'
+    ],
+    bien:'Notas la parte de atrás del muslo.',
+    mal:'Si se te levanta el culo del asiento, baja el peso.',
+    clave:'Rodilla alineada con el eje de la máquina. Vuelve despacio.',
+    alternativa:'Si está ocupada: <b>sáltatelo sin más</b>, o haz 3 × 12 de puente de glúteos en la colchoneta.'
+  },
+  {
+    id:'biceps', turno:'B', nombre:'Curl de bíceps',
+    alias:'En la máquina pone "Biceps Curl" o "Arm Curl"', series:3, reps:'10-15 repeticiones',
+    musculo:'El bíceps, la parte de delante del brazo.',
+    maquina:'Te sientas, apoyas los brazos en un atril inclinado y doblas los codos subiendo unas asas.',
+    ajuste:'El asiento a la altura en la que las axilas quedan pegadas al borde de arriba del atril y los codos alineados con el eje de giro.',
+    pasos:[
+      'Siéntate y apoya la parte de atrás de los brazos en el atril.',
+      'Agarra las asas con las palmas hacia arriba.',
+      'Sube doblando los codos, sin despegar los brazos del atril.',
+      'Baja despacio hasta casi estirar.'
+    ],
+    bien:'Notas el bíceps, y los brazos no se mueven del atril.',
+    mal:'Si echas el cuerpo hacia atrás para subir, sobra peso.',
+    clave:'Brazos quietos en el atril. Baja despacio.',
+    alternativa:'Si está ocupada: <b>curl en polea baja</b> con una barra corta, de pie y con los codos pegados al cuerpo.'
+  },
+  {
+    id:'triceps', turno:'B', nombre:'Tríceps en polea',
+    alias:'Polea alta con cuerda: "Triceps Pushdown"', series:3, reps:'10-15 repeticiones',
+    musculo:'El tríceps, la parte de atrás del brazo. Es más de la mitad del volumen del brazo: si quieres que el brazo se note, es este.',
+    maquina:'De pie delante de una polea alta, empujas hacia abajo una cuerda o una barra corta.',
+    ajuste:'La polea arriba del todo. El peso se cambia con el pin, igual que en las demás.',
+    pasos:[
+      'De pie frente a la polea, pies separados como tus hombros.',
+      'Agarra la cuerda con los codos pegados a los costados.',
+      'Empuja hacia abajo hasta estirar los brazos, sin mover los codos.',
+      'Sube despacio hasta que los antebrazos queden paralelos al suelo.'
+    ],
+    bien:'Notas la parte de atrás del brazo, y los codos no se mueven.',
+    mal:'Si se te despegan los codos o te echas encima de la cuerda, sobra peso.',
+    clave:'Codos pegados al cuerpo y quietos. Solo se mueve el antebrazo.',
+    alternativa:'Si no hay polea libre: <b>máquina de fondos</b> ("Dip" o "Triceps Press"), sentado y empujando hacia abajo.'
+  }
+];
+const FASES = [
+  { desde:0,           titulo:'Aprender las seis', txt:'3 series de 10 a 15 en las seis máquinas. Cuando salen 15 en las tres, +5 kg y otra vez desde 10.' },
+  { desde:FASE_EXTRAS, titulo:'Se suman dos ejercicios', txt:'Hombro lateral, brazos y parte de atrás del muslo, turnándose: un día dos, el siguiente los otros dos.' },
+  { desde:12,          titulo:'4 series en los cuatro grandes', txt:'Prensa, jalón, pecho y remo pasan a 4 series. Aquí la sesión completa ya es un entreno de gimnasio en toda regla.' }
+];
+
+/* ===== Estiramientos =====
+   Elegidos para alguien que pasa el día sentado y hace esta rutina: cadera,
+   parte de atrás del muslo, glúteo, pecho, muslo y espalda. Estáticos, al
+   final o en casa: antes de las máquinas lo que toca es calentar. */
+const ESTIRAMIENTOS = [
+  {
+    id:'cadera', nombre:'Flexor de cadera', seg:30, lados:true,
+    zona:'Delante de la cadera: lo que más se acorta con ocho horas sentado.',
+    pasos:[
+      'Rodilla en el suelo (encima de una toalla o un cojín) y el otro pie delante, como en una pedida de mano.',
+      'Aprieta el culo del lado de la rodilla que está en el suelo.',
+      'Lleva la cadera un poco hacia delante, sin arquear la espalda, hasta notar el tirón delante de la cadera.'
+    ],
+    nota:'Si no notas nada, aprieta más el culo antes de irte hacia delante: es lo que hace que funcione.'
+  },
+  {
+    id:'isquios', nombre:'Parte de atrás del muslo', seg:30, lados:true,
+    zona:'Isquiotibiales.',
+    pasos:[
+      'Sentado en el suelo, una pierna estirada y la otra doblada, con la planta del pie contra el muslo de la estirada.',
+      'Con la espalda recta, inclínate desde la cadera hacia el pie de la pierna estirada.',
+      'Para cuando notes el tirón detrás del muslo. No hace falta tocar el pie.'
+    ],
+    nota:'Mejor espalda recta y llegar menos lejos que doblarse para alcanzar el pie.'
+  },
+  {
+    id:'gluteo', nombre:'Glúteo', seg:30, lados:true,
+    zona:'El culo y la cadera por fuera.',
+    pasos:[
+      'Túmbate boca arriba con las rodillas dobladas.',
+      'Cruza un tobillo encima de la rodilla contraria, formando un 4.',
+      'Agarra el muslo de la pierna de abajo y tira de él hacia el pecho.'
+    ],
+    nota:'Cabeza apoyada en el suelo y hombros sueltos.'
+  },
+  {
+    id:'pecho', nombre:'Pecho', seg:30, lados:true,
+    zona:'Pecho y parte de delante del hombro: lo que se cierra delante del ordenador.',
+    pasos:[
+      'De pie, al lado de una pared o del marco de una puerta.',
+      'Apoya el antebrazo en ella, con el codo a la altura del hombro.',
+      'Gira el cuerpo despacio hacia el lado contrario hasta notar el pecho.'
+    ],
+    nota:'Tirón suave. Si te hormiguea la mano, baja un poco el codo.'
+  },
+  {
+    id:'cuadriceps', nombre:'Parte de delante del muslo', seg:30, lados:true,
+    zona:'Cuádriceps.',
+    pasos:[
+      'De pie, con una mano en la pared para no perder el equilibrio.',
+      'Dobla una rodilla y agárrate el tobillo por detrás, llevando el talón hacia el culo.',
+      'Rodillas juntas y la cadera un poco hacia delante.'
+    ],
+    nota:'Si no llegas al tobillo, agarra el pantalón o usa una toalla.'
+  },
+  {
+    id:'espalda', nombre:'Espalda', seg:40, lados:false,
+    zona:'La espalda entera, sobre todo los laterales.',
+    pasos:[
+      'De rodillas, siéntate sobre los talones.',
+      'Inclínate hacia delante y estira los brazos por delante, en el suelo.',
+      'Deja caer el pecho hacia el suelo. Coge aire por la nariz y suéltalo despacio.'
+    ],
+    nota:'Va el último a propósito: respirar así baja las pulsaciones.'
   }
 ];
 
@@ -1732,13 +1938,13 @@ const EJERCICIOS_CASA = [
   },
   {
     id:'plancha-casa', nombre:'Plancha',
-    alias:'Igual que en el gimnasio', series:3, reps:'20 segundos', sinPeso:true,
+    alias:'Igual que en el gimnasio', series:3, reps:'30 segundos', sinPeso:true,
     musculo:'El centro del cuerpo: abdomen y espalda baja.',
     maquina:'Nada, el suelo.', ajuste:'Ninguno.',
     pasos:[
       'Apóyate en los antebrazos y en las puntas de los pies.',
       'Cuerpo recto como una tabla, de la cabeza a los talones.',
-      'Aguanta 20 segundos respirando normal.',
+      'Aguanta lo que marque el cronómetro respirando normal: empieza en 30 segundos y sube solo.',
       'Si es mucho, apoya las rodillas. Cuenta exactamente igual.'
     ],
     bien:'Barriga apretada, cuerpo en línea.',
@@ -1758,7 +1964,8 @@ const K = {
   sensacion:'planEjercicioSensacion', sesion:'planEjercicioSesionActiva', vuelta:'planEjercicioVuelta',
   marcas:'planEjercicioMarcas', ghToken:'planEjercicioGhToken', gistId:'planEjercicioGistId',
   syncOk:'planEjercicioSyncOk', syncError:'planEjercicioSyncError',
-  entrenos:'planEjercicioEntrenos', ajustesMaq:'planEjercicioAjustesMaquina'
+  entrenos:'planEjercicioEntrenos', ajustesMaq:'planEjercicioAjustesMaquina',
+  aguante:'planEjercicioAguante'
 };
 /* Qué viaja entre el móvil y el ordenador, y cómo se junta (ver fusionarEstado).
    Tema, tamaño de letra, contraste y 'al abrir la app' se quedan en cada
@@ -1766,8 +1973,8 @@ const K = {
 const SYNC_CFG = {
   todas: [K.color, K.dias, K.lugar, K.descanso, K.sonido, K.tono,
           K.log, K.pesos, K.check, K.sensacion, K.cintaExtra, K.pesosHist,
-          K.entrenos, K.ajustesMaq],
-  objeto: [K.log, K.pesos, K.check, K.sensacion, K.entrenos, K.ajustesMaq],
+          K.entrenos, K.ajustesMaq, K.aguante],
+  objeto: [K.log, K.pesos, K.check, K.sensacion, K.entrenos, K.ajustesMaq, K.aguante],
   union: { [K.cintaExtra]: 'fechas', [K.pesosHist]: 'historial' }
 };
 /* Lo que nunca sale del dispositivo, ni en la copia descargada: el token de
@@ -1825,6 +2032,24 @@ function getDescanso(){
   return (n === 60 || n === 75 || n === 90) ? n : DESCANSO_DEFECTO;
 }
 function ejerciciosActuales(){ return getLugar() === 'casa' ? EJERCICIOS_CASA : EJERCICIOS_GYM; }
+function catalogo(){ return EJERCICIOS_GYM.concat(EJERCICIOS_EXTRA, EJERCICIOS_CASA); }
+function nombreEj(id){ return (catalogo().find(e => e.id === id) || { nombre: id }).nombre; }
+/* Qué dos extras tocan en la próxima sesión completa: A y B se turnan por
+   número de sesiones, así que un parón no descoloca nada. */
+function extrasDeHoy(){
+  const n = sesionesFuerza();
+  if(n < FASE_EXTRAS) return [];
+  const turno = (n - FASE_EXTRAS) % 2 === 0 ? 'A' : 'B';
+  return EJERCICIOS_EXTRA.filter(e => e.turno === turno);
+}
+/* Los extras van después del press de hombros y antes de la plancha. */
+function conExtras(lista){
+  const extras = extrasDeHoy();
+  if(!extras.length) return lista;
+  const i = lista.findIndex(e => e.sinPeso);
+  const pos = i === -1 ? lista.length : i;
+  return lista.slice(0, pos).concat(extras, lista.slice(pos));
+}
 
 function getPref(key, validos, defecto){
   try{ const v = localStorage.getItem(key); return validos.indexOf(v) !== -1 ? v : defecto; }
@@ -2470,7 +2695,9 @@ function renderHoy(){
 
   if(marcado){
     acciones.innerHTML =
-      '<div class="actions"><button class="btn-second" onclick="empezarSesion(\'fuerza\')">' + ic('i-play') + 'Hacer otra sesión de todas formas</button></div>' +
+      '<div class="actions">' +
+        (marcado !== 'descanso' ? '<button class="btn-second" onclick="abrirEstira()">' + ic('i-respirar') + 'Estirar 7 minutos</button>' : '') +
+        '<button class="btn-second" onclick="empezarSesion(\'fuerza\')">' + ic('i-play') + 'Hacer otra sesión de todas formas</button></div>' +
       '<button class="btn-undo" onclick="desmarcar()">Deshacer lo de hoy</button>';
     document.getElementById('escapeCard').classList.remove('show');
   } else if(primeraVez){
@@ -2492,6 +2719,7 @@ function renderHoy(){
       '<div class="actions">' + bCaminar +
         '<button class="btn-second" onclick="empezarCinta()">' + ic('i-cinta') + 'Hacer cinta</button>' +
         '<button class="btn-second" onclick="empezarSesion(\'fuerza\')">' + ic('i-pesa') + 'Hacer fuerza</button>' +
+        '<button class="btn-second" onclick="abrirEstira()">' + ic('i-respirar') + 'Estirar 7 minutos</button>' +
         bRespira +
       '</div>';
   } else {
@@ -2505,6 +2733,25 @@ function renderHoy(){
   renderManana();
   renderPesosRapido();
   renderHorario();
+  renderHoyEntreno();
+  renderFases();
+}
+/* Lo de hoy, entero y a la vista, en cuanto se guarda la sesión. */
+function renderHoyEntreno(){
+  const el = document.getElementById('hoyEntreno');
+  if(!el) return;
+  const e = getEntrenos()[hoyKey()];
+  const lista = e && Array.isArray(e.ej) ? e.ej : [];
+  if(!e || (!lista.length && !e.cinta)){ el.innerHTML = ''; return; }
+  const filas = lista.map(x =>
+    '<tr><td>' + esc(nombreEj(x.id)) + '<small>' + esc(detalleSeries(x)) + '</small></td>' +
+    '<td>' + (x.kg ? x.kg + ' kg' : '') + '</td></tr>').join('') +
+    (e.cinta ? '<tr><td>Cinta en cuesta</td><td>' + e.cinta + ' min</td></tr>' : '');
+  el.innerHTML =
+    '<div class="card"><h3 style="margin-top:0;">Tu entreno de hoy</h3>' +
+      totalesEntrenosHTML({ hoy: e }).replace(/>1<\/b><span>sesión/, '>' + lista.length + '</b><span>' + (lista.length === 1 ? 'ejercicio' : 'ejercicios')) +
+      '<table class="pesos-lista">' + filas + '</table>' +
+    '</div>';
 }
 
 function renderManana(){
@@ -2530,6 +2777,11 @@ function avisosHTML(tipo, marcado){
   if(esFuerza && !marcado && (nF === 12 || nF === 13)){
     html += '<div class="aviso-nivel"><b>Hoy son 4 series</b> en los cuatro primeros ejercicios, no 3. ' +
             'Llevas ' + nF + ' sesiones de fuerza — ya tienes base para más volumen. Hombro y plancha siguen igual.</div>';
+  }
+  if(esFuerza && !marcado && getLugar() === 'gym' && (nF === FASE_EXTRAS || nF === FASE_EXTRAS + 1)){
+    html += '<div class="aviso-nivel"><b>Hoy se suman dos ejercicios:</b> ' +
+            extrasDeHoy().map(e => e.nombre.toLowerCase()).join(' y ') +
+            '. Van después del press de hombros, y la próxima vez se turnan con otros dos.</div>';
   }
   /* Cinta: aviso solo cuando el nivel acaba de subir respecto a la sesión anterior. */
   if(tipo === 'cinta' && !marcado && nC > 0 && !enReentrada()){
@@ -2587,7 +2839,7 @@ function renderProgresoPesos(){
   const el = document.getElementById('progresoPesos');
   if(!el) return;
   const hist = getPesosHist();
-  const filas = EJERCICIOS_GYM.filter(e => !e.sinPeso).map(e => {
+  const filas = EJERCICIOS_GYM.concat(EJERCICIOS_EXTRA).filter(e => !e.sinPeso).map(e => {
     const lista = hist[e.id];
     if(!Array.isArray(lista) || lista.length < 2) return '';
     const primero = lista[0].kg;
@@ -2612,7 +2864,7 @@ function renderPesosRapido(){
   if(!el) return;
   const pesos = getPesos();
   const ajustes = getAjustesMaq();
-  const lista = EJERCICIOS_GYM.filter(e => !e.sinPeso);
+  const lista = EJERCICIOS_GYM.concat(EJERCICIOS_EXTRA.filter(e => pesos[e.id] || sesionesFuerza() >= FASE_EXTRAS)).filter(e => !e.sinPeso);
   if(getLugar() !== 'gym' || !lista.some(e => pesos[e.id] || ajustes[e.id])){ el.innerHTML = ''; return; }
   const filas = lista.map(e =>
     '<tr' + (pesos[e.id] ? '' : ' class="vacio"') + '><td>' + esc(e.nombre) +
@@ -2786,6 +3038,153 @@ function cerrarRespira(){
   if(!S.activa) document.body.classList.remove('sesion-abierta');
 }
 
+/* ===================== ESTIRAMIENTOS =====================
+   Guiado y con cronómetro: unos segundos para colocarse, 30 aguantando,
+   aviso para cambiar de lado y al siguiente. Se sigue desde el suelo sin
+   tocar el móvil. Igual que la respiración, no cuenta como sesión. */
+const E = { activa:false, i:-1, lado:0, fase:'prep', fin:0, total:0, pausada:false, restante:0, t:null, ultimoAviso:0 };
+const EST_PREP = 8, EST_CAMBIO = 5;
+function estTotalMin(){
+  const seg = ESTIRAMIENTOS.reduce((a, x) => a + x.seg * (x.lados ? 2 : 1) + EST_PREP + (x.lados ? EST_CAMBIO : 0), 0);
+  return Math.round(seg / 60);
+}
+function estiramientoHTML(x, i){
+  return '<details><summary><span class="ex-head"><span class="ex-num">' + (i + 1) + '</span>' + esc(x.nombre) + '</span>' +
+    '<span class="ex-series">' + x.seg + ' s' + (x.lados ? ' por lado' : '') + '</span></summary>' +
+    '<div class="content"><div class="ex-alias">' + esc(x.zona) + '</div>' +
+      '<div class="ex-field"><div>Cómo se hace</div><ol>' + x.pasos.map(p => '<li>' + esc(p) + '</li>').join('') + '</ol></div>' +
+      '<div class="ex-check"><b>Truco:</b> ' + esc(x.nota) + '</div>' +
+    '</div></details>';
+}
+function abrirEstira(){
+  pararEstira();
+  E.activa = true; E.i = -1; E.pausada = false;
+  prepararSonido();
+  document.getElementById('estira').classList.add('show');
+  document.body.classList.add('sesion-abierta');
+  document.getElementById('estira').scrollTop = 0;
+  pintarEstira();
+}
+function empezarEstira(){
+  prepararSonido();
+  pantallaEncendida(true);
+  irAEstiramiento(0);
+}
+function irAEstiramiento(i){
+  pararEstira();
+  E.i = i; E.lado = 0;
+  if(i >= ESTIRAMIENTOS.length){ pintarEstira(); return; }
+  faseEstira('prep', EST_PREP);
+}
+function faseEstira(fase, seg){
+  E.fase = fase; E.total = seg; E.fin = Date.now() + seg * 1000;
+  E.pausada = false; E.ultimoAviso = 0;
+  pintarEstira();
+  arrancarEstira();
+}
+function arrancarEstira(){
+  pararEstira();
+  E.t = setInterval(() => {
+    const quedan = Math.ceil((E.fin - Date.now()) / 1000);
+    if(quedan <= 0){ avanzarEstira(); return; }
+    if(E.fase === 'prep' && quedan <= 3 && quedan !== E.ultimoAviso){ E.ultimoAviso = quedan; pito('cuenta'); }
+    ringEstira();
+  }, 250);
+}
+function pararEstira(){ if(E.t){ clearInterval(E.t); E.t = null; } }
+function avanzarEstira(){
+  pararEstira();
+  const x = ESTIRAMIENTOS[E.i];
+  if(!x) return;
+  if(E.fase === 'prep'){ pito('seguir'); faseEstira('aguanta', x.seg); return; }
+  if(x.lados && E.lado === 0){ E.lado = 1; pito('tanda'); faseEstira('prep', EST_CAMBIO); return; }
+  pito(E.i + 1 >= ESTIRAMIENTOS.length ? 'fin' : 'tanda');
+  irAEstiramiento(E.i + 1);
+}
+function pausarEstira(){
+  if(E.pausada){
+    E.fin = Date.now() + E.restante;
+    E.pausada = false;
+    arrancarEstira();
+  } else {
+    E.restante = Math.max(0, E.fin - Date.now());
+    E.pausada = true;
+    pararEstira();
+  }
+  pintarEstira();
+}
+function saltarEstira(){ irAEstiramiento(E.i + 1); }
+function cerrarEstira(){
+  E.activa = false;
+  pararEstira();
+  document.getElementById('estira').classList.remove('show');
+  if(!S.activa){
+    document.body.classList.remove('sesion-abierta');
+    pantallaEncendida(false);
+  }
+}
+function ringEstiraHTML(){
+  return '<svg class="ring" viewBox="0 0 200 200" aria-hidden="true">' +
+    '<circle class="pista" cx="100" cy="100" r="88"></circle>' +
+    '<circle class="avance" id="estRingAvance" cx="100" cy="100" r="88" ' +
+      'transform="rotate(-90 100 100)" stroke-dasharray="552.9" stroke-dashoffset="0"></circle>' +
+    '<text class="ring-txt" x="100" y="100" text-anchor="middle" dominant-baseline="central" id="estRingTxt"></text>' +
+  '</svg>';
+}
+function ringEstira(){
+  const txt = document.getElementById('estRingTxt');
+  const anillo = document.getElementById('estRingAvance');
+  if(!txt || !anillo) return;
+  const quedan = E.pausada ? Math.ceil(E.restante / 1000) : Math.max(0, Math.ceil((E.fin - Date.now()) / 1000));
+  txt.textContent = String(quedan);
+  anillo.setAttribute('stroke-dashoffset', String(552.9 * (1 - Math.min(1, quedan / Math.max(1, E.total)))));
+}
+function pintarEstira(){
+  const body = document.getElementById('estBody');
+  const cuenta = document.getElementById('estCuenta');
+  const barra = document.getElementById('estBarra');
+  const N = ESTIRAMIENTOS.length;
+  if(E.i < 0){
+    cuenta.textContent = N + ' estiramientos · ' + estTotalMin() + ' min';
+    barra.style.width = '0%';
+    body.innerHTML =
+      '<h2 class="ses-nombre">Estirar</h2>' +
+      '<p class="ses-alias">' + estTotalMin() + ' minutos · la app cuenta, tú respiras</p>' +
+      '<div class="ses-recuerda"><b>La regla:</b> tirón suave, un 3 o 4 sobre 10. Nunca dolor, sin rebotes y respirando.</div>' +
+      '<p style="font-size:var(--t-sm); color:var(--muted); margin:0;">Hace falta un trozo de suelo (una toalla o la colchoneta) y una pared. Cada uno empieza con unos segundos para colocarte, y suena al cambiar de lado.</p>' +
+      '<div class="est-lista">' + ESTIRAMIENTOS.map(estiramientoHTML).join('') + '</div>' +
+      '<div class="ses-foot"><button class="btn-main" onclick="empezarEstira()">' + ic('i-play') + 'Empezar</button></div>';
+    return;
+  }
+  if(E.i >= N){
+    cuenta.textContent = '';
+    barra.style.width = '100%';
+    body.innerHTML =
+      '<div class="ses-fin"><span class="emo">' + ic('i-check', 'ic-lg') + '</span><h3>Estirado</h3>' +
+        '<p>' + T('No cuenta como sesión ni hace falta apuntarlo: es para que el cuerpo se suelte, nada más.', 'Hecho.') + '</p>' +
+        '<button class="btn-main" onclick="cerrarEstira()">Cerrar</button></div>';
+    return;
+  }
+  const x = ESTIRAMIENTOS[E.i];
+  const prep = E.fase === 'prep';
+  cuenta.textContent = (E.i + 1) + ' de ' + N;
+  barra.style.width = Math.round(E.i / N * 100) + '%';
+  body.innerHTML =
+    '<h2 class="ses-nombre">' + esc(x.nombre) + '</h2>' +
+    '<p class="ses-alias">' + esc(x.zona) + '</p>' +
+    (x.lados ? '<span class="est-lado">' + (E.lado === 0 ? 'Lado derecho' : 'Lado izquierdo') + '</span>' : '') +
+    '<div class="ses-descanso" style="padding-top:0;">' + ringEstiraHTML() +
+      '<p class="est-fase">' + (prep ? (E.lado === 1 ? 'Cambia de lado y colócate' : 'Colócate') : 'Aguanta y respira') + '</p>' +
+      '<div style="display:flex; gap:8px;">' +
+        '<button class="btn-timer" onclick="pausarEstira()">' + (E.pausada ? ic('i-play') + 'Seguir' : ic('i-pausa') + 'Pausa') + '</button>' +
+        '<button class="btn-timer" onclick="saltarEstira()">Siguiente</button>' +
+      '</div>' +
+    '</div>' +
+    '<ol class="ses-pasos" style="margin-top:18px;">' + x.pasos.map(p => '<li>' + esc(p) + '</li>').join('') + '</ol>' +
+    '<div class="quiet" style="margin:0;">' + esc(x.nota) + '</div>';
+  ringEstira();
+}
+
 /* ===================== SESIÓN GUIADA =====================
    Lleva de la mano ejercicio por ejercicio y serie por serie (o tanda por tanda
    en la cinta), con los tiempos cronometrados. Se puede salir en cualquier
@@ -2796,7 +3195,7 @@ const S = {
   tanda:0, tandaObjetivo:2, cintaExtra:false, finTanda:0, pausada:false, restante:0, ultimoSeg:-1,
   aguantando:false, finAguante:0, segAguante:0,
   hechasPor:[], historial:[], terminada:false, valorados:{}, ultimoCompletado:null, viendoLista:false,
-  inicio:0
+  inicio:0, reg:{}, repsSel:{}, calentando:false, finCalentar:0, subeAguante:{}, segHecho:null
 };
 const TANDA_MIN = 15;
 const DESCANSO_TANDAS = 120;   // 2 min entre las dos tandas de cinta
@@ -2808,10 +3207,15 @@ function empezarSesion(modo){
   S.tipo = 'fuerza';
   if(modo === 'minima' || modo === 'express') S.lista = todos.slice(0,3);
   else if(modo === 'viaje') S.lista = todos.slice(0,4);
-  else S.lista = todos.slice();
+  else S.lista = (modo === 'fuerza' && todos === EJERCICIOS_GYM) ? conExtras(todos.slice()) : todos.slice();
   S.modo = modo; S.iEj = 0; S.serie = 0; S.activa = true; S.descansando = false; S.aguantando = false; S.hechos = 0;
   S.hechasPor = S.lista.map(() => 0); S.historial = []; S.terminada = false;
   S.valorados = {}; S.ultimoCompletado = null; S.viendoLista = false;
+  S.reg = {}; S.repsSel = {}; S.subeAguante = {}; S.segHecho = null;
+  /* En el gimnasio, la sesión empieza calentando. En express y viaje no:
+     son la salida rápida y tienen que empezar ya. */
+  S.calentando = todos === EJERCICIOS_GYM && (modo === 'fuerza' || modo === 'minima');
+  S.finCalentar = 0;
   S.inicio = Date.now();
   abrirSesion();
 }
@@ -2822,7 +3226,8 @@ function serieUnica(){ return S.modo === 'express' || S.modo === 'viaje'; }
 function empezarCinta(){
   S.tipo = 'cinta'; S.modo = 'cinta'; S.activa = true; S.hechos = 0;
   S.tanda = 0; S.tandaObjetivo = 2; S.cintaExtra = false;
-  S.descansando = false; S.pausada = false;
+  S.descansando = false; S.pausada = false; S.calentando = false;
+  S.reg = {}; S.repsSel = {}; S.subeAguante = {};
   S.finTanda = Date.now() + TANDA_MIN * 60000;
   S.inicio = Date.now();
   abrirSesion();
@@ -2913,11 +3318,13 @@ function pintarSesionDentro(){
         (S.modo === 'fuerza' && getLugar() === 'gym'
           ? '<button class="btn-second" onclick="seguirConCinta()">' + ic('i-cinta') + ' Seguir con 15 min de cinta</button>'
           : '') +
+        '<button class="btn-second" onclick="terminarSesion(); abrirEstira()">' + ic('i-respirar') + ' Guardar y estirar 7 min</button>' +
       '</div>';
     return;
   }
 
   if(S.viendoLista) return pintarListaEjercicios();
+  if(S.calentando) return pintarCalentar();
   let ej = S.lista[S.iEj];
   let nSeries = seriesDe(ej, S.iEj);
   document.getElementById('sesCuenta').textContent = 'Ejercicio ' + (S.iEj+1) + ' de ' + S.lista.length;
@@ -2936,7 +3343,9 @@ function pintarSesionDentro(){
   let series = '';
   for(let i = 0; i < nSeries; i++){
     const cls = i < S.serie ? 'hecha' : (i === S.serie ? 'actual' : '');
-    series += '<div class="ses-serie ' + cls + '">' + (i < S.serie ? '✓' : 'Serie ' + (i+1)) + '</div>';
+    const hecha = (S.reg[S.iEj] || [])[i];
+    const marca = hecha ? (hecha.r ? '✓ ' + hecha.r : hecha.seg ? '✓ ' + hecha.seg + 's' : '✓') : '✓';
+    series += '<div class="ses-serie ' + cls + '">' + (i < S.serie ? marca : 'Serie ' + (i+1)) + '</div>';
   }
 
   const pesos = getPesos();
@@ -2956,16 +3365,27 @@ function pintarSesionDentro(){
       '</div>' +
     '</div>' + ajusteMaquinaHTML(ej) + sugerenciaPeso(ej);
 
+  const bloqueReps = segundosDe(ej) ? '' :
+    '<div class="ses-reps">' +
+      '<div><div class="ses-peso-lbl">Repeticiones</div>' +
+        '<div style="font-size:var(--t-xs); color:var(--muted);">De la serie ' + Math.min(S.serie + 1, nSeries) + '. Si han salido otras, cámbialo antes de marcarla.</div></div>' +
+      '<div class="ses-peso-ctrl">' +
+        '<button onclick="cambiarReps(-1)" aria-label="Una repetición menos">' + ic('i-menos') + '</button>' +
+        '<span class="ses-reps-num" id="repsNum" aria-live="polite">' + repsActual(S.iEj) + '</span>' +
+        '<button onclick="cambiarReps(1)" aria-label="Una repetición más">' + ic('i-mas') + '</button>' +
+      '</div>' +
+    '</div>';
+
   const alt = ej.alternativa ?
     '<details class="ses-alt"><summary>¿Está ocupada?</summary><div class="content">' + ej.alternativa + '</div></details>' : '';
 
   body.innerHTML =
     '<h2 class="ses-nombre">' + esc(ej.nombre) + '</h2>' +
-    '<p class="ses-alias">' + esc(ej.alias) + ' · ' + esc(ej.reps) + '</p>' +
+    '<p class="ses-alias">' + esc(ej.alias) + ' · ' + esc(repsTexto(ej)) + '</p>' +
     ultimaVezHTML(ej) +
     '<div class="ses-recuerda"><b>Lo único que importa:</b> ' + esc(ej.clave) + '</div>' +
     '<ol class="ses-pasos">' + ej.pasos.map(p => '<li>' + esc(p) + '</li>').join('') + '</ol>' +
-    alt + bloquePeso +
+    alt + bloquePeso + bloqueReps +
     '<div class="ses-series">' + series + '</div>' +
     '<div class="ses-foot">' +
       (segundosDe(ej)
@@ -3057,11 +3477,13 @@ function pintarCintaDentro(){
           '<p>La rutina completa y 15 minutos de cuesta encima. Esta es tu sesión de verdad, no una versión reducida.</p>' +
           resumenFinHTML() +
           '<button class="btn-main" onclick="terminarCintaExtra()">Guardar y salir</button>' +
+          '<button class="btn-second" onclick="terminarCintaExtra(); abrirEstira()">' + ic('i-respirar') + ' Guardar y estirar 7 min</button>' +
         '</div>'
       : '<div class="ses-fin">' +
           '<span class="emo">' + ic('i-check','ic-lg') + '</span><h3>30 minutos de cinta</h3>' +
           '<p>Media hora andando en cuesta. Eso es exactamente lo que más le conviene ahora mismo a tu colesterol.</p>' +
           '<button class="btn-main" onclick="terminarCinta()">Guardar y salir</button>' +
+          '<button class="btn-second" onclick="terminarCinta(); abrirEstira()">' + ic('i-respirar') + ' Guardar y estirar 7 min</button>' +
         '</div>';
     return;
   }
@@ -3163,7 +3585,114 @@ function terminarCintaExtra(){
 function segundosDe(ej){
   if(!ej || !ej.sinPeso) return 0;
   const m = /(\d+)\s*segundo/.exec(ej.reps || '');
-  return m ? parseInt(m[1], 10) : 0;
+  if(!m) return 0;
+  const g = getAguante()[ej.id];
+  return (g >= 30 && g <= 60) ? g : parseInt(m[1], 10);
+}
+/* La plancha empezaba en 20 segundos y ahí se quedaba para siempre. Ahora
+   empieza en 30 y sube 5 cada vez que aguanta el tiempo entero en todas las
+   series, hasta 60. Soltar antes de tiempo no la baja nunca. */
+const AGUANTE_MAX = 60;
+function getAguante(){ const a = loadJSON(K.aguante, {}); return (a && typeof a === 'object') ? a : {}; }
+function subirAguante(i){
+  const e = S.lista[i];
+  const obj = segundosDe(e);
+  if(!obj || obj >= AGUANTE_MAX) return;
+  const segs = (S.reg[i] || []).map(x => x.seg).filter(n => n > 0);
+  if(segs.length < seriesDe(e, i) || !segs.every(n => n >= obj)) return;
+  const a = getAguante();
+  a[e.id] = obj + 5;
+  saveJSON(K.aguante, a);
+  S.subeAguante[e.id] = obj + 5;
+}
+function repsTexto(ej){ const s = segundosDe(ej); return s ? s + ' segundos' : ej.reps; }
+
+/* ---------- Repeticiones de cada serie ----------
+   Lo que Hevy apuntaba y aquí faltaba: cuántas salieron en cada serie. Viene
+   ya puesto con lo más probable, así que marcar la serie sigue siendo un solo
+   toque si ha salido lo de siempre. */
+function ultimoRegistro(id){
+  const todos = getEntrenos();
+  const hoy = hoyKey();
+  const fechas = Object.keys(todos).filter(f => f < hoy).sort().reverse();
+  for(const f of fechas){
+    const x = (Array.isArray(todos[f].ej) ? todos[f].ej : []).find(y => y.id === id);
+    if(x) return { f: f, x: x };
+  }
+  return null;
+}
+function repsPorDefecto(i){
+  const e = S.lista[i];
+  if(!e) return 10;
+  const hechas = (S.reg[i] || []).filter(x => x.r);
+  if(hechas.length) return hechas[hechas.length - 1].r;
+  const prev = ultimoRegistro(e.id);
+  const kg = getPesos()[e.id] || 0;
+  if(prev && Array.isArray(prev.x.r) && prev.x.r.length && (e.sinPeso || prev.x.kg === kg)) return prev.x.r[0];
+  const m = /(\d+)/.exec(e.reps || '');
+  return m ? parseInt(m[1], 10) : 10;
+}
+function repsActual(i){ return (S.repsSel && S.repsSel[i] > 0) ? S.repsSel[i] : repsPorDefecto(i); }
+function cambiarReps(d){
+  const n = Math.max(1, Math.min(50, repsActual(S.iEj) + d));
+  S.repsSel[S.iEj] = n;
+  const el = document.getElementById('repsNum');
+  if(el) el.textContent = n;
+  guardarSesion();
+}
+function repsDe(i){ return (S.reg[i] || []).map(x => x.r).filter(n => n > 0); }
+/* Con las repeticiones apuntadas, la pregunta de "¿cuántas te han salido?"
+   se contesta sola. */
+function autoValorar(i){
+  const e = S.lista[i];
+  if(!e || e.sinPeso || !getPesos()[e.id]) return;
+  const rs = repsDe(i);
+  if(!rs.length) return;
+  const v = rs.every(n => n >= 15) ? 'sobra' : Math.min.apply(null, rs) >= 10 ? 'justo' : 'corto';
+  const s = getSensaciones();
+  s[e.id] = { v: v, kg: getPesos()[e.id], f: hoyKey() };
+  saveJSON(K.sensacion, s);
+  S.valorados[i] = v;
+}
+function detalleSeries(x){
+  if(Array.isArray(x.r) && x.r.length) return x.r.join(' · ') + ' repeticiones';
+  if(Array.isArray(x.seg) && x.seg.length) return x.seg.map(n => n + ' s').join(' · ');
+  return x.s + (x.s === 1 ? ' serie' : ' series') + (x.v && REPS_TXT[x.v] ? ' · ' + REPS_TXT[x.v] : '');
+}
+
+/* ---------- Calentar ---------- */
+function pintarCalentar(){
+  const body = document.getElementById('sesBody');
+  document.getElementById('sesCuenta').textContent = 'Calentamiento';
+  const enMarcha = S.finCalentar > 0;
+  body.innerHTML =
+    '<h2 class="ses-nombre">Calentar</h2>' +
+    '<p class="ses-alias">5 minutos · antes de la primera máquina</p>' +
+    (enMarcha ? '<div class="ses-descanso" style="padding-top:0;">' + anilloHTML('5:00') + '</div>' : '') +
+    '<div class="ses-recuerda"><b>Lo único que importa:</b> entrar en calor, no cansarte. Tienes que acabar pudiendo hablar sin esfuerzo.</div>' +
+    '<ol class="ses-pasos">' +
+      '<li>Cinta andando rápido con un 5-6% de cuesta, o bici estática suave.</li>' +
+      '<li>Nada de estirar ahora: en frío no previene lesiones y quita algo de fuerza. Los estiramientos van al final.</li>' +
+      '<li>En la primera máquina, haz una serie de prueba con menos peso. Esa no la marques.</li>' +
+    '</ol>' +
+    '<div class="ses-foot">' +
+      (enMarcha
+        ? '<button class="btn-main" onclick="finCalentar()">' + ic('i-check') + 'Ya estoy, a la primera máquina</button>'
+        : '<button class="btn-main" onclick="empezarCalentar()">' + ic('i-reloj') + 'Empezar los 5 minutos</button>' +
+          '<button class="btn-second" onclick="finCalentar()">Ya he calentado</button>') +
+    '</div>';
+  if(enMarcha) actualizarRing(true);
+}
+const CALENTAR_SEG = 300;
+function empezarCalentar(){
+  S.finCalentar = Date.now() + CALENTAR_SEG * 1000;
+  arrancarTick();
+  pintarSesion();
+}
+function finCalentar(){
+  pararTick();
+  S.calentando = false; S.finCalentar = 0;
+  pintarSesion();
 }
 function empezarAguante(){
   const seg = segundosDe(S.lista[S.iEj]);
@@ -3178,6 +3707,8 @@ function empezarAguante(){
    Aguantar 12 de 20 segundos también es una serie: cuenta igual. */
 function finAguante(){
   pararTick();
+  const inicio = S.finAguante - S.segAguante * 1000;
+  S.segHecho = Math.max(1, Math.min(S.segAguante, Math.round((Date.now() - inicio) / 1000)));
   S.aguantando = false;
   serieHecha();
 }
@@ -3213,6 +3744,12 @@ function serieHecha(){
   const ej = S.lista[S.iEj];
   const nSeries = seriesDe(ej, S.iEj);
   if(S.serie >= nSeries) return pintarSesion();
+  const apunte = segundosDe(ej)
+    ? { seg: S.segHecho != null ? S.segHecho : segundosDe(ej) }
+    : { r: repsActual(S.iEj) };
+  if(!ej.sinPeso) apunte.kg = getPesos()[ej.id] || 0;
+  S.reg[S.iEj] = (S.reg[S.iEj] || []).concat([apunte]);
+  S.segHecho = null;
   S.serie++;
   S.historial.push(S.iEj);
   /* Primera serie completada de este ejercicio: el peso ya se ha usado. */
@@ -3221,6 +3758,8 @@ function serieHecha(){
   if(S.serie >= nSeries){
     S.hechos++;
     S.ultimoCompletado = S.iEj;
+    autoValorar(S.iEj);
+    subirAguante(S.iEj);
     if(siguientePendiente(S.iEj) === -1){
       S.terminada = true;
       pito('fin');
@@ -3254,6 +3793,16 @@ function deshacerSerie(){
   S.descansando = false; S.aguantando = false; S.terminada = false; S.viendoLista = false;
   const i = S.historial.pop();
   if(i !== S.iEj) irAEjercicio(i);
+  if(S.reg && Array.isArray(S.reg[i])) S.reg[i] = S.reg[i].slice(0, -1);
+  const eDes = S.lista[i];
+  if(eDes && S.subeAguante && S.subeAguante[eDes.id]){
+    /* Si deshace la serie que hizo subir la plancha, la subida se deshace con ella. */
+    const a = getAguante();
+    a[eDes.id] = S.subeAguante[eDes.id] - 5;
+    if(a[eDes.id] <= 30) delete a[eDes.id];
+    saveJSON(K.aguante, a);
+    delete S.subeAguante[eDes.id];
+  }
   if(S.serie >= seriesDe(S.lista[i], i)) S.hechos = Math.max(0, S.hechos - 1);
   S.serie = Math.max(0, S.serie - 1);
   anotarSerieActual();
@@ -3269,7 +3818,7 @@ function verListaEjercicios(){
 }
 function elegirEjercicio(i){
   pararTick();
-  S.descansando = false; S.aguantando = false; S.viendoLista = false;
+  S.descansando = false; S.aguantando = false; S.viendoLista = false; S.calentando = false;
   irAEjercicio(i);
   pintarSesion();
 }
@@ -3284,14 +3833,16 @@ function pintarListaEjercicios(){
   const hechos = S.lista.filter((e, i) => completo(i)).length;
   document.getElementById('sesCuenta').textContent = hechos + ' de ' + S.lista.length + ' hechos';
   body.innerHTML =
-    '<h2 class="ses-nombre">Elige máquina</h2>' +
-    '<p class="ses-alias">Si la que toca está ocupada, ve a otra que esté libre. Las que dejes a medias te esperan aquí.</p>' +
+    '<h2 class="ses-nombre">Tu entreno de hoy</h2>' +
+    '<p class="ses-alias">Toca cualquiera para ir a ella. Si la que toca está ocupada, ve a otra: las que dejes a medias te esperan aquí.</p>' +
     '<div class="ses-lista-ej">' +
       S.lista.map((e, i) => {
         const n = seriesDe(e, i);
         const h = Math.min(S.hechasPor[i] || 0, n);
         const hecho = h >= n;
-        const estado = hecho ? 'Hecho' : (h ? h + ' de ' + n + ' series' : n + ' × ' + e.reps);
+        const apuntes = (S.reg[i] || []).map(x => x.r || (x.seg ? x.seg + 's' : '')).filter(Boolean);
+        const estado = (hecho ? 'Hecho' : (h ? h + ' de ' + n + ' series' : n + ' × ' + repsTexto(e))) +
+                       (apuntes.length ? ': ' + apuntes.join(' · ') : '');
         const peso = !e.sinPeso && pesos[e.id] ? ' · ' + pesos[e.id] + ' kg' : '';
         return '<button class="ses-ej' + (hecho ? ' hecho' : '') + (i === S.iEj ? ' actual' : '') + '"' +
                  (hecho ? ' disabled' : ' onclick="elegirEjercicio(' + i + ')"') + '>' +
@@ -3317,7 +3868,7 @@ function ajustarCabecera(){
   if(cuenta && cuenta.textContent && S.inicio && !S.terminada) cuenta.textContent += ' · ' + minutosSesion() + ' min';
   const b = document.getElementById('sesListaBtn');
   if(!b) return;
-  b.hidden = S.tipo === 'cinta' || S.terminada || S.lista.length < 2;
+  b.hidden = S.tipo === 'cinta' || S.terminada || S.calentando || S.lista.length < 2;
   b.textContent = S.viendoLista ? 'Cerrar lista' : 'Ejercicios';
 }
 
@@ -3344,6 +3895,11 @@ function preguntaSensacion(i){
   const e = (i === undefined || i === null) ? null : S.lista[i];
   if(!e || e.sinPeso || !getPesos()[e.id]) return '';
   const v = S.valorados[i];
+  const rs = repsDe(i);
+  if(rs.length && v){
+    return '<div class="ses-sensacion"><p>Apuntado: <b>' + rs.join(' · ') + '</b> con ' + getPesos()[e.id] + ' kg. ' +
+      (v === 'sobra' ? 'La próxima vez toca subir.' : 'La próxima vez, mismo peso intentando sumar.') + '</p></div>';
+  }
   const op = (clave, txt) => '<button class="' + (v === clave ? 'on' : '') + '" onclick="valorar(' + i + ',&quot;' + clave + '&quot;)">' + txt + '</button>';
   return '<div class="ses-sensacion"><p>' +
       (v ? 'Apuntado. La próxima vez te digo qué peso poner.'
@@ -3373,19 +3929,12 @@ function aplicarPeso(id, kg){
    sesiones. Delante de la máquina es el dato que de verdad hace falta. */
 function ultimaVezHTML(ej){
   if(!ej) return '';
-  const todos = getEntrenos();
-  const hoy = hoyKey();
-  const fechas = Object.keys(todos).filter(f => f < hoy).sort().reverse();
-  for(const f of fechas){
-    const x = (Array.isArray(todos[f].ej) ? todos[f].ej : []).find(y => y.id === ej.id);
-    if(!x) continue;
-    const d = desdeKey(f);
-    const partes = [x.kg ? x.kg + ' kg' : '', x.s + (x.s === 1 ? ' serie' : ' series'),
-                    x.v && REPS_TXT[x.v] ? REPS_TXT[x.v] : ''].filter(Boolean);
-    return '<div class="ses-ultima">La última vez (' + DIAS_LARGOS[d.getDay()] + ' ' + d.getDate() + '): <b>' +
-      esc(partes.join(' · ')) + '</b></div>';
-  }
-  return '';
+  const u = ultimoRegistro(ej.id);
+  if(!u) return '';
+  const d = desdeKey(u.f);
+  const partes = [u.x.kg ? u.x.kg + ' kg' : '', detalleSeries(u.x)].filter(Boolean);
+  return '<div class="ses-ultima">La última vez (' + DIAS_LARGOS[d.getDay()] + ' ' + d.getDate() + '): <b>' +
+    esc(partes.join(' · ')) + '</b></div>';
 }
 function resumenEntrenoTxt(e){
   if(!e) return '';
@@ -3410,7 +3959,7 @@ function guardarAjusteMaq(id, txt){
   if(limpio) toast('Ajuste apuntado');
 }
 function ajusteMaquinaHTML(ej){
-  if(!ej || ej.sinPeso || !EJERCICIOS_GYM.some(e => e.id === ej.id)) return '';
+  if(!ej || ej.sinPeso || !EJERCICIOS_GYM.concat(EJERCICIOS_EXTRA).some(e => e.id === ej.id)) return '';
   const actual = getAjustesMaq()[ej.id] || '';
   return '<label class="ses-ajuste"><span>Cómo la dejas</span>' +
     '<input type="text" maxlength="80" enterkeyhint="done" autocomplete="off" value="' + esc(actual) + '" ' +
@@ -3437,6 +3986,11 @@ function fotoEntreno(tipo){
     const o = { id: e.id, s: s };
     if(!e.sinPeso && pesos[e.id]) o.kg = pesos[e.id];
     if(S.valorados[i]) o.v = S.valorados[i];
+    const apuntes = (S.reg && S.reg[i]) || [];
+    const r = apuntes.map(x => x.r).filter(n => n > 0);
+    const seg = apuntes.map(x => x.seg).filter(n => n > 0);
+    if(r.length) o.r = r;
+    if(seg.length) o.seg = seg;
     return o;
   }).filter(Boolean);
   return { tipo: tipo, modo: S.modo, min: minutosSesion(), ej: ej, cinta: S.tipo === 'cinta' ? (S.tanda || 0) * TANDA_MIN : 0 };
@@ -3477,13 +4031,14 @@ function resumenFinHTML(){
     if(e.sinPeso || !(S.hechasPor[i] > 0)) return '';
     const antes = pesoAnterior(e.id), ahora = pesos[e.id];
     return antes && ahora > antes ? '<li>' + esc(e.nombre) + ' <b>' + antes + ' → ' + ahora + ' kg</b></li>' : '';
-  }).join('');
+  }).join('') + Object.keys(S.subeAguante || {}).map(id =>
+    '<li>' + esc(nombreEj(id)) + ': la próxima vez <b>' + S.subeAguante[id] + ' segundos</b></li>').join('');
   if(!series && !min) return '';
   const dato = (n, txt) => '<div><b>' + n + '</b><span>' + txt + '</span></div>';
   return '<div class="ses-resumen">' +
       (min ? dato(min, 'minutos') : '') + dato(series, 'series') + dato(hechos.length, hechos.length === 1 ? 'ejercicio' : 'ejercicios') +
     '</div>' +
-    (subidas ? '<div class="ses-subidas"><b>Hoy has subido de peso:</b><ul>' + subidas + '</ul></div>' : '');
+    (subidas ? '<div class="ses-subidas"><b>Hoy has subido:</b><ul>' + subidas + '</ul></div>' : '');
 }
 
 /* En Semana: las últimas sesiones con lo que hiciste en cada una. */
@@ -3511,11 +4066,9 @@ function renderEntrenos(){
   const todos = getEntrenos();
   const fechas = Object.keys(todos).sort().reverse().slice(0, 12);
   if(!fechas.length){ el.innerHTML = ''; return; }
-  const catalogo = EJERCICIOS_GYM.concat(EJERCICIOS_CASA);
-  const nombre = id => (catalogo.find(e => e.id === id) || { nombre: id }).nombre;
   el.innerHTML =
     '<h2 style="margin-top:36px;"><span class="h2-badge">' + ic('i-nota') + '</span>Tus últimas sesiones</h2>' +
-    '<p class="lead">Qué hiciste y con cuánto peso. Se apunta solo al cerrar cada sesión.</p>' +
+    '<p class="lead">Qué hiciste, con cuánto peso y cuántas repeticiones. Se apunta solo al cerrar cada sesión.</p>' +
     totalesEntrenosHTML(todos) +
     fechas.map(f => {
       const e = todos[f] || {};
@@ -3525,8 +4078,7 @@ function renderEntrenos(){
       const meta = [e.min ? e.min + ' min' : '', series ? series + ' series' : '', e.cinta ? e.cinta + ' min cinta' : '']
         .filter(Boolean).join(' · ');
       const filas = lista.map(x =>
-        '<tr><td>' + esc(nombre(x.id)) + '<small>' + x.s + (x.s === 1 ? ' serie' : ' series') +
-          (x.v && REPS_TXT[x.v] ? ' · ' + REPS_TXT[x.v] : '') + '</small></td>' +
+        '<tr><td>' + esc(nombreEj(x.id)) + '<small>' + esc(detalleSeries(x)) + '</small></td>' +
         '<td>' + (x.kg ? x.kg + ' kg' : '') + '</td></tr>').join('') +
         (e.cinta ? '<tr><td>Cinta en cuesta</td><td>' + e.cinta + ' min</td></tr>' : '');
       return '<details class="entreno"><summary><span class="ex-head">' +
@@ -3565,10 +4117,14 @@ function arrancarTick(){
   pararTick();
   S.tick = setInterval(() => {
     const objetivo = S.aguantando ? S.finAguante
+                   : S.calentando ? S.finCalentar
                    : (S.tipo === 'cinta' && !S.descansando) ? S.finTanda
                    : S.finDescanso;
     if(Math.ceil((objetivo - Date.now()) / 1000) <= 0){
-      if(S.aguantando){
+      if(S.calentando){
+        pito('tanda');
+        finCalentar();
+      } else if(S.aguantando){
         pito('seguir');
         finAguante();
       } else if(S.tipo === 'cinta' && !S.descansando){
@@ -3596,8 +4152,9 @@ function actualizarRing(forzar){
   const anillo = document.getElementById('ringAvance');
   if(!txt || !anillo) return;
   const enTanda = S.tipo === 'cinta' && !S.descansando;
-  const objetivo = S.aguantando ? S.finAguante : enTanda ? S.finTanda : S.finDescanso;
+  const objetivo = S.aguantando ? S.finAguante : S.calentando ? S.finCalentar : enTanda ? S.finTanda : S.finDescanso;
   const total = S.aguantando ? S.segAguante
+              : S.calentando ? CALENTAR_SEG
               : enTanda ? TANDA_MIN * 60
               : (S.tipo === 'cinta' ? DESCANSO_TANDAS : descansoActual());
   const quedan = S.pausada
@@ -3727,10 +4284,10 @@ function destello(){
 }
 
 /* ===================== RUTINA ===================== */
-function ejercicioHTML(ej, i){
+function ejercicioHTML(ej, i, marca){
   return '<details>' +
-    '<summary><span class="ex-head"><span class="ex-num">' + (i+1) + '</span>' + esc(ej.nombre) +
-      '</span><span class="ex-series">' + ej.series + ' × ' + esc(ej.reps.replace(' repeticiones','')) + '</span></summary>' +
+    '<summary><span class="ex-head"><span class="ex-num">' + (typeof marca === 'string' ? marca : (i+1)) + '</span>' + esc(ej.nombre) +
+      '</span><span class="ex-series">' + ej.series + ' × ' + esc(repsTexto(ej).replace(' repeticiones','')) + '</span></summary>' +
     '<div class="content">' +
       '<div class="ex-alias">' + esc(ej.alias) + '</div>' +
       '<div class="ex-field"><div>Para qué sirve</div>' + esc(ej.musculo) + '</div>' +
@@ -3753,7 +4310,33 @@ function renderRutina(){
   if(rutinaPintada) return;
   document.getElementById('listaGym').innerHTML  = EJERCICIOS_GYM.map(ejercicioHTML).join('');
   document.getElementById('listaCasa').innerHTML = EJERCICIOS_CASA.map(ejercicioHTML).join('');
+  document.getElementById('listaExtra').innerHTML = EJERCICIOS_EXTRA.map((e, i) => ejercicioHTML(e, i, e.turno)).join('');
+  document.getElementById('listaEstira').innerHTML = ESTIRAMIENTOS.map(estiramientoHTML).join('');
   rutinaPintada = true;
+}
+function renderFases(){
+  const el = document.getElementById('fasesBox');
+  if(!el) return;
+  const n = sesionesFuerza();
+  let actual = 0;
+  FASES.forEach((f, i) => { if(n >= f.desde) actual = i; });
+  const sig = FASES[actual + 1];
+  const extras = extrasDeHoy();
+  const plancha = segundosDe(EJERCICIOS_GYM.find(e => e.id === 'plancha'));
+  el.innerHTML =
+    '<div class="card" style="margin-top:0;"><h3 style="margin-top:0;">Cómo va creciendo tu rutina</h3>' +
+      '<p style="font-size:var(--t-sm); margin:0;">Llevas <b>' + n + (n === 1 ? ' sesión' : ' sesiones') + ' de fuerza</b>. ' +
+        'Avanza con las sesiones que haces, no con las semanas: si un día paras, te espera donde lo dejaste.</p>' +
+      '<ol class="fases">' + FASES.map((f, i) =>
+        '<li class="fase' + (i < actual ? ' hecha' : i === actual ? ' actual' : '') + '">' +
+          '<small>' + (f.desde ? 'Tras ' + f.desde + ' sesiones' : 'Desde el principio') + (i === actual ? ' · estás aquí' : '') + '</small>' +
+          '<b>' + esc(f.titulo) + '</b><span>' + esc(f.txt) + '</span></li>').join('') +
+      '</ol>' +
+      '<p style="font-size:var(--t-xs); color:var(--muted); margin:10px 0 0;">' +
+        (sig ? 'Para lo siguiente: ' + (sig.desde - n) + (sig.desde - n === 1 ? ' sesión más. ' : ' sesiones más. ') : '') +
+        (extras.length ? 'La próxima sesión completa lleva ' + extras.map(e => e.nombre.toLowerCase()).join(' y ') + '. ' : '') +
+        'Plancha ahora: ' + plancha + ' segundos, y sube 5 cada vez que aguantas las tres enteras.</p>' +
+    '</div>';
 }
 function setVista(v){
   ['gym','cinta','casa'].forEach(k => {
@@ -4425,7 +5008,8 @@ function toggleTheme(){ toggleThemeManual(); }
    y a la misma altura en vez de aparecer en Hoy. */
 const CAMPOS_SESION = ['activa','tipo','modo','iEj','serie','descansando','finDescanso','hechos',
   'tanda','tandaObjetivo','cintaExtra','finTanda','pausada','restante',
-  'aguantando','finAguante','segAguante','hechasPor','historial','terminada','valorados','ultimoCompletado','inicio'];
+  'aguantando','finAguante','segAguante','hechasPor','historial','terminada','valorados','ultimoCompletado','inicio',
+  'reg','repsSel','calentando','finCalentar','subeAguante'];
 
 function guardarSesion(){
   if(!S.activa) return;
@@ -4439,7 +5023,7 @@ function restaurarSesion(){
   if(!foto || !foto.activa) return false;
   /* Una sesión de ayer, o de hace más de cuatro horas, ya no es "la de ahora". */
   if(foto.dia !== hoyKey() || Date.now() - foto.guardada > 4 * 3600000){ borrarSesionGuardada(); return false; }
-  const todos = EJERCICIOS_GYM.concat(EJERCICIOS_CASA);
+  const todos = catalogo();
   const lista = (foto.ids || []).map(id => todos.find(e => e.id === id)).filter(Boolean);
   if(foto.tipo !== 'cinta' && !lista.length){ borrarSesionGuardada(); return false; }
   CAMPOS_SESION.forEach(c => { if(foto[c] !== undefined) S[c] = foto[c]; });
@@ -4449,10 +5033,12 @@ function restaurarSesion(){
   }
   if(!Array.isArray(S.historial)) S.historial = [];
   if(!S.valorados || typeof S.valorados !== 'object') S.valorados = {};
+  ['reg','repsSel','subeAguante'].forEach(c => { if(!S[c] || typeof S[c] !== 'object') S[c] = {}; });
+  S.segHecho = null;
   S.viendoLista = false; S.tick = null; S.ultimoSeg = -1;
   abrirSesion();
   const cintaEnMarcha = S.tipo === 'cinta' && !S.pausada && S.tanda < (S.tandaObjetivo || 2);
-  if(S.aguantando || S.descansando || cintaEnMarcha) arrancarTick();
+  if(S.aguantando || S.descansando || cintaEnMarcha || (S.calentando && S.finCalentar)) arrancarTick();
   toast('Seguimos donde lo dejaste');
   return true;
 }
@@ -4558,7 +5144,7 @@ function toast(msg){
    Lo que queda es lo que sí funciona: todo vive en este dispositivo, y para
    llevártelo a otro está la copia manual. La fusión clave a clave sigue aquí
    porque restaurar una copia no debe borrar lo que hayas hecho desde entonces. */
-const FUSIONABLES = [K.log, K.pesos, K.sensacion, K.entrenos, K.ajustesMaq];
+const FUSIONABLES = [K.log, K.pesos, K.sensacion, K.entrenos, K.ajustesMaq, K.aguante];
 
 function fusionarObjetos(localRaw, remotoRaw){
   let local = {}, remoto = {};
