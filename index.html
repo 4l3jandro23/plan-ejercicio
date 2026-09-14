@@ -826,6 +826,15 @@
   .minutos-opts{display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; margin:6px 0 4px;}
   .minutos-opts button{min-height:54px; border-radius:var(--r-md); border:1px solid var(--border); background:var(--card); color:var(--ink); font-family:var(--font-mono); font-size:var(--t-md); font-weight:700; cursor:pointer;}
   .minutos-opts button span{display:block; font-family:inherit; font-size:var(--t-2xs); color:var(--muted); font-weight:600;}
+  .horario-det{margin:0; border:none; background:transparent; box-shadow:none;}
+  .horario-det > summary{padding:2px 0 8px; font-family:inherit; font-size:inherit;}
+  .novedades-antes{margin:0 0 12px; border:none; background:transparent; box-shadow:none;}
+  .novedades-antes > summary{padding:4px 0; font-family:inherit; font-size:var(--t-sm); color:var(--muted);}
+  .cal-dias{display:grid; grid-template-columns:repeat(7, minmax(0, 1fr)); gap:6px; margin:6px 0 16px;}
+  .cal-dias button{min-height:46px; border-radius:var(--r-sm); border:1px solid var(--border); background:var(--card); color:var(--ink); font-family:var(--font-mono); font-weight:700; font-size:var(--t-sm); cursor:pointer;}
+  .cal-dias button.on{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .cal-fila{display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 14px; font-size:var(--t-sm);}
+  .cal-fila input, .cal-fila select{font-family:var(--font-mono); font-size:16px; padding:8px 10px; border:1px solid var(--border); border-radius:var(--r-sm); background:var(--card); color:var(--ink);}
   .ses-descanso{text-align:center; padding:16px 0 8px;}
   .ring{width:190px; height:190px; margin:0 auto 6px; display:block; filter:drop-shadow(0 4px 14px rgba(0,0,0,.08));}
   .ring circle{fill:none; stroke-width:8; stroke-linecap:round;}
@@ -1290,8 +1299,10 @@
   <div class="sos-row" id="sosRow"></div>
 
   <div id="hoyEntreno"></div>
-  <div id="hoyResumenSemana"></div>
+  <!-- El botón de empezar va antes que el resumen de la semana: medido en un
+       martes a las 18:30, el resumen lo empujaba por debajo de la pantalla. -->
   <div id="hoyActions"></div>
+  <div id="hoyResumenSemana"></div>
 
   <div class="escape-card" id="escapeCard">
     <h4>Vale. No pasa nada.</h4>
@@ -1512,6 +1523,8 @@
 
   <h2><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-nota"/></svg></span>Que te avise el iPhone</h2>
   <p class="lead">Esta app no puede mandarte notificaciones: una web necesita un servidor propio para eso, y montarlo no compensa para lo poco que aporta. Pero el iPhone ya sabe hacerlo, y mejor:</p>
+  <button class="btn-main" onclick="abrirCalendario()"><svg class="ic-v" aria-hidden="true"><use href="#i-reloj"/></svg>Poner mis entrenos en el calendario</button>
+  <p style="font-size:var(--t-xs); color:var(--muted); margin:8px 0 14px;">Crea un evento cada semana en tus días, con aviso antes. El iPhone te avisa aunque no abras la app. Si prefieres hacerlo a mano:</p>
   <ul style="font-size:var(--t-base);">
     <li><b>Una alarma normal, repetida.</b> Reloj → Alarma → repetir los días que entrenas, con la etiqueta que quieras. Es lo más simple y lo que menos falla.</li>
     <li><b>Un evento en el calendario</b>, semanal, con aviso 30 minutos antes. Tiene la ventaja de que ocupa el hueco y ves que ese rato ya está pillado.</li>
@@ -2993,6 +3006,7 @@ function cenaHTML(){
          '<p class="cena-nota">' + porque + '</p>' + snack;
 }
 
+let horarioAbierto = false;
 function renderHorario(){
   const ahora = new Date();
   const dow = ahora.getDay();
@@ -3016,9 +3030,13 @@ function renderHorario(){
   filas += '<div class="horario-row bad"><span>Entre semana por la tarde no hay nada que hacer</span><span>18:00-22:30</span></div>';
   filas += '<div class="horario-row"><span>Cierra a la 1:00, así que aún queda margen luego</span><span>22:45+</span></div>';
 
+  /* Plegado: la tarjeta de aforo de arriba ya dice lo de ahora mismo, y
+     desplegado ocupaba 440 px al final de Hoy. */
   document.getElementById('horarioBox').innerHTML =
-    '<div class="horario-title">Cuándo ir hoy</div>' + filas +
-    '<button class="btn-second" style="margin-top:8px;" onclick="abrirHoras()">' + ic('i-reloj') + 'Ver todas las franjas y cuál te conviene</button>';
+    '<details class="horario-det"' + (horarioAbierto ? ' open' : '') + ' ontoggle="horarioAbierto = this.open">' +
+      '<summary class="horario-title">Cuándo ir hoy</summary>' + filas +
+      '<button class="btn-second" style="margin-top:8px;" onclick="abrirHoras()">' + ic('i-reloj') + 'Ver todas las franjas y cuál te conviene</button>' +
+    '</details>';
 }
 
 function marcar(tipo, silencioso){
@@ -3852,6 +3870,82 @@ function estancamientoHTML(e){
     '</ul></div></details>';
 }
 
+/* ---------- Entrenos en el calendario ----------
+   La app no puede mandar avisos, pero el calendario del iPhone sí. Se genera
+   un archivo .ics con un evento semanal por cada día elegido y su aviso: al
+   abrirlo, el iPhone ofrece añadirlos todos. Hora "flotante" (sin zona), que
+   el calendario interpreta en la hora de aquí. */
+function icsFecha(d){
+  const p = n => String(n).padStart(2, '0');
+  return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + 'T' + p(d.getHours()) + p(d.getMinutes()) + '00';
+}
+function icsTexto(t){ return String(t).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }
+function crearIcs(eventos, prodid){
+  const DIA = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const l = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//' + prodid + '//ES', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH'];
+  eventos.forEach((ev, i) => {
+    const hm = ev.hora.split(':').map(Number);
+    const ini = new Date();
+    ini.setHours(hm[0], hm[1], 0, 0);
+    let suma = (ev.dow - ini.getDay() + 7) % 7;
+    if(suma === 0 && ini < new Date()) suma = 7;
+    ini.setDate(ini.getDate() + suma);
+    const fin = new Date(ini.getTime() + ev.minutos * 60000);
+    l.push('BEGIN:VEVENT', 'UID:' + prodid.replace(/\s+/g, '-').toLowerCase() + '-' + ev.dow + '-' + Date.now() + '-' + i + '@4l3jandro23.github.io',
+      'DTSTAMP:' + stamp, 'DTSTART:' + icsFecha(ini), 'DTEND:' + icsFecha(fin), 'RRULE:FREQ=WEEKLY;BYDAY=' + DIA[ev.dow],
+      'SUMMARY:' + icsTexto(ev.titulo), 'DESCRIPTION:' + icsTexto(ev.desc), 'URL:' + ev.url,
+      'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsTexto(ev.titulo), 'TRIGGER:-PT' + ev.aviso + 'M', 'END:VALARM', 'END:VEVENT');
+  });
+  l.push('END:VCALENDAR');
+  return l.join('\r\n');
+}
+function descargarIcs(texto, nombre){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([texto], { type: 'text/calendar;charset=utf-8' }));
+  a.download = nombre;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+function abrirCalendario(){
+  const dias = getDias();
+  if(!Array.isArray(window.calDias)) window.calDias = dias.fijos.concat(dias.flex);
+  if(!window.calHora) window.calHora = '15:30';
+  abrirSheet('i-reloj', 'Calendario', '<div id="calCuerpo"></div>');
+  pintarCalendario();
+}
+function pintarCalendario(){
+  const el = document.getElementById('calCuerpo');
+  if(!el) return;
+  const orden = [1, 2, 3, 4, 5, 6, 0];
+  el.innerHTML = cabSheet('Tus entrenos en el calendario', 'Marca los días y la hora. Se crea un evento cada semana con aviso antes, y el iPhone te avisa aunque no abras la app.') +
+    '<div class="cal-dias">' + orden.map(d => '<button class="' + (window.calDias.indexOf(d) !== -1 ? 'on' : '') + '" aria-pressed="' + (window.calDias.indexOf(d) !== -1) + '" onclick="alternarDiaCal(' + d + ')">' + DIAS_CORTOS[d] + '</button>').join('') + '</div>' +
+    '<label class="cal-fila"><span>Hora de ir</span><input type="time" value="' + window.calHora + '" onchange="window.calHora = this.value || \'15:30\'"></label>' +
+    '<label class="cal-fila"><span>Avisarme antes</span><select id="calAviso"><option value="15">15 min</option><option value="30" selected>30 min</option><option value="60">1 hora</option></select></label>' +
+    '<button class="btn-main"' + (window.calDias.length ? '' : ' disabled') + ' onclick="crearCalendarioEntrenos()">' + ic('i-descarga') + 'Crear el archivo del calendario</button>' +
+    '<p style="font-size:var(--t-xs); color:var(--muted); margin:10px 0 0;">Se descarga un archivo: ábrelo y el iPhone te ofrece «Añadir todo». Si un día cambias de días, borra esos eventos del calendario y créalos otra vez.</p>';
+}
+function alternarDiaCal(d){
+  const i = window.calDias.indexOf(d);
+  if(i === -1) window.calDias.push(d); else window.calDias.splice(i, 1);
+  pintarCalendario();
+}
+function eventosEntreno(dias, hora, aviso){
+  return dias.slice().sort().map(d => ({
+    dow: d, hora: hora, minutos: 60, aviso: aviso,
+    titulo: 'Gimnasio', desc: 'Abre la app: Hoy te dice qué toca y cómo está de lleno.',
+    url: 'https://4l3jandro23.github.io/plan-ejercicio/#hoy'
+  }));
+}
+function crearCalendarioEntrenos(){
+  if(!window.calDias.length) return;
+  const aviso = parseInt((document.getElementById('calAviso') || {}).value, 10) || 30;
+  descargarIcs(crearIcs(eventosEntreno(window.calDias, window.calHora || '15:30', aviso), 'Plan de Ejercicio'), 'entrenos.ics');
+  toast('Ábrelo para añadirlo al calendario');
+}
+
 /* ---------- Tus datos, a salvo ----------
    Todo vive en el almacenamiento del navegador. Si iOS anda justo de espacio
    puede borrarlo, y con él meses de pesos y sesiones. Se le pide al navegador
@@ -3898,7 +3992,13 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-09-14'; }
+function novedadesId(){ return '2026-09-14b'; }
+function novedadesNuevas(){
+  return [
+    '<b>Tus entrenos en el calendario del iPhone:</b> eliges días y hora y te avisa antes, aunque no abras la app. Guía → Que te avise el iPhone.',
+    '<b>Hoy más corto:</b> el botón de empezar sale antes, y «Cuándo ir hoy» va plegado al final.'
+  ];
+}
 function novedades(){
   return [
     '<b>Cuánto dura:</b> los botones de empezar dicen cuánto vas a tardar, y en el descanso ves lo que te queda.',
@@ -3915,7 +4015,8 @@ function novedadesHTML(){
   try{ vistas = localStorage.getItem('planEjercicioNovedades') || ''; }catch(e){}
   if(vistas === novedadesId()) return '';
   if(totalSesiones() === 0){ setRaw('planEjercicioNovedades', novedadesId()); return ''; }
-  return '<div class="card aviso-hoy"><h3>Qué hay de nuevo</h3><ul>' + novedades().map(n => '<li>' + n + '</li>').join('') + '</ul>' +
+  return '<div class="card aviso-hoy"><h3>Qué hay de nuevo</h3><ul>' + novedadesNuevas().map(n => '<li>' + n + '</li>').join('') + '</ul>' +
+    '<details class="novedades-antes"><summary>Y lo de estos días</summary><ul>' + novedades().map(n => '<li>' + n + '</li>').join('') + '</ul></details>' +
     '<button class="btn-second" onclick="cerrarNovedades()">Entendido</button></div>';
 }
 function cerrarNovedades(){
