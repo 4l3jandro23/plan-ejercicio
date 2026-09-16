@@ -167,13 +167,13 @@
   }
   /* Si el navegador no sabe desenfocar, opacamos para que siga siendo legible. */
   @supports not ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){
-    .glass, .pane, header, .bottomnav, .sheet, .settings-panel, .sos-btn{
+    .glass, .pane, .bottomnav, .sheet, .settings-panel, .sos-btn{
       background:var(--card);
     }
   }
   /* Quien pide menos transparencia en el sistema, la recibe. */
   @media (prefers-reduced-transparency: reduce){
-    .glass, .pane, header, .bottomnav, .sheet, .settings-panel, .sos-btn{
+    .glass, .pane, .bottomnav, .sheet, .settings-panel, .sos-btn{
       background:var(--card); -webkit-backdrop-filter:none; backdrop-filter:none;
     }
     body::before{background:var(--bg);}
@@ -190,13 +190,18 @@
   .bottomnav .ic-v{width:22px; height:22px; vertical-align:0;}
   .ic-lg{width:1.6em; height:1.6em;}
 
+  /* La cabecera va de un color liso y opaco arriba del todo. Desde iOS 26, si
+     el iPhone no encuentra un color liso en el borde de arriba (y el degradado
+     semitransparente con desenfoque no lo era), pinta encima su propia franja
+     de vidrio borroso: era la "sombra fea" sobre el título. Con color plano la
+     usa como color de la barra de estado y no pinta nada. Sin sombra propia. */
+  :root{ --cab:var(--accent); --cab2:color-mix(in srgb, var(--accent) 84%, var(--accent2)); }
+  html.dark{ --cab:color-mix(in srgb, var(--accent2) 60%, #000); --cab2:color-mix(in srgb, var(--accent2) 52%, #000); }
   header{
-    background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 92%, transparent), color-mix(in srgb, var(--accent2) 88%, transparent));
-    -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
+    background:linear-gradient(180deg, var(--cab) 0%, var(--cab) 50%, var(--cab2) 100%);
     color:#fff; padding:calc(14px + env(safe-area-inset-top)) 16px 16px;
     position:sticky; top:0; z-index:20;
-    border-bottom:1px solid rgba(255,255,255,.16);
-    box-shadow:0 6px 24px rgba(20,32,48,.14);
+    border-bottom:1px solid rgba(0,0,0,.10);
   }
   .headtop{display:flex; justify-content:space-between; align-items:center; gap:12px; max-width:760px; margin:0 auto;}
   header h1{margin:0 0 2px; font-size:var(--t-lg); font-family:var(--font-display); font-weight:600; letter-spacing:-.3px; display:flex; align-items:center; gap:9px;}
@@ -873,6 +878,47 @@
   .cinta-num span{font-size:var(--t-2xs); color:var(--muted); text-transform:uppercase; letter-spacing:.7px; font-weight:700;}
   .cena-nota{font-size:var(--t-xs); color:var(--muted); margin:8px 0 0; line-height:1.45;}
 
+  /* ===== Cómo se mueve cada ejercicio ===== */
+  .anim-caja{background:var(--card); border:1px solid var(--border); border-radius:var(--r-md); padding:8px 10px; margin:0 0 20px; text-align:center;}
+  .content > .anim-caja{margin:4px 0 16px;}
+  .anim-det .content .anim-caja{margin:0;}
+  .anim{display:block; width:100%; max-width:320px; height:auto; margin:0 auto; overflow:visible;}
+  .anim .maq{color:var(--muted); stroke:var(--muted); fill:none; opacity:.42; stroke-linecap:round; stroke-linejoin:round;}
+  .anim line{stroke-linecap:round;}
+  .anim .f{stroke:var(--ink);}
+  .anim .f.lejos{opacity:.35;}
+  .anim .cab{fill:var(--ink);}
+  .anim .mueve{stroke:var(--accent); fill:var(--accent);}
+  .anim .cable{stroke:var(--muted); opacity:.55;}
+  .anim .guia{stroke:var(--accent); stroke-dasharray:4 5; opacity:.8;}
+  .anim-ritmo{display:block; margin-top:2px; font-family:var(--font-mono); font-size:var(--t-2xs); color:var(--muted);}
+
+  /* ===== Calentar en casa ===== */
+  .cal-casa li{color:var(--muted);}
+  .cal-casa li b{color:var(--ink); font-weight:600;}
+  .cal-casa li.actual b{color:var(--accent);}
+  .cal-casa li.hecho{opacity:.55; text-decoration:line-through;}
+
+  /* ===== La bolsa ===== */
+  .bolsa{margin-top:12px; padding:12px 14px; border-radius:var(--r-md); background:var(--pane); border:1px solid var(--border);}
+  .bolsa-cab{display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:var(--t-sm);}
+  .bolsa-cab .btn-undo{padding:6px 0; min-height:36px; white-space:nowrap; flex-shrink:0;}
+  .bolsa-chips{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;}
+  .bolsa-chip{border:1px solid var(--border); background:var(--card); color:var(--ink); border-radius:999px; padding:8px 13px; min-height:40px; font-family:inherit; font-size:var(--t-sm); font-weight:600; cursor:pointer;}
+  .bolsa-chip.on{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .bolsa.lista{display:flex; align-items:center; gap:10px; font-size:var(--t-sm);}
+  .bolsa.lista > .ic-v{color:var(--ok); width:18px; height:18px;}
+  .bolsa.lista span{flex:1;}
+  .bolsa.lista .btn-undo{padding:6px 0; min-height:36px;}
+  .bolsa-txt{width:100%; box-sizing:border-box; font-family:inherit; font-size:16px; line-height:1.5; padding:10px 12px; border:1px solid var(--border); border-radius:var(--r-sm); background:var(--card); color:var(--ink); margin:0 0 12px; resize:vertical;}
+
+  /* ===== Tu mes en una imagen ===== */
+  .mes-opts{display:flex; gap:6px; overflow-x:auto; margin:4px 0 12px; padding-bottom:2px; scrollbar-width:none;}
+  .mes-opts::-webkit-scrollbar{display:none;}
+  .mes-opts button{flex-shrink:0; border:1px solid var(--border); background:var(--card); color:var(--ink); border-radius:999px; padding:8px 14px; min-height:40px; font-family:inherit; font-size:var(--t-sm); font-weight:700; cursor:pointer;}
+  .mes-opts button.on{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .mes-previa img{display:block; width:100%; height:auto; border-radius:var(--r-md); border:1px solid var(--border); margin:0 0 12px;}
+
   /* ===== Semana ===== */
   .statgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin:4px 0 20px;}
   .stat{
@@ -1281,6 +1327,7 @@
 
     <button class="settings-close" onclick="closeSettings()">Listo</button>
     <button class="settings-danger" onclick="exportarDatos()"><svg class="ic-v" aria-hidden="true"><use href="#i-descarga"/></svg> Descargar una copia de mis datos</button>
+    <button class="settings-danger" onclick="exportarCSV()"><svg class="ic-v" aria-hidden="true"><use href="#i-grafico"/></svg> Mis entrenos en Excel (CSV)</button>
     <button class="settings-danger" onclick="document.getElementById('inpImport').click()">Restaurar desde una copia</button>
     <input type="file" id="inpImport" accept="application/json,.json" style="display:none" onchange="importarDatos(this)">
     <div class="settings-hint" id="copiaEstado" style="text-align:center;"></div>
@@ -1414,6 +1461,10 @@
 
   <div id="vistaCasa" style="display:none;">
     <p class="lead">Sin material, sin salir de casa, unos 20 minutos. Esto no es "la versión mala": los días que el gimnasio no va a pasar, esto es lo que evita que la semana entera se vaya a cero.</p>
+    <h3 style="margin-top:6px;">Calentar primero</h3>
+    <p style="font-size:var(--t-base); margin-top:0;">La sesión de casa empieza por aquí y te va cantando cada movimiento: seis seguidos, sin material y sin saltos, así que vale en un piso.</p>
+    <div id="listaCalentarCasa"></div>
+    <h3 style="margin-top:22px;">Los 6 ejercicios</h3>
     <div id="listaCasa"></div>
     <div id="casaVariantes"></div>
     <button class="btn-second" style="margin-top:12px;" onclick="abrirEstira()"><svg class="ic-v" aria-hidden="true"><use href="#i-respirar"/></svg>Y después, estirar 7 minutos</button>
@@ -1522,6 +1573,7 @@
   <p class="lead">Esta app no puede hablar con el reloj: una web no tiene acceso a Salud, eso solo lo pueden hacer las apps de la App Store. Pero no hace falta que hablen para usar las dos a la vez.</p>
   <ul style="font-size:var(--t-base);">
     <li><b>Al entrar:</b> en el reloj, app Entreno → <b>Fuerza tradicional</b>. Los días de solo cinta, <b>Caminata en interior</b>.</li>
+    <li><b>Para empezarlo de un toque:</b> pon el complemento de <b>Entreno</b> en la esfera del reloj (mantén pulsada la esfera → Editar → Complementos).</li>
     <li><b>Durante:</b> el reloj mide pulso y calorías; aquí van los pesos, las repeticiones y los descansos.</li>
     <li><b>Al salir:</b> para el entreno del reloj. Anillos e historial de Salud se llenan igual que con Hevy.</li>
   </ul>
@@ -1534,7 +1586,7 @@
   <ul style="font-size:var(--t-base);">
     <li><b>Una alarma normal, repetida.</b> Reloj → Alarma → repetir los días que entrenas, con la etiqueta que quieras. Es lo más simple y lo que menos falla.</li>
     <li><b>Un evento en el calendario</b>, semanal, con aviso 30 minutos antes. Tiene la ventaja de que ocupa el hueco y ves que ese rato ya está pillado.</li>
-    <li><b>Un Atajo con automatización</b> (app Atajos → Automatización → Hora del día): puede abrirte esta app directamente a la hora que le digas.</li>
+    <li><b>Un Atajo no sirve aquí:</b> la app Atajos abre las direcciones en Safari, y en el iPhone Safari es otra copia de la app, sin tus datos. Para que te avise, mejor la alarma o el calendario.</li>
   </ul>
   <div class="quiet">
     Consejo sobre la hora del aviso: <b>ponlo cuando aún puedes decidir</b>, no cuando ya llegas tarde. Si el plan es el viernes al salir de trabajar, la alarma a las 14:45, no a las 15:30.
@@ -1542,6 +1594,7 @@
 
   <h3>Lo que llevas encima</h3>
   <p style="font-size:var(--t-base);">Toalla, botella de agua y zapatillas. Ya está — no necesitas ropa especial ni nada más. Hay vestuarios, duchas y taquillas; pregunta el primer día si las taquillas necesitan candado propio, que eso cambia de un sitio a otro. Hay fuente de agua dentro, así que la botella puedes llenarla allí.</p>
+  <p style="font-size:var(--t-sm); color:var(--muted);">La noche antes de cada día de gimnasio, Hoy te enseña la lista para ir marcándola. Se cambia desde ahí.</p>
 </div>
 <!-- ==================== VOLVER ==================== -->
 <div id="tab-volver" class="tabpanel">
@@ -1603,6 +1656,7 @@
     <p style="font-size:var(--t-xs); color:var(--muted); margin-top:12px;">Aquí no hay rachas que romper. Los números de arriba solo suben, nunca bajan, pase lo que pase.</p>
     <button class="btn-second" style="margin-top:10px;" onclick="compartirProgreso()"><svg class="ic-v" aria-hidden="true"><use href="#i-compartir"/></svg>Compartir mis números como imagen</button>
     <p style="font-size:var(--t-xs); color:var(--muted); margin-top:8px;">Genera una imagen con los tres números de arriba y nada más. No sale ninguna fecha, ninguna semana en cero ni nada que no quieras enseñar.</p>
+    <button class="btn-second" style="margin-top:10px;" onclick="abrirResumenMes()"><svg class="ic-v" aria-hidden="true"><use href="#i-grafico"/></svg>Tu mes, en una imagen</button>
   </div>
 
   <!-- Aparece solo cuando hay al menos un peso que haya cambiado. Es el único
@@ -2909,7 +2963,83 @@ function renderManana(){
   el.innerHTML =
     '<div class="hoy-manana"><span>' + cuando + '</span>' +
     '<b>' + DIAS_LARGOS[prox.fecha.getDay()] + ' ' + prox.fecha.getDate() +
-    ' · ' + (NOMBRE_TIPO[prox.tipo] || 'fuerza') + '</b></div>' + cenaHTML();
+    ' · ' + (NOMBRE_TIPO[prox.tipo] || 'fuerza') + '</b></div>' + bolsaHTML() + cenaHTML();
+}
+
+/* ---------- La bolsa ----------
+   Salir de casa sin la bolsa y no volver a por ella es de las formas más
+   tontas de no ir. La noche antes de un día de gimnasio (y esa misma mañana,
+   si no está marcada), una lista corta para ir tocando. La lista se cambia y
+   se queda en este móvil, que es donde se prepara. */
+function bolsaLista(){
+  try{
+    const l = JSON.parse(localStorage.getItem('planEjercicioBolsaLista'));
+    if(Array.isArray(l)){
+      const limpia = l.filter(x => typeof x === 'string' && x.trim()).map(x => x.trim()).slice(0, 12);
+      if(limpia.length) return limpia;
+    }
+  }catch(e){}
+  return ['Toalla', 'Botella de agua', 'Candado', 'Auriculares cargados', 'Ropa y zapatillas'];
+}
+function bolsaObjetivo(){
+  if(getLugar() !== 'gym') return null;
+  const ahora = new Date(), h = ahora.getHours();
+  if(h < 13 && tipoDeDia(ahora) !== 'libre' && !esSesion(getLog()[hoyKey()])) return { f: hoyKey(), cuando: 'hoy' };
+  if(h >= 19){
+    const m = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() + 1);
+    if(tipoDeDia(m) !== 'libre') return { f: dateKey(m), cuando: 'mañana' };
+  }
+  return null;
+}
+function bolsaHechos(f){
+  try{
+    const b = JSON.parse(localStorage.getItem('planEjercicioBolsa'));
+    return (b && b.f === f && Array.isArray(b.hechos)) ? b.hechos : [];
+  }catch(e){ return []; }
+}
+function bolsaHTML(){
+  const obj = bolsaObjetivo();
+  if(!obj) return '';
+  const lista = bolsaLista(), hechos = bolsaHechos(obj.f);
+  if(lista.every(x => hechos.indexOf(x) !== -1)){
+    return '<div class="bolsa lista">' + ic('i-check') + '<span><b>Bolsa lista</b> para ' + obj.cuando + '.</span>' +
+      '<button class="btn-undo" onclick="bolsaDeNuevo(\'' + obj.f + '\')">Deshacer</button></div>';
+  }
+  return '<div class="bolsa"><div class="bolsa-cab"><b>' + (obj.cuando === 'hoy' ? '¿Llevas la bolsa?' : 'Deja la bolsa lista para mañana') + '</b>' +
+      '<button class="btn-undo" onclick="editarBolsa()">Cambiar la lista</button></div>' +
+    '<div class="bolsa-chips">' + lista.map((x, i) => {
+      const on = hechos.indexOf(x) !== -1;
+      return '<button class="bolsa-chip' + (on ? ' on' : '') + '" aria-pressed="' + on + '" onclick="marcarBolsa(' + i + ')">' + (on ? ic('i-check') + ' ' : '') + esc(x) + '</button>';
+    }).join('') + '</div></div>';
+}
+function marcarBolsa(i){
+  const obj = bolsaObjetivo(), x = bolsaLista()[i];
+  if(!obj || !x) return;
+  const hechos = bolsaHechos(obj.f);
+  const j = hechos.indexOf(x);
+  if(j === -1) hechos.push(x); else hechos.splice(j, 1);
+  setRaw('planEjercicioBolsa', JSON.stringify({ f: obj.f, hechos: hechos }));
+  renderManana();
+}
+function bolsaDeNuevo(f){
+  setRaw('planEjercicioBolsa', JSON.stringify({ f: f, hechos: [] }));
+  renderManana();
+}
+function editarBolsa(){
+  abrirSheet('i-nota', 'La bolsa',
+    cabSheet('Lo que llevas al gimnasio', 'Una cosa por línea. Sale la noche antes de cada día de gimnasio, y esa mañana si no la has marcado.') +
+    '<textarea id="bolsaTxt" class="bolsa-txt" rows="7">' + esc(bolsaLista().join('\n')) + '</textarea>' +
+    '<div class="actions" style="margin-top:0;"><button class="btn-main" onclick="guardarBolsa()">Guardar</button>' +
+    '<button class="btn-second" onclick="guardarBolsa(true)">Volver a la de siempre</button></div>');
+}
+function guardarBolsa(deSiempre){
+  const el = document.getElementById('bolsaTxt');
+  const l = deSiempre ? [] : String(el ? el.value : '').split('\n').map(x => x.trim()).filter(Boolean).slice(0, 12);
+  if(l.length) setRaw('planEjercicioBolsaLista', JSON.stringify(l));
+  else { try{ localStorage.removeItem('planEjercicioBolsaLista'); }catch(e){} }
+  cerrarSheet();
+  renderManana();
+  toast(deSiempre ? 'Vuelve la lista de siempre' : 'Lista guardada');
 }
 
 /* Avisos de lo que va a cambiar HOY, antes de salir de casa: que no se
@@ -3365,10 +3495,12 @@ function empezarSesion(modo){
   S.hechasPor = S.lista.map(() => 0); S.historial = []; S.terminada = false;
   S.valorados = {}; S.ultimoCompletado = null; S.viendoLista = false;
   S.reg = {}; S.repsSel = {}; S.subeAguante = {}; S.segHecho = null; S.marcasHoy = {}; S.nota = '';
-  /* En el gimnasio, la sesión empieza calentando. En express y viaje no:
-     son la salida rápida y tienen que empezar ya. */
-  S.calentando = todos === EJERCICIOS_GYM && (modo === 'fuerza' || modo === 'minima');
-  S.finCalentar = 0;
+  /* La sesión empieza calentando: en el gimnasio, en la cinta; en casa, con
+     los movimientos guiados. En express y viaje no: son la salida rápida y
+     tienen que empezar ya. */
+  S.calentando = (todos === EJERCICIOS_GYM && (modo === 'fuerza' || modo === 'minima')) ||
+    (todos === EJERCICIOS_CASA && modo !== 'viaje' && modo !== 'express');
+  S.finCalentar = 0; S.calPaso = 0; S.animAbierta = {};
   S.inicio = Date.now();
   abrirSesion();
 }
@@ -3439,6 +3571,7 @@ function pintarSesion(){
   pintarSesionDentro();
   ajustarCabecera();
   guardarSesion();
+  activarAnimaciones();
 }
 function pintarSesionDentro(){
   if(S.tipo === 'cinta') return pintarCinta();
@@ -3536,7 +3669,7 @@ function pintarSesionDentro(){
   body.innerHTML =
     '<h2 class="ses-nombre">' + esc(ej.nombre) + '</h2>' +
     '<p class="ses-alias">' + esc(ej.alias) + ' · ' + esc(repsTexto(ej)) + '</p>' +
-    ultimaVezHTML(ej) +
+    ultimaVezHTML(ej) + animSesionHTML(ej) +
     '<div class="ses-recuerda"><b>Lo único que importa:</b> ' + esc(ej.clave) + '</div>' +
     '<ol class="ses-pasos">' + ej.pasos.map(p => '<li>' + esc(p) + '</li>').join('') + '</ol>' +
     alt + bloquePeso + varianteHTML(ej) + bloqueReps +
@@ -3876,7 +4009,8 @@ function minutosPlan(modo){
               : modo === 'viaje' ? todos.slice(0, 4)
               : (modo === 'fuerza' && todos === EJERCICIOS_GYM) ? conExtras(todos.slice()) : todos.slice();
   const unica = modo === 'express' || modo === 'viaje';
-  let seg = (todos === EJERCICIOS_GYM && (modo === 'fuerza' || modo === 'minima')) ? CALENTAR_SEG : 0;
+  let seg = (todos === EJERCICIOS_GYM && (modo === 'fuerza' || modo === 'minima')) ? CALENTAR_SEG
+          : (todos === EJERCICIOS_CASA && modo !== 'viaje' && modo !== 'express') ? calentarCasaSeg() : 0;
   lista.forEach((e, i) => {
     const n = seriesPlan(e, i, unica);
     seg += n * segundosDeSerie(e) + (n - 1) * descansoPara(e, unica) + (i < lista.length - 1 ? 60 : 0);
@@ -3887,7 +4021,12 @@ function minutosRestantes(){
   if(!S.activa || S.tipo === 'cinta' || S.terminada) return 0;
   const unica = serieUnica();
   let seg = 0;
-  if(S.calentando) seg += S.finCalentar ? Math.max(0, (S.finCalentar - Date.now()) / 1000) : CALENTAR_SEG;
+  if(S.calentando){
+    const casa = sesionEnCasa();
+    seg += S.finCalentar
+      ? Math.max(0, (S.finCalentar - Date.now()) / 1000) + (casa ? CALENTAR_CASA.slice((S.calPaso || 0) + 1).reduce((a, x) => a + x.seg, 0) : 0)
+      : (casa ? calentarCasaSeg() : CALENTAR_SEG);
+  }
   if(S.descansando) seg += Math.max(0, (S.finDescanso - Date.now()) / 1000);
   const pend = S.lista.map((e, i) => i).filter(i => !completo(i));
   pend.forEach((i, k) => {
@@ -4063,7 +4202,7 @@ function alternarDiaCal(d){
 function eventosEntreno(dias, hora, aviso){
   return dias.slice().sort().map(d => ({
     dow: d, hora: hora, minutos: 60, aviso: aviso,
-    titulo: 'Gimnasio', desc: 'Abre la app: Hoy te dice qué toca y cómo está de lleno.',
+    titulo: 'Gimnasio', desc: 'Abre la app: Hoy te dice qué toca y cómo está de lleno. En la bolsa: ' + bolsaLista().join(', ').toLowerCase() + '.',
     url: 'https://4l3jandro23.github.io/plan-ejercicio/#hoy'
   }));
 }
@@ -4120,14 +4259,18 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-09-14c'; }
+function novedadesId(){ return '2026-09-16'; }
 function novedadesNuevas(){
   return [
-    '<b>En casa también se sube de nivel:</b> cuando te sobran repeticiones, la sesión te propone la versión difícil de cada ejercicio. También en Rutina → En casa.'
+    '<b>Cómo se mueve cada máquina:</b> una figura hace el ejercicio con su ritmo. Sale en la sesión las primeras veces, y siempre en Rutina.',
+    '<b>Calentar en casa:</b> la sesión de casa empieza con seis movimientos guiados, sin material y sin saltos.',
+    '<b>La bolsa:</b> la noche antes de ir, una lista para marcar (toalla, agua, candado…). Se puede cambiar.',
+    '<b>Tu mes en una imagen</b> y <b>tus entrenos en Excel</b>, en Semana.'
   ];
 }
 function novedades(){
   return [
+    '<b>En casa también se sube de nivel:</b> la versión difícil de cada ejercicio cuando te sobran repeticiones.',
     '<b>Tus entrenos en el calendario del iPhone:</b> Guía → Que te avise el iPhone.',
     '<b>Hoy más corto:</b> el botón de empezar sale antes, y «Cuándo ir hoy» va plegado.',
     '<b>Cuánto dura:</b> los botones de empezar dicen cuánto vas a tardar, y en el descanso ves lo que te queda.',
@@ -4262,6 +4405,7 @@ function ocultarResumenSemana(semana){
 
 /* ---------- Calentar ---------- */
 function pintarCalentar(){
+  if(sesionEnCasa()) return pintarCalentarCasa();
   const body = document.getElementById('sesBody');
   document.getElementById('sesCuenta').textContent = 'Calentamiento';
   const enMarcha = S.finCalentar > 0;
@@ -4285,8 +4429,69 @@ function pintarCalentar(){
   if(enMarcha) actualizarRing(true);
 }
 const CALENTAR_SEG = 300;
+
+/* ---------- Calentar en casa ----------
+   En el gimnasio se calienta en la cinta. En casa no hay cinta, y empezar la
+   sentadilla en frío es cuando más cuesta. Seis movimientos seguidos, sin
+   material y sin saltos (vale en un piso), con pitido y, si está activada,
+   la voz al cambiar: no hace falta mirar el móvil. */
+const CALENTAR_CASA = [
+  { nombre:'Marcha en el sitio', seg:40, como:'Subiendo las rodillas y moviendo los brazos, a ritmo cómodo.' },
+  { nombre:'Círculos de brazos', seg:30, como:'Brazos estirados hacia los lados: la mitad hacia delante y la otra mitad hacia atrás.' },
+  { nombre:'Sentadilla suave', seg:30, como:'A medio recorrido y despacio, sin bajar del todo.' },
+  { nombre:'Balanceo de piernas', seg:30, como:'Una mano en la pared y la pierna adelante y atrás, suelta. A la mitad, cambia de pierna.' },
+  { nombre:'Paso lateral con brazos', seg:40, como:'Un paso a un lado y juntas, subiendo los brazos por encima de la cabeza. Sin saltar.' },
+  { nombre:'Flexiones en la pared', seg:30, como:'De pie frente a la pared, suaves: solo para despertar hombros y pecho.' }
+];
+function calentarCasaSeg(){ return CALENTAR_CASA.reduce((a, x) => a + x.seg, 0); }
+function calentarCasaTxt(){
+  const m = calentarCasaSeg() / 60, f = m % 1;
+  return (f >= 0.25 && f < 0.75) ? Math.floor(m) + ' minutos y medio' : Math.round(m) + ' minutos';
+}
+function sesionEnCasa(){ return Array.isArray(S.lista) && S.lista.length > 0 && EJERCICIOS_CASA.some(e => e.id === S.lista[0].id); }
+function pintarCalentarCasa(){
+  const body = document.getElementById('sesBody');
+  const enMarcha = S.finCalentar > 0;
+  const i = Math.min(S.calPaso || 0, CALENTAR_CASA.length - 1);
+  const x = CALENTAR_CASA[i], sig = CALENTAR_CASA[i + 1];
+  document.getElementById('sesCuenta').textContent = enMarcha ? 'Calentamiento · ' + (i + 1) + ' de ' + CALENTAR_CASA.length : 'Calentamiento';
+  body.innerHTML =
+    '<h2 class="ses-nombre">' + (enMarcha ? esc(x.nombre) : 'Calentar') + '</h2>' +
+    '<p class="ses-alias">' + (enMarcha ? esc(x.como) : calentarCasaTxt() + ' · antes del primer ejercicio') + '</p>' +
+    (enMarcha
+      ? '<div class="ses-descanso" style="padding-top:0;">' + anilloHTML(x.seg) +
+          (sig ? '<div class="ses-siguiente" style="margin:6px 0 0;">Luego: <b>' + esc(sig.nombre) + '</b></div>' : '') + '</div>'
+      : '<div class="ses-recuerda"><b>Lo único que importa:</b> entrar en calor, no cansarte. Sin material y sin saltos.</div>' + ultimaNotaHTML()) +
+    '<ol class="ses-pasos cal-casa">' + CALENTAR_CASA.map((c, j) =>
+      '<li class="' + (enMarcha && j < i ? 'hecho' : enMarcha && j === i ? 'actual' : '') + '"><b>' + esc(c.nombre) + '</b> · ' + c.seg + ' s</li>').join('') + '</ol>' +
+    '<div class="ses-foot">' +
+      (enMarcha
+        ? '<button class="btn-main" onclick="siguienteCalentarCasa()">' + ic('i-flecha') + (sig ? 'Siguiente movimiento' : 'Terminar de calentar') + '</button>' +
+          '<button class="btn-second" onclick="finCalentar()">Ya estoy, a la rutina</button>'
+        : '<button class="btn-main" onclick="empezarCalentar()">' + ic('i-reloj') + 'Empezar los ' + calentarCasaTxt() + '</button>' +
+          '<button class="btn-second" onclick="finCalentar()">Ya he calentado</button>') +
+    '</div>';
+  if(enMarcha) actualizarRing(true);
+}
+function siguienteCalentarCasa(){
+  const i = (S.calPaso || 0) + 1;
+  if(i >= CALENTAR_CASA.length){ pito('tanda'); finCalentar(); return; }
+  S.calPaso = i;
+  S.finCalentar = Date.now() + CALENTAR_CASA[i].seg * 1000;
+  S.ultimoSeg = -1;
+  pito('tanda');
+  decir(CALENTAR_CASA[i].nombre + '. ' + CALENTAR_CASA[i].seg + ' segundos.');
+  arrancarTick();
+  pintarSesion();
+}
 function empezarCalentar(){
-  S.finCalentar = Date.now() + CALENTAR_SEG * 1000;
+  if(sesionEnCasa()){
+    S.calPaso = 0;
+    S.finCalentar = Date.now() + CALENTAR_CASA[0].seg * 1000;
+    decir(CALENTAR_CASA[0].nombre + '. ' + CALENTAR_CASA[0].seg + ' segundos.');
+  } else {
+    S.finCalentar = Date.now() + CALENTAR_SEG * 1000;
+  }
   arrancarTick();
   pintarSesion();
 }
@@ -4966,7 +5171,210 @@ function renderEntrenos(){
           (e.nota ? '<p class="nota-entreno"><b>Tu nota:</b> ' + esc(e.nota) + '</p>' : '') +
           (lista.length ? '<button class="btn-undo" onclick="corregirEntreno(\'' + f + '\')">Corregir pesos o repeticiones</button>' : '')) +
         '</div></details>';
-    }).join('');
+    }).join('') +
+    '<button class="btn-second" style="margin-top:12px;" onclick="exportarCSV()">' + ic('i-grafico') + 'Todos tus entrenos en Excel</button>';
+}
+
+/* ---------- Tus entrenos en una hoja de cálculo ----------
+   Una fila por ejercicio y día, con cada serie en su columna. Punto y coma y
+   marca BOM: es lo que Excel y Numbers en español abren bien a la primera.
+   En el iPhone sale la hoja de compartir (guardar en Archivos, mandarlo...). */
+function csvCampo(v){
+  const s = v == null ? '' : String(v);
+  return /[;"\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function entrenosCSV(){
+  const todos = getEntrenos();
+  const filas = [['Fecha', 'Tipo', 'Minutos', 'Ejercicio', 'Series', 'Kg', 'Serie 1', 'Serie 2', 'Serie 3', 'Serie 4', 'Cinta (min)', 'Andando (min)', 'Nota']];
+  Object.keys(todos).sort().forEach(f => {
+    const e = todos[f] || {};
+    const base = [f, etiqueta(e.tipo).corto, e.min || ''];
+    const lista = Array.isArray(e.ej) ? e.ej : [];
+    const extra = [e.cinta || '', e.andar || '', e.nota || ''];
+    if(!lista.length){ filas.push(base.concat(['', '', '', '', '', '', ''], extra)); return; }
+    lista.forEach((x, i) => {
+      const vals = Array.isArray(x.seg) && x.seg.length ? x.seg : (Array.isArray(x.r) ? x.r : []);
+      const series = [0, 1, 2, 3].map(j => vals[j] != null ? vals[j] : '');
+      filas.push(base.concat([nombreEj(x.id), x.s || '', x.kg ? String(x.kg).replace('.', ',') : ''], series, i === 0 ? extra : ['', '', '']));
+    });
+  });
+  return '\ufeff' + filas.map(r => r.map(csvCampo).join(';')).join('\r\n');
+}
+function exportarCSV(){
+  if(!Object.keys(getEntrenos()).length){ toast('Todavía no hay entrenos que pasar a Excel'); return; }
+  const nombre = 'entrenos-' + hoyKey() + '.csv';
+  const blob = new Blob([entrenosCSV()], { type:'text/csv;charset=utf-8' });
+  try{
+    const file = new File([blob], nombre, { type:'text/csv' });
+    if(navigator.canShare && navigator.canShare({ files:[file] })){
+      navigator.share({ files:[file], title:'Mis entrenos' }).catch(() => {});
+      return;
+    }
+  }catch(e){}
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = nombre;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  toast('Hoja descargada');
+}
+
+/* ---------- Tu mes, en una imagen ----------
+   Para guardarlo o mandarlo a quien quieras. Solo lo que sí hiciste: sesiones,
+   tiempo, series, mejores marcas y lo que has subido. Un mes sin nada no sale
+   en la lista: no hay imagen que hacer de eso. */
+function mesesConEntrenos(){
+  const log = getLog(), todos = getEntrenos(), meses = {};
+  Object.keys(log).forEach(k => { if(esSesion(log[k])) meses[k.slice(0, 7)] = true; });
+  Object.keys(todos).forEach(k => { meses[k.slice(0, 7)] = true; });
+  return Object.keys(meses).sort().reverse().slice(0, 6);
+}
+function nombreMes(mes, conAnio){
+  const p = mes.split('-').map(Number);
+  return MESES[p[1] - 1].replace(/^./, c => c.toUpperCase()) + ((conAnio || p[0] !== new Date().getFullYear()) ? ' ' + p[0] : '');
+}
+function resumenMes(mes){
+  const log = getLog(), todos = getEntrenos();
+  const enMes = k => String(k).slice(0, 7) === mes;
+  const p = mes.split('-').map(Number);
+  const desde = mes + '-01', hasta = dateKey(new Date(p[0], p[1], 1));
+  let min = 0, series = 0, cardio = 0;
+  Object.keys(todos).filter(enMes).forEach(k => {
+    const e = todos[k] || {};
+    min += (e.min || 0) + (e.cinta && !e.min ? e.cinta : 0) + (e.andar || 0);
+    cardio += (e.cinta || 0) + (e.andar || 0);
+    (Array.isArray(e.ej) ? e.ej : []).forEach(x => { series += x.s || 0; });
+  });
+  const antes = mejoresMarcas(desde), despues = mejoresMarcas(hasta);
+  const marcas = Object.keys(despues).filter(id => antes[id] && mejorQue(despues[id], antes[id]) && enMes(despues[id].f))
+    .map(id => [nombreEj(id), textoMarca(despues[id])]);
+  const hist = getPesosHist();
+  const subidas = EJERCICIOS_GYM.concat(EJERCICIOS_EXTRA).filter(e => !e.sinPeso).map(e => {
+    const l = (Array.isArray(hist[e.id]) ? hist[e.id] : []).filter(x => x.f < hasta);
+    if(!l.some(x => enMes(x.f))) return null;
+    const previos = l.filter(x => x.f < desde);
+    const inicio = previos.length ? previos.reduce((a, x) => Math.max(a, x.kg), 0) : l.find(x => enMes(x.f)).kg;
+    const mejor = l.reduce((a, x) => Math.max(a, x.kg), 0);
+    return mejor > inicio ? [e.nombre, inicio + ' → ' + mejor + ' kg'] : null;
+  }).filter(Boolean);
+  return { mes: mes, sesiones: Object.keys(log).filter(k => enMes(k) && esSesion(log[k])).length, min: min, series: series, cardio: cardio, marcas: marcas, subidas: subidas };
+}
+function lienzoRedondeado(g, x, y, w, h, r){
+  g.beginPath();
+  g.moveTo(x + r, y);
+  g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r);
+  g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r);
+  g.closePath();
+}
+function lienzoRecortar(g, txt, max){
+  let t = String(txt);
+  if(g.measureText(t).width <= max) return t;
+  while(t.length > 3 && g.measureText(t + '…').width > max) t = t.slice(0, -1);
+  return t.trim() + '…';
+}
+function dibujarResumenMes(r){
+  const c = document.createElement('canvas');
+  c.width = 1080; c.height = 1350;
+  const g = c.getContext('2d');
+  const acc = (getComputedStyle(document.documentElement).getPropertyValue('--accent2') || '').trim() || '#4a8fd1';
+  const tinta = '#1e2329', gris = '#5a626c';
+  const titular = "600 110px 'Fraunces', Georgia, serif", mono = "'JetBrains Mono', ui-monospace, Menlo, monospace", sans = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  /* Siempre en claro: la imagen se va a ver en fondos que no son la app. */
+  g.fillStyle = '#f4f6f9'; g.fillRect(0, 0, 1080, 1350);
+  g.fillStyle = acc; g.fillRect(0, 0, 1080, 330);
+  const sombra = g.createLinearGradient(0, 0, 1080, 330);
+  sombra.addColorStop(0, 'rgba(0,0,0,0)'); sombra.addColorStop(1, 'rgba(0,0,0,.25)');
+  g.fillStyle = sombra; g.fillRect(0, 0, 1080, 330);
+  g.textAlign = 'left';
+  g.fillStyle = 'rgba(255,255,255,.85)'; g.font = '700 30px ' + sans;
+  g.fillText('PLAN DE EJERCICIO', 80, 104);
+  g.fillStyle = '#ffffff'; g.font = titular;
+  g.fillText(nombreMes(r.mes), 74, 234);
+  g.fillStyle = 'rgba(255,255,255,.85)'; g.font = '500 40px ' + sans;
+  g.fillText(r.mes.slice(0, 4), 80, 290);
+
+  const horas = Math.floor(r.min / 60), resto = r.min % 60;
+  const datos = [[r.sesiones, r.sesiones === 1 ? 'sesión' : 'sesiones']];
+  if(r.min) datos.push([r.min >= 60 ? horas + ' h' + (resto ? ' ' + resto : '') : r.min + ' min', 'entrenando']);
+  if(r.series) datos.push([r.series, 'series de fuerza']);
+  if(r.cardio) datos.push([r.cardio, 'min andando o en cinta']);
+  datos.forEach((d, i) => {
+    const x = 80 + (i % 2) * 470, y = 380 + Math.floor(i / 2) * 200;
+    lienzoRedondeado(g, x, y, 450, 180, 28); g.fillStyle = '#ffffff'; g.fill();
+    g.fillStyle = acc; g.font = '700 92px ' + mono;
+    g.fillText(lienzoRecortar(g, d[0], 380), x + 36, y + 108);
+    g.fillStyle = gris; g.font = '500 34px ' + sans;
+    g.fillText(d[1], x + 38, y + 156);
+  });
+
+  let y = 380 + Math.ceil(datos.length / 2) * 200 + 50;
+  const lista = (titulo, filas) => {
+    if(!filas.length || y > 1150) return;
+    g.textAlign = 'left'; g.fillStyle = tinta; g.font = "600 46px 'Fraunces', Georgia, serif";
+    g.fillText(titulo, 80, y);
+    y += 16;
+    filas.forEach(f => {
+      if(y + 50 > 1240) return;
+      y += 50;
+      g.textAlign = 'right'; g.fillStyle = acc; g.font = '700 34px ' + mono;
+      const valor = String(f[1]);
+      const ancho = g.measureText(valor).width;
+      g.fillText(valor, 1000, y);
+      g.textAlign = 'left'; g.fillStyle = tinta; g.font = '500 36px ' + sans;
+      g.fillText(lienzoRecortar(g, f[0], 900 - ancho), 80, y);
+    });
+    y += 76;
+  };
+  lista('Mejores marcas del mes', r.marcas.slice(0, r.subidas.length ? 3 : 5));
+  lista('Lo que has subido', r.subidas.slice(0, 3));
+  g.textAlign = 'center'; g.fillStyle = gris; g.font = '500 30px ' + sans;
+  g.fillText('Sin rachas. Estos números solo suben.', 540, 1300);
+  return c;
+}
+let mesArchivo = null;
+function abrirResumenMes(){
+  const meses = mesesConEntrenos();
+  if(!meses.length){ toast('En cuanto entrenes, aquí sale tu mes'); return; }
+  abrirSheet('i-compartir', 'Tu mes',
+    cabSheet('Tu mes, en una imagen', 'Solo lo que hiciste. Mantén pulsada la imagen para guardarla, o compártela.') +
+    '<div class="mes-opts" id="mesOpts">' + meses.map(m => '<button data-mes="' + m + '" onclick="verResumenMes(\'' + m + '\')">' + esc(nombreMes(m)) + '</button>').join('') + '</div>' +
+    '<div class="mes-previa" id="mesPrevia"></div>');
+  verResumenMes(meses[0]);
+}
+async function verResumenMes(mes){
+  document.querySelectorAll('#mesOpts button').forEach(b => b.classList.toggle('on', b.getAttribute('data-mes') === mes));
+  const el = document.getElementById('mesPrevia');
+  if(!el) return;
+  el.innerHTML = '<p class="nota-entreno">Preparando la imagen…</p>';
+  try{
+    if(document.fonts && document.fonts.load){
+      await Promise.race([Promise.all([document.fonts.load("600 110px 'Fraunces'"), document.fonts.load("700 92px 'JetBrains Mono'")]), new Promise(r => setTimeout(r, 900))]);
+    }
+  }catch(e){}
+  const c = dibujarResumenMes(resumenMes(mes));
+  mesArchivo = null;
+  try{ c.toBlob(b => { if(b) mesArchivo = new File([b], 'mi-mes-' + mes + '.png', { type:'image/png' }); }, 'image/png'); }catch(e){}
+  el.innerHTML = '<img src="' + c.toDataURL('image/png') + '" alt="' + esc('Resumen de ' + nombreMes(mes, true)) + '">' +
+    '<button class="btn-main" onclick="compartirResumenMes()">' + ic('i-compartir') + 'Compartir o guardar</button>';
+}
+function compartirResumenMes(){
+  try{
+    if(mesArchivo && navigator.canShare && navigator.canShare({ files:[mesArchivo] })){
+      navigator.share({ files:[mesArchivo] }).catch(() => {});
+      return;
+    }
+  }catch(e){}
+  const img = document.querySelector('#mesPrevia img');
+  if(!img) return;
+  const a = document.createElement('a');
+  a.href = img.src;
+  a.download = mesArchivo ? mesArchivo.name : 'mi-mes.png';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  toast('Imagen descargada');
 }
 
 /* En express/viaje el descanso baja a 30s: si dura lo mismo que una sesión
@@ -5009,8 +5417,8 @@ function arrancarTick(){
                    : S.finDescanso;
     if(Math.ceil((objetivo - Date.now()) / 1000) <= 0){
       if(S.calentando){
-        pito('tanda');
-        finCalentar();
+        if(sesionEnCasa()) siguienteCalentarCasa();
+        else { pito('tanda'); finCalentar(); }
       } else if(S.aguantando){
         pito('seguir');
         finAguante();
@@ -5041,7 +5449,7 @@ function actualizarRing(forzar){
   const enTanda = S.tipo === 'cinta' && !S.descansando;
   const objetivo = S.aguantando ? S.finAguante : S.calentando ? S.finCalentar : enTanda ? S.finTanda : S.finDescanso;
   const total = S.aguantando ? S.segAguante
-              : S.calentando ? CALENTAR_SEG
+              : S.calentando ? (sesionEnCasa() ? CALENTAR_CASA[Math.min(S.calPaso || 0, CALENTAR_CASA.length - 1)].seg : CALENTAR_SEG)
               : enTanda ? TANDA_MIN * 60
               : (S.tipo === 'cinta' ? DESCANSO_TANDAS : descansoActual());
   const quedan = S.pausada
@@ -5206,12 +5614,363 @@ function destello(){
   setTimeout(() => { el.style.transition = 'background .5s'; el.style.background = ''; }, 130);
 }
 
+/* ===================== CÓMO SE MUEVE CADA EJERCICIO =====================
+   Una figura de líneas que hace el movimiento en bucle y con el ritmo de
+   verdad: empujar en un segundo, volver en dos. Es lo más difícil de explicar
+   con palabras, y lo que da vergüenza hacer mal delante de la gente.
+   Sin imágenes ni vídeos: se calcula en el momento, así que funciona sin
+   conexión y no pesa nada. Solo se anima lo que está en pantalla, y con
+   "reducir movimiento" activado se queda quieta en la postura final. */
+const ANIM_NS = 'http://www.w3.org/2000/svg';
+function aPol(p, ang, len){ const r = ang * Math.PI / 180; return [p[0] + Math.cos(r) * len, p[1] + Math.sin(r) * len]; }
+function aLp(a, b, k){ return a + (b - a) * k; }
+function aLpP(a, b, k){ return [aLp(a[0], b[0], k), aLp(a[1], b[1], k)]; }
+function aAng(a, b){ return Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI; }
+/* Dos segmentos (brazo y antebrazo, muslo y tibia) desde la raíz hasta un
+   punto: devuelve la articulación y el extremo. `lado` elige hacia dónde se
+   dobla. Si el punto queda lejos, el miembro se estira sin romperse. */
+function aIK(raiz, obj, l1, l2, lado){
+  const d = Math.max(Math.abs(l1 - l2) + 0.5, Math.min(l1 + l2 - 0.01, Math.hypot(obj[0] - raiz[0], obj[1] - raiz[1])));
+  const c = (l1 * l1 + d * d - l2 * l2) / (2 * l1 * d);
+  const art = aPol(raiz, aAng(raiz, obj) + lado * Math.acos(Math.max(-1, Math.min(1, c))) * 180 / Math.PI, l1);
+  return [art, aPol(art, aAng(art, obj), l2)];
+}
+/* De 0 a 1 (ida), pausa, de 1 a 0 (vuelta), pausa. Con arranque y frenada suaves. */
+function animFase(t, seg){
+  const total = t[0] + t[1] + t[2] + t[3];
+  let x = seg % total;
+  const suave = u => (1 - Math.cos(Math.PI * u)) / 2;
+  if(x < t[0]) return suave(x / t[0]);
+  x -= t[0]; if(x < t[1]) return 1;
+  x -= t[1]; if(x < t[2]) return 1 - suave(x / t[2]);
+  return 0;
+}
+/* La figura de perfil: pierna de atrás (si hay), pierna, tronco, brazo y cabeza. */
+function animFigura(p){
+  const f = [];
+  if(p.rod2) f.push({ l:[p.hip, p.rod2], w:9, c:'f lejos' }, { l:[p.rod2, p.tob2], w:8, c:'f lejos' }, { l:[p.tob2, p.punta2], w:5, c:'f lejos' });
+  f.push({ l:[p.hip, p.rod], w:9, c:'f' }, { l:[p.rod, p.tob], w:8, c:'f' });
+  if(p.punta) f.push({ l:[p.tob, p.punta], w:5, c:'f' });
+  f.push({ l:[p.hip, p.sho], w:11, c:'f' }, { l:[p.sho, p.codo], w:7, c:'f' }, { l:[p.codo, p.mano], w:6, c:'f' }, { o:p.head, r:9, c:'cab' });
+  return f;
+}
+
+/* Todas las máquinas y ejercicios, de perfil y mirando a la derecha (salvo las
+   elevaciones laterales, que solo se entienden de frente). Caja de 240 × 160. */
+const SUELO = '<path d="M6 147H234" stroke-width="3"/>';
+const ANIMS = {
+  prensa: {
+    t:[1, .3, 2, .6], ritmo:'Empuja en 1 s · vuelve en 2 s',
+    maq: SUELO + '<path d="M58 124L42 72" stroke-width="10"/><path d="M56 126H98" stroke-width="8"/><path d="M76 130V146" stroke-width="4"/>' +
+      '<path d="M112 130L176 112" stroke-width="3"/><path d="M182 58V146" stroke-width="4"/>',
+    calc(k){
+      const hip = [74, 116], sho = aPol(hip, -110, 50), head = aPol(sho, -104, 15);
+      const [rod, tob] = aIK(hip, aLpP([118, 112], [140, 106], k), 36, 34, -1);
+      const codo = aPol(sho, 70, 28);
+      return { hip, sho, head, rod, tob, punta:aPol(tob, -80, 12), codo, mano:aPol(codo, 55, 26) };
+    },
+    delante(p){ const x = p.tob[0] + 7; return [{ l:[[x, p.tob[1] - 28], [x, p.tob[1] + 12]], w:7, c:'mueve' }]; }
+  },
+  jalon: {
+    t:[1, .3, 2, .5], ritmo:'Tira en 1 s · sube en 2 s',
+    maq: SUELO + '<path d="M74 114H116" stroke-width="8"/><path d="M95 118V146" stroke-width="4"/>' +
+      '<path d="M164 146V6H100" stroke-width="4"/><circle cx="124" cy="100" r="7" fill="currentColor" stroke="none"/>',
+    calc(k){
+      const hip = [92, 110], sho = aPol(hip, -94, 50), head = aPol(sho, -94, 15);
+      const [codo, mano] = aIK(sho, aLpP([100, 12], [106, 72], k), 28, 26, 1);
+      return { hip, sho, head, rod:[128, 110], tob:[128, 144], punta:[140, 146], codo, mano };
+    },
+    atras(p){ return [{ l:[[103, 6], p.mano], w:2, c:'cable' }]; },
+    delante(p){ return [{ l:[[p.mano[0] - 13, p.mano[1]], [p.mano[0] + 13, p.mano[1]]], w:5, c:'mueve' }]; }
+  },
+  pecho: {
+    t:[1, .3, 2, .5], ritmo:'Empuja en 1 s · vuelve en 2 s',
+    maq: SUELO + '<path d="M70 42V118" stroke-width="10"/><path d="M70 120H112" stroke-width="8"/><path d="M90 124V146" stroke-width="4"/>' +
+      '<path d="M190 146V14H122" stroke-width="4"/>',
+    calc(k){
+      const hip = [84, 112], sho = aPol(hip, -91, 50), head = aPol(sho, -91, 15);
+      const [codo, mano] = aIK(sho, aLpP([93, 72], [136, 68], k), 28, 26, 1);
+      return { hip, sho, head, rod:[120, 114], tob:[118, 144], punta:[130, 146], codo, mano };
+    },
+    atras(p){ return [{ l:[[124, 14], p.mano], w:3, c:'cable' }]; },
+    delante(p){ return [{ l:[[p.mano[0], p.mano[1] - 10], [p.mano[0], p.mano[1] + 10]], w:7, c:'mueve' }]; }
+  },
+  remo: {
+    t:[1, .5, 2, .4], ritmo:'Tira en 1 s · aprieta · vuelve en 2 s',
+    maq: SUELO + '<path d="M64 116H106" stroke-width="8"/><path d="M84 120V146" stroke-width="4"/>' +
+      '<path d="M104 60V98" stroke-width="10"/><path d="M104 98V146" stroke-width="4"/><path d="M134 146L146 116" stroke-width="5"/><path d="M210 146V40" stroke-width="4"/>',
+    calc(k){
+      const hip = [84, 112], sho = aPol(hip, -88, 50), head = aPol(sho, -86, 15);
+      const [rod, tob] = aIK(hip, [138, 136], 36, 34, -1);
+      const [codo, mano] = aIK(sho, aLpP([142, 72], [96, 78], k), 28, 26, 1);
+      return { hip, sho, head, rod, tob, punta:aPol(tob, -68, 12), codo, mano };
+    },
+    atras(p){ return [{ l:[p.mano, [210, 70]], w:2, c:'cable' }]; },
+    delante(p){ return [{ l:[[p.mano[0], p.mano[1] - 10], [p.mano[0], p.mano[1] + 10]], w:7, c:'mueve' }]; }
+  },
+  hombros: {
+    t:[1, .3, 2, .5], ritmo:'Empuja en 1 s · baja en 2 s',
+    maq: SUELO + '<path d="M70 18V118" stroke-width="10"/><path d="M70 120H112" stroke-width="8"/><path d="M90 124V146" stroke-width="4"/>',
+    calc(k){
+      const hip = [84, 112], sho = aPol(hip, -91, 50), head = aPol(sho, -91, 15);
+      const [codo, mano] = aIK(sho, aLpP([97, 62], [99, 12], k), 28, 26, 1);
+      return { hip, sho, head, rod:[120, 114], tob:[118, 144], punta:[130, 146], codo, mano };
+    },
+    delante(p){ return [{ l:[[p.mano[0] - 9, p.mano[1]], [p.mano[0] + 9, p.mano[1]]], w:7, c:'mueve' }]; }
+  },
+  plancha: {
+    t:[1.8, .3, 1.8, .3], ritmo:'Cuerpo recto · respira normal',
+    maq: SUELO,
+    calc(k){
+      const sho = [70, 116];
+      const hip = aLpP([132, 126], [132, 124.5], k);
+      const [rod, tob] = aIK(hip, [198, 135], 36, 34, -1);
+      return { hip, sho, head:aPol(sho, 194, 15), rod, tob, punta:[194, 146], codo:[70, 143], mano:[44, 144] };
+    },
+    delante(p){ return [{ l:[p.head, p.tob], w:2, c:'guia' }]; }
+  },
+  laterales: {
+    t:[1, .3, 2, .5], ritmo:'Sube en 1 s · baja en 2 s',
+    maq: SUELO + '<path d="M90 110H150" stroke-width="10"/><path d="M120 116V146" stroke-width="4"/>',
+    calc(k){
+      const a = aLp(84, -2, k), b = aLp(10, 2, k);
+      const hI = [101, 50], hD = [139, 50];
+      const codoD = aPol(hD, a, 30), codoI = aPol(hI, 180 - a, 30);
+      return { head:[120, 28], cuello:[120, 42], hip:[120, 102], hI, hD, codoD, codoI,
+        manoD:aPol(codoD, a + b, 22), manoI:aPol(codoI, 180 - a - b, 22) };
+    },
+    figura(p){
+      return [
+        { l:[[111, 102], [109, 118]], w:9, c:'f' }, { l:[[129, 102], [131, 118]], w:9, c:'f' },
+        { l:[[109, 118], [107, 144]], w:8, c:'f' }, { l:[[131, 118], [133, 144]], w:8, c:'f' },
+        { l:[p.cuello, p.hip], w:14, c:'f' }, { l:[p.hI, p.hD], w:9, c:'f' },
+        { l:[p.hI, p.codoI], w:7, c:'f' }, { l:[p.codoI, p.manoI], w:6, c:'f' },
+        { l:[p.hD, p.codoD], w:7, c:'f' }, { l:[p.codoD, p.manoD], w:6, c:'f' },
+        { o:p.head, r:10, c:'cab' }
+      ];
+    },
+    delante(p){ return [{ o:aPol(p.hI, 180 - aAng(p.hD, p.codoD), 24), r:5, c:'mueve' }, { o:aPol(p.hD, aAng(p.hD, p.codoD), 24), r:5, c:'mueve' }]; }
+  },
+  femoral: {
+    t:[1, .3, 2, .5], ritmo:'Dobla en 1 s · vuelve en 2 s',
+    maq: SUELO + '<path d="M60 44L64 106" stroke-width="10"/><path d="M64 106H118" stroke-width="8"/><path d="M88 110V146" stroke-width="4"/>' +
+      '<circle cx="104" cy="91" r="7" fill="currentColor" stroke="none"/>',
+    calc(k){
+      const hip = [80, 100], sho = aPol(hip, -95, 50), head = aPol(sho, -95, 15);
+      const codo = aPol(sho, 74, 28), rod = [116, 100];
+      const a = aLp(8, 112, k);
+      const tob = aPol(rod, a, 34);
+      return { hip, sho, head, codo, mano:aPol(codo, 10, 26), rod, tob, punta:aPol(tob, a - 96, 12), pad:aPol(tob, a + 90, 9) };
+    },
+    atras(p){ return [{ o:p.pad, r:6, c:'mueve' }]; }
+  },
+  biceps: {
+    t:[1, .3, 2, .5], ritmo:'Sube en 1 s · baja en 2 s',
+    maq: SUELO + '<path d="M58 114H98" stroke-width="8"/><path d="M78 118V146" stroke-width="4"/>' +
+      '<path d="M84 74L114 96" stroke-width="12"/><path d="M108 100V146" stroke-width="4"/>',
+    calc(k){
+      const hip = [74, 112], sho = aPol(hip, -80, 50), head = aPol(sho, -76, 15);
+      const codo = aPol(sho, 38, 28);
+      return { hip, sho, head, rod:[112, 114], tob:[112, 144], punta:[124, 146], codo, mano:aPol(codo, aLp(46, -78, k), 26) };
+    },
+    delante(p){ return [{ o:p.mano, r:4.5, c:'mueve' }]; }
+  },
+  triceps: {
+    t:[1, .3, 2, .5], ritmo:'Empuja en 1 s · sube en 2 s',
+    maq: SUELO + '<path d="M172 147V4H150" stroke-width="4"/>',
+    calc(k){
+      const hip = [104, 80], sho = aPol(hip, -83, 50), head = aPol(sho, -80, 15);
+      const codo = aPol(sho, 97, 28);
+      return { hip, sho, head, rod:[104, 113], tob:[104, 144], punta:[116, 146], codo, mano:aPol(codo, aLp(-6, 84, k), 26) };
+    },
+    atras(p){ return [{ l:[[152, 6], p.mano], w:2, c:'cable' }]; },
+    delante(p){ return [{ l:[p.mano, aPol(p.mano, 104, 9)], w:4, c:'mueve' }, { l:[p.mano, aPol(p.mano, 64, 9)], w:4, c:'mueve' }]; }
+  },
+  sentadilla: {
+    t:[2, .3, 1, .6], ritmo:'Baja en 2 s · sube en 1 s',
+    maq: SUELO + '<path d="M50 64V108M50 108H90M52 110V146M88 110V146" stroke-width="6"/>',
+    calc: animSentadilla
+  },
+  'sentadilla-v': { t:[2, .3, 1, .6], ritmo:'Baja en 2 s · sube en 1 s', maq: SUELO, calc: animSentadilla },
+  flexiones: {
+    t:[2, .2, 1, .6], ritmo:'Baja en 2 s · sube en 1 s',
+    maq: SUELO + '<path d="M150 88H234M150 88V147" stroke-width="5"/>',
+    calc(k){
+      const tob = [18, 143], ang = aLp(-42, -29, k);
+      const hip = aPol(tob, ang, 70), sho = aPol(hip, ang, 50);
+      const [codo, mano] = aIK(sho, [156, 86], 28, 26, -1);
+      return { hip, sho, head:aPol(sho, ang, 15), rod:aPol(tob, ang, 34), tob, punta:[28, 146], codo, mano };
+    }
+  },
+  'flexiones-v': {
+    t:[2, .2, 1, .6], ritmo:'Baja en 2 s · sube en 1 s',
+    maq: SUELO,
+    calc(k){
+      const rod = [66, 143], ang = aLp(-34, -19, k);
+      const hip = aPol(rod, ang, 36), sho = aPol(hip, ang, 50);
+      const [codo, mano] = aIK(sho, [152, 144], 28, 26, 1);
+      return { hip, sho, head:aPol(sho, ang, 15), rod, tob:[34, 127], punta:[24, 122], codo, mano };
+    }
+  },
+  puente: {
+    t:[1, .8, 2, .4], ritmo:'Sube en 1 s · aguanta · baja en 2 s',
+    maq: SUELO,
+    calc: animPuente
+  },
+  'puente-v': {
+    t:[1, .8, 2, .4], ritmo:'Sube en 1 s · aguanta · baja en 2 s',
+    maq: SUELO,
+    calc(k){
+      const p = animPuente(k);
+      const a = aAng(p.hip, p.rod);
+      const tob = aPol(p.rod, a, 34);
+      return Object.assign(p, { rod2:p.rod, tob2:p.tob, punta2:p.punta, tob, punta:aPol(tob, a - 90, 12) });
+    }
+  },
+  zancada: {
+    t:[2, .3, 1, .5], ritmo:'Baja en 2 s · sube en 1 s',
+    maq: SUELO + '<path d="M132 58V147" stroke-width="5"/>',
+    calc(k){
+      const p = animZancada(k);
+      const [codo, mano] = aIK(p.sho, aLpP([129, 64], [129, 86], k), 28, 26, 1);
+      return Object.assign(p, { codo, mano });
+    }
+  },
+  'zancada-v': {
+    t:[2, .3, 1, .5], ritmo:'Baja en 2 s · sube en 1 s',
+    maq: SUELO,
+    calc(k){
+      const p = animZancada(k);
+      const [codo, mano] = aIK(p.sho, [p.hip[0] + 7, p.hip[1] - 8], 28, 26, -1);
+      return Object.assign(p, { codo, mano });
+    }
+  },
+  superman: { t:[1, 2, 1.5, .8], ritmo:'Sube · aguanta 2 s · baja despacio', maq: SUELO, calc: animSuperman },
+  'superman-v': { t:[1, 3, 1.5, .8], ritmo:'Sube · aguanta 3 s · baja despacio', maq: SUELO, calc: animSuperman }
+};
+function animSentadilla(k){
+  const tob = [112, 143];
+  const hip = aLpP([112, 77], [88, 105], k);
+  const [rod, t2] = aIK(hip, tob, 36, 34, -1);
+  const ta = aLp(-90, -56, k), ba = aLp(84, -2, k);
+  const sho = aPol(hip, ta, 50), codo = aPol(sho, ba, 28);
+  return { hip, sho, head:aPol(sho, ta + 4, 15), rod, tob:t2, punta:[124, 146], codo, mano:aPol(codo, ba, 26) };
+}
+function animPuente(k){
+  const sho = [64, 138];
+  const hip = aPol(sho, aLp(-6, -44, k), 50);
+  const [rod, tob] = aIK(hip, [146, 139], 36, 34, -1);
+  return { hip, sho, head:[48, 139], rod, tob, punta:[158, 146], codo:[92, 143], mano:[118, 144] };
+}
+function animZancada(k){
+  const hip = aLpP([98, 88], [98, 105], k);
+  const [rod, tob] = aIK(hip, [140, 141], 36, 34, -1);
+  const [rod2, tob2] = aIK(hip, [56, 137], 36, 34, -1);
+  const sho = aPol(hip, -90, 50);
+  return { hip, sho, head:aPol(sho, -90, 15), rod, tob, punta:[152, 146], rod2, tob2, punta2:[66, 146] };
+}
+function animSuperman(k){
+  const hip = [112, 137], a = aLp(0, -9, k), ba = aLp(2, -16, k), pa = aLp(180, 189, k);
+  const sho = aPol(hip, a, 50), codo = aPol(sho, ba, 28), rod = aPol(hip, pa, 36), tob = aPol(rod, pa, 34);
+  return { hip, sho, head:aPol(sho, a - 6, 15), codo, mano:aPol(codo, ba, 26), rod, tob, punta:aPol(tob, pa - 20, 12) };
+}
+
+/* Crea los elementos la primera vez y luego solo mueve coordenadas. */
+function animElems(g, items){
+  const mismos = g.childNodes.length === items.length &&
+    items.every((it, i) => g.childNodes[i].tagName === (it.o ? 'circle' : 'line'));
+  if(!mismos){
+    g.textContent = '';
+    items.forEach(it => g.appendChild(document.createElementNS(ANIM_NS, it.o ? 'circle' : 'line')));
+  }
+  items.forEach((it, i) => {
+    const e = g.childNodes[i];
+    if(it.o){
+      e.setAttribute('cx', it.o[0].toFixed(1)); e.setAttribute('cy', it.o[1].toFixed(1)); e.setAttribute('r', it.r);
+    } else {
+      e.setAttribute('x1', it.l[0][0].toFixed(1)); e.setAttribute('y1', it.l[0][1].toFixed(1));
+      e.setAttribute('x2', it.l[1][0].toFixed(1)); e.setAttribute('y2', it.l[1][1].toFixed(1));
+      e.setAttribute('stroke-width', it.w);
+    }
+    if(e.getAttribute('class') !== it.c) e.setAttribute('class', it.c);
+  });
+}
+function animQuieta(){ try{ return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } }
+function animPintar(svg, ahora){
+  const rig = ANIMS[svg.getAttribute('data-rig')];
+  if(!rig) return;
+  if(!svg._anim){
+    svg.innerHTML = '<g class="maq">' + (rig.maq || '') + '</g><g></g><g></g><g></g>';
+    svg._anim = { t0: ahora };
+  }
+  const fija = svg.getAttribute('data-k');
+  const k = fija !== null ? parseFloat(fija) : animQuieta() ? 1 : animFase(rig.t, (ahora - svg._anim.t0) / 1000);
+  const p = rig.calc(k);
+  const g = svg.childNodes;
+  animElems(g[1], rig.atras ? rig.atras(p) : []);
+  animElems(g[2], rig.figura ? rig.figura(p) : animFigura(p));
+  animElems(g[3], rig.delante ? rig.delante(p) : []);
+}
+let animRaf = 0;
+function animVisible(s){
+  const r = s.getBoundingClientRect();
+  return r.width > 0 && r.bottom > 0 && r.top < (window.innerHeight || 900);
+}
+function animTick(ahora){
+  animRaf = 0;
+  if(document.hidden) return;
+  const vivas = Array.prototype.filter.call(document.querySelectorAll('svg.anim'), animVisible);
+  vivas.forEach(s => animPintar(s, ahora));
+  if(vivas.length && !animQuieta()) animRaf = requestAnimationFrame(animTick);
+}
+function activarAnimaciones(){ if(!animRaf) animRaf = requestAnimationFrame(animTick); }
+/* Al hacer scroll (también dentro de la sesión), abrir una ficha o volver a la
+   app, se reanuda: el bucle se para solo cuando no hay ninguna a la vista. */
+document.addEventListener('scroll', activarAnimaciones, { passive:true, capture:true });
+document.addEventListener('toggle', activarAnimaciones, true);
+document.addEventListener('visibilitychange', activarAnimaciones);
+window.addEventListener('resize', activarAnimaciones);
+
+function claveAnim(ej){
+  if(!ej) return '';
+  const base = ej.id === 'plancha-casa' ? 'plancha' : ej.id;
+  return (ej.variante && ANIMS[base + '-v']) ? base + '-v' : base;
+}
+function animHTML(ej){
+  const k = claveAnim(ej);
+  const rig = ANIMS[k];
+  if(!rig) return '';
+  return '<div class="anim-caja"><svg class="anim" data-rig="' + k + '" viewBox="0 0 240 160" role="img" aria-label="' +
+    esc('Cómo se mueve: ' + ej.nombre) + '"></svg><span class="anim-ritmo">' + esc(rig.ritmo) + '</span></div>';
+}
+
+/* En la sesión, las primeras veces con un ejercicio la figura sale abierta;
+   cuando ya lo has hecho tres veces, plegada: a esas alturas estorba más de
+   lo que ayuda, y sigue a un toque. */
+function vecesEjercicio(id){
+  const todos = getEntrenos(), hoy = hoyKey();
+  return Object.keys(todos).filter(f => f < hoy && todos[f] && Array.isArray(todos[f].ej) && todos[f].ej.some(x => x.id === id)).length;
+}
+function animSesionHTML(ej){
+  const html = animHTML(ej);
+  if(!html) return '';
+  if(vecesEjercicio(ej.id) < 3) return html;
+  const abierta = !!(S.animAbierta && S.animAbierta[ej.id]);
+  return '<details class="ses-alt anim-det"' + (abierta ? ' open' : '') + ' ontoggle="animToggle(\'' + ej.id + '\', this.open)">' +
+    '<summary>Ver cómo se mueve</summary><div class="content">' + html + '</div></details>';
+}
+function animToggle(id, abierta){
+  if(!S.animAbierta) S.animAbierta = {};
+  S.animAbierta[id] = abierta;
+  if(abierta) activarAnimaciones();
+}
+
 /* ===================== RUTINA ===================== */
 function ejercicioHTML(ej, i, marca){
   return '<details>' +
     '<summary><span class="ex-head"><span class="ex-num">' + (typeof marca === 'string' ? marca : (i+1)) + '</span>' + esc(ej.nombre) +
       '</span><span class="ex-series">' + ej.series + ' × ' + esc(repsTexto(ej).replace(' repeticiones','')) + '</span></summary>' +
-    '<div class="content">' +
+    '<div class="content">' + animHTML(ej) +
       '<div class="ex-alias">' + esc(ej.alias) + '</div>' +
       '<div class="ex-field"><div>Para qué sirve</div>' + esc(ej.musculo) + '</div>' +
       '<div class="ex-field"><div>Qué es la máquina</div>' + esc(ej.maquina) + '</div>' +
@@ -5236,6 +5995,9 @@ function renderRutina(){
   document.getElementById('listaCasa').innerHTML = EJERCICIOS_CASA.map(ejercicioHTML).join('');
   document.getElementById('listaExtra').innerHTML = EJERCICIOS_EXTRA.map((e, i) => ejercicioHTML(e, i, e.turno)).join('');
   document.getElementById('listaEstira').innerHTML = ESTIRAMIENTOS.map(estiramientoHTML).join('');
+  const calCasa = document.getElementById('listaCalentarCasa');
+  if(calCasa) calCasa.innerHTML = '<ol class="ses-pasos" style="margin-bottom:8px;">' +
+    CALENTAR_CASA.map(c => '<li><b>' + esc(c.nombre) + '</b> (' + c.seg + ' s). ' + esc(c.como) + '</li>').join('') + '</ol>';
   rutinaPintada = true;
 }
 function renderFases(){
@@ -5938,7 +6700,7 @@ function toggleTheme(){ toggleThemeManual(); }
 const CAMPOS_SESION = ['activa','tipo','modo','iEj','serie','descansando','finDescanso','hechos',
   'tanda','tandaObjetivo','cintaExtra','finTanda','pausada','restante',
   'aguantando','finAguante','segAguante','hechasPor','historial','terminada','valorados','ultimoCompletado','inicio',
-  'reg','repsSel','calentando','finCalentar','subeAguante','marcasHoy','nota'];
+  'reg','repsSel','calentando','finCalentar','calPaso','subeAguante','marcasHoy','nota'];
 
 function guardarSesion(){
   if(!S.activa) return;
@@ -5964,7 +6726,7 @@ function restaurarSesion(){
   if(!S.valorados || typeof S.valorados !== 'object') S.valorados = {};
   ['reg','repsSel','subeAguante','marcasHoy'].forEach(c => { if(!S[c] || typeof S[c] !== 'object') S[c] = {}; });
   S.segHecho = null;
-  S.viendoLista = false; S.tick = null; S.ultimoSeg = -1;
+  S.viendoLista = false; S.tick = null; S.ultimoSeg = -1; S.animAbierta = {};
   abrirSesion();
   const cintaEnMarcha = S.tipo === 'cinta' && !S.pausada && S.tanda < (S.tandaObjetivo || 2);
   if(S.aguantando || S.descansando || cintaEnMarcha || (S.calentando && S.finCalentar)) arrancarTick();
