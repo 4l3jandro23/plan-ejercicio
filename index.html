@@ -1263,7 +1263,7 @@
         <button class="style-opt" data-voz="si" onclick="setVoz('si')">Sí</button>
         <button class="style-opt" data-voz="no" onclick="setVoz('no')">No</button>
       </div>
-      <div class="settings-hint">Al empezar cada descanso te dice cuánto descansas y, si toca cambiar de máquina, cuál es, con qué peso y cómo la dejaste. Con los auriculares puestos no hace falta mirar el móvil. Es de este móvil: no pasa al ordenador. Con la pantalla bloqueada puede que el iPhone no lo diga.</div>
+      <div class="settings-hint">Al empezar cada descanso te dice cuánto descansas y, si toca cambiar de máquina, cuál es, con qué peso y cómo la dejaste. Con los auriculares puestos no hace falta mirar el móvil. Es de este móvil: no pasa al ordenador. Con la pantalla bloqueada puede que el iPhone no lo diga. Si al hablar se te para la música, ponlo en No: el pitido no la para.</div>
     </div>
 
     <div class="settings-row">
@@ -1435,7 +1435,7 @@
          Aquí debajo sigue estando, que es donde de verdad la vas a leer. -->
     <div class="tip" style="margin-top:18px;">
       <b>La regla del peso, que es la única que importa:</b><br>
-      El primer día pon <b>el peso más bajo</b> en todo: el pin, arriba del todo de la torre de placas. Haz <b>entre 10 y 15 repeticiones</b>. Cuando te salgan 15 en las tres series, la próxima vez bajas el pin una placa y vuelves a empezar desde 10. Ya está. No existe el peso "correcto" — si te quedas corto, lo subes el día siguiente y no ha pasado nada.
+      El primer día pon <b>el peso más bajo</b> en todo: el pin, arriba del todo de la torre de placas. Haz <b>entre 10 y 15 repeticiones</b>. Cuando te salgan 15 en las tres series, la próxima vez subes 5 kg (casi siempre es bajar el pin una placa) y vuelves a empezar desde 10. Ya está. No existe el peso "correcto" — si te quedas corto, lo subes el día siguiente y no ha pasado nada.
     </div>
     <h3 style="margin-top:26px;">Tras 6 sesiones: dos más, que se turnan</h3>
     <p style="font-size:var(--t-base); margin-top:0;">Los seis de arriba cubren todo el cuerpo, pero se quedan cortos en lo que más se ve: la anchura de hombros, los brazos y la parte de atrás del muslo. Cuando las seis máquinas ya no te den corte, la sesión completa añade dos de estos después del press de hombros: un día los dos primeros, el siguiente los otros dos. Lo hace sola.</p>
@@ -1486,7 +1486,7 @@
 
   <div class="card">
     <h3 style="margin-top:0;">La idea que lo cambia todo</h3>
-    <p style="font-size:var(--t-base);">Tu rutina no es una lista cerrada que hay que completar en orden. Son <b>cinco zonas del cuerpo</b>, y a cada zona se llega por tres máquinas distintas. Cuando entiendes eso, un gimnasio lleno deja de ser un muro y pasa a ser un inconveniente.</p>
+    <p style="font-size:var(--t-base);">Tu rutina no es una lista cerrada que hay que completar en orden. Son <b>cinco zonas del cuerpo</b>, y a cada zona se llega por dos o tres máquinas distintas. Cuando entiendes eso, un gimnasio lleno deja de ser un muro y pasa a ser un inconveniente.</p>
     <p style="font-size:var(--t-base); margin-bottom:0;">Y hay una regla que no se negocia: <b>no esperar de pie al lado de nadie</b>. Nunca. Es lo que genera el agobio y no hace falta hacerlo jamás.</p>
     <div class="actions" style="margin-top:14px;">
       <button class="btn-main" onclick="abrirLleno()"><svg class="ic-v" aria-hidden="true"><use href="#i-gente"/></svg>Abrir el plan para gimnasio lleno</button>
@@ -1789,8 +1789,8 @@ const EJERCICIOS_GYM = [
       'Vuelve despacio hasta estirar los brazos, sin dejar que el peso caiga de golpe.'
     ],
     bien:'Notas que se juntan las paletillas y trabaja el centro de la espalda.',
-    mal:'Si te balanceas adelante y atrás para tirar, baja el peso.',
-    clave:'Junta las paletillas. Sin balancearte.',
+    mal:'Si te balanceas adelante y atrás para tirar, baja el peso. Y si no notas nada en la espalda, estás tirando solo con los brazos: saca pecho, lleva los codos hacia atrás pegados al cuerpo y aguanta un segundo con las paletillas juntas antes de volver.',
+    clave:'Tira con la espalda: codos atrás y paletillas juntas un segundo. Sin balancearte.',
     alternativa:'Si está ocupado: haz el <b>jalón al pecho</b> (el número 2) y vuelve luego. Si también está pillado, cualquier polea donde puedas tirar hacia ti sentado vale.'
   },
   {
@@ -3475,7 +3475,7 @@ const S = {
   activa:false, tipo:'fuerza', modo:'fuerza', lista:[], iEj:0, serie:0,
   descansando:false, finDescanso:0, tick:null, hechos:0,
   tanda:0, tandaObjetivo:2, cintaExtra:false, finTanda:0, pausada:false, restante:0, ultimoSeg:-1,
-  aguantando:false, finAguante:0, segAguante:0,
+  aguantando:false, preparando:false, finAguante:0, segAguante:0,
   hechasPor:[], historial:[], terminada:false, valorados:{}, ultimoCompletado:null, viendoLista:false,
   inicio:0, reg:{}, repsSel:{}, calentando:false, finCalentar:0, subeAguante:{}, segHecho:null, marcasHoy:{}, nota:''
 };
@@ -3491,7 +3491,7 @@ function empezarSesion(modo){
   else if(modo === 'viaje') S.lista = todos.slice(0,4);
   else S.lista = (modo === 'fuerza' && todos === EJERCICIOS_GYM) ? conExtras(todos.slice()) : todos.slice();
   S.lista = S.lista.map(conVariante);
-  S.modo = modo; S.iEj = 0; S.serie = 0; S.activa = true; S.descansando = false; S.aguantando = false; S.hechos = 0;
+  S.modo = modo; S.iEj = 0; S.serie = 0; S.activa = true; S.descansando = false; S.aguantando = false; S.preparando = false; S.hechos = 0;
   S.hechasPor = S.lista.map(() => 0); S.historial = []; S.terminada = false;
   S.valorados = {}; S.ultimoCompletado = null; S.viendoLista = false;
   S.reg = {}; S.repsSel = {}; S.subeAguante = {}; S.segHecho = null; S.marcasHoy = {}; S.nota = '';
@@ -3699,6 +3699,18 @@ function noSeQueMaquina(){
 
 function pintarAguante(ej, nSeries){
   const body = document.getElementById('sesBody');
+  if(S.preparando){
+    body.innerHTML =
+      '<div class="ses-descanso">' + anilloHTML(prepAguanteSeg()) +
+        '<p><b>Colócate.</b> Serie ' + (S.serie + 1) + ' de ' + nSeries + ': ' + S.segAguante + ' segundos. ' +
+        'Antebrazos en el suelo y el cuerpo recto. Con el pitido empieza a contar.</p>' +
+        '<div style="display:flex; gap:8px;">' +
+          '<button class="btn-timer" onclick="empezarYaAguante()">Ya estoy, empezar</button>' +
+        '</div>' +
+      '</div>';
+    actualizarRing(true);
+    return;
+  }
   body.innerHTML =
     '<div class="ses-descanso">' + anilloHTML(S.segAguante) +
       '<p><b>Aguanta.</b> Serie ' + (S.serie + 1) + ' de ' + nSeries + '. ' +
@@ -3955,8 +3967,15 @@ function detalleSeries(x){
    eso obligaba a sacar el móvil delante de la gente. Con la voz, al empezar el
    descanso ya sabe cuánto descansa y a qué máquina va después, con qué peso y
    cómo la dejó. Apagado por defecto: hay quien prefiere solo la música. */
+/* iOS para la música cuando una web habla. Safari deja marcar el audio de la
+   página como "de fondo" para que se mezcle con lo que suena; donde no exista,
+   no hace nada. */
+function audioDeFondo(){
+  try{ if(navigator.audioSession && navigator.audioSession.type !== 'ambient') navigator.audioSession.type = 'ambient'; }catch(e){}
+}
 function decir(txt){
   if(!txt || getVoz() !== 'si' || !('speechSynthesis' in window)) return;
+  audioDeFondo();
   try{
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(txt);
@@ -4259,8 +4278,15 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-09-16'; }
+function novedadesId(){ return '2026-09-17'; }
 function novedadesNuevas(){
+  return [
+    '<b>Plancha:</b> ahora tienes 10 segundos para colocarte antes de que empiece a contar. Si ya estás, «Ya estoy, empezar».',
+    '<b>Avisos por voz:</b> la app pide al iPhone que no pare tu música al hablar. Si aun así se para, ponlos en No: el pitido no la para.',
+    '<b>Remo sentado:</b> qué hacer si no notas nada en la espalda.'
+  ];
+}
+function novedadesAntes17(){
   return [
     '<b>Cómo se mueve cada máquina:</b> una figura hace el ejercicio con su ritmo. Sale en la sesión las primeras veces, y siempre en Rutina.',
     '<b>Calentar en casa:</b> la sesión de casa empieza con seis movimientos guiados, sin material y sin saltos.',
@@ -4269,7 +4295,7 @@ function novedadesNuevas(){
   ];
 }
 function novedades(){
-  return [
+  return novedadesAntes17().concat([
     '<b>En casa también se sube de nivel:</b> la versión difícil de cada ejercicio cuando te sobran repeticiones.',
     '<b>Tus entrenos en el calendario del iPhone:</b> Guía → Que te avise el iPhone.',
     '<b>Hoy más corto:</b> el botón de empezar sale antes, y «Cuándo ir hoy» va plegado.',
@@ -4280,7 +4306,7 @@ function novedades(){
     '<b>Nota al acabar</b> la sesión («me molestaba el hombro»), que te recuerda la siguiente.',
     '<b>Estiramientos guiados</b> de 7 minutos al terminar, y la plancha empieza en 30 s y sube sola.',
     '<b>Tu historial de Hevy</b> se puede traer desde Ajustes.'
-  ];
+  ]);
 }
 function novedadesHTML(){
   let vistas = '';
@@ -4503,11 +4529,24 @@ function finCalentar(){
 function empezarAguante(){
   const seg = segundosDe(S.lista[S.iEj]);
   if(!seg) return serieHecha();
+  /* Diez segundos para colocarse antes de contar: tumbarse y ponerse en
+     plancha con el cronómetro ya corriendo era perder un tercio de la serie. */
   S.aguantando = true;
+  S.preparando = true;
   S.segAguante = seg;
-  S.finAguante = Date.now() + seg * 1000;
+  S.finAguante = Date.now() + (prepAguanteSeg() + seg) * 1000;
   arrancarTick();
   pintarSesion();
+  guardarSesion();
+}
+function prepAguanteSeg(){ return 10; }
+function empezarYaAguante(){
+  if(!S.aguantando) return;
+  S.preparando = false;
+  S.finAguante = Date.now() + S.segAguante * 1000;
+  arrancarTick();
+  pintarSesion();
+  guardarSesion();
 }
 /* Sirve tanto para el final del tiempo como para el botón de "ya no puedo".
    Aguantar 12 de 20 segundos también es una serie: cuenta igual. */
@@ -4515,7 +4554,7 @@ function finAguante(){
   pararTick();
   const inicio = S.finAguante - S.segAguante * 1000;
   S.segHecho = Math.max(1, Math.min(S.segAguante, Math.round((Date.now() - inicio) / 1000)));
-  S.aguantando = false;
+  S.aguantando = false; S.preparando = false;
   serieHecha();
 }
 
@@ -4587,7 +4626,7 @@ function serieHecha(){
    Si ya no queda otro, es saltarlo de verdad y se va al final. */
 function saltarEjercicio(){
   pararTick();
-  S.descansando = false; S.aguantando = false; S.viendoLista = false;
+  S.descansando = false; S.aguantando = false; S.preparando = false; S.viendoLista = false;
   const sig = siguientePendiente(S.iEj);
   if(sig === -1 || sig === S.iEj) S.terminada = true;
   else irAEjercicio(sig);
@@ -4600,7 +4639,7 @@ function puedeDeshacer(){ return Array.isArray(S.historial) && S.historial.lengt
 function deshacerSerie(){
   if(!puedeDeshacer()) return;
   pararTick();
-  S.descansando = false; S.aguantando = false; S.terminada = false; S.viendoLista = false;
+  S.descansando = false; S.aguantando = false; S.preparando = false; S.terminada = false; S.viendoLista = false;
   const i = S.historial.pop();
   if(i !== S.iEj) irAEjercicio(i);
   if(S.reg && Array.isArray(S.reg[i])) S.reg[i] = S.reg[i].slice(0, -1);
@@ -4623,13 +4662,13 @@ function deshacerSerie(){
 /* ---------- Lista de ejercicios dentro de la sesión ---------- */
 function verListaEjercicios(){
   if(S.tipo === 'cinta' || S.terminada) return;
-  if(S.aguantando){ pararTick(); S.aguantando = false; }
+  if(S.aguantando){ pararTick(); S.aguantando = false; S.preparando = false; }
   S.viendoLista = !S.viendoLista;
   pintarSesion();
 }
 function elegirEjercicio(i){
   pararTick();
-  S.descansando = false; S.aguantando = false; S.viendoLista = false; S.calentando = false;
+  S.descansando = false; S.aguantando = false; S.preparando = false; S.viendoLista = false; S.calentando = false;
   irAEjercicio(i);
   pintarSesion();
 }
@@ -5411,7 +5450,7 @@ function finDescanso(){
 function arrancarTick(){
   pararTick();
   S.tick = setInterval(() => {
-    const objetivo = S.aguantando ? S.finAguante
+    const objetivo = S.aguantando ? (S.preparando ? S.finAguante - S.segAguante * 1000 : S.finAguante)
                    : S.calentando ? S.finCalentar
                    : (S.tipo === 'cinta' && !S.descansando) ? S.finTanda
                    : S.finDescanso;
@@ -5419,6 +5458,12 @@ function arrancarTick(){
       if(S.calentando){
         if(sesionEnCasa()) siguienteCalentarCasa();
         else { pito('tanda'); finCalentar(); }
+      } else if(S.aguantando && S.preparando){
+        pito('seguir');
+        S.preparando = false;
+        pintarSesion();
+        guardarSesion();
+        arrancarTick();
       } else if(S.aguantando){
         pito('seguir');
         finAguante();
@@ -5436,7 +5481,7 @@ function arrancarTick(){
        coger el agarre antes del pitido de seguir, sin mirar la pantalla. */
     const quedanSeg = Math.ceil((objetivo - Date.now()) / 1000);
     if(quedanSeg > 3) S.ultimoAviso = 0;
-    else if(S.descansando && S.tipo !== 'cinta' && quedanSeg !== S.ultimoAviso){ S.ultimoAviso = quedanSeg; if(!pitosProgramados.length) pito('cuenta'); }
+    else if(((S.descansando && S.tipo !== 'cinta') || S.preparando) && quedanSeg !== S.ultimoAviso){ S.ultimoAviso = quedanSeg; if(!pitosProgramados.length) pito('cuenta'); }
     actualizarRing();
   }, 250);
 }
@@ -5447,8 +5492,8 @@ function actualizarRing(forzar){
   const anillo = document.getElementById('ringAvance');
   if(!txt || !anillo) return;
   const enTanda = S.tipo === 'cinta' && !S.descansando;
-  const objetivo = S.aguantando ? S.finAguante : S.calentando ? S.finCalentar : enTanda ? S.finTanda : S.finDescanso;
-  const total = S.aguantando ? S.segAguante
+  const objetivo = S.aguantando ? (S.preparando ? S.finAguante - S.segAguante * 1000 : S.finAguante) : S.calentando ? S.finCalentar : enTanda ? S.finTanda : S.finDescanso;
+  const total = S.aguantando ? (S.preparando ? prepAguanteSeg() : S.segAguante)
               : S.calentando ? (sesionEnCasa() ? CALENTAR_CASA[Math.min(S.calPaso || 0, CALENTAR_CASA.length - 1)].seg : CALENTAR_SEG)
               : enTanda ? TANDA_MIN * 60
               : (S.tipo === 'cinta' ? DESCANSO_TANDAS : descansoActual());
@@ -5532,6 +5577,7 @@ function cambiarPeso(id, delta){
    que es el gesto que iOS exige para permitir sonido. */
 let audioCtx = null;
 function prepararSonido(){
+  audioDeFondo();
   try{
     if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     if(audioCtx.state === 'suspended') audioCtx.resume();
@@ -5980,7 +6026,7 @@ function ejercicioHTML(ej, i, marca){
       '</ol></div>' +
       '<div class="ex-check"><b>Va bien si:</b> ' + esc(ej.bien) + '</div>' +
       '<div class="ex-cross"><b>Ojo si:</b> ' + esc(ej.mal) + '</div>' +
-      (!ej.sinPeso ? '<div class="ex-sube"><b>Sube de peso cuando:</b> cuando saques 15 repeticiones en las tres series. La próxima vez, la siguiente placa, y otra vez desde 10. No te quedes parado en el mismo peso solo por costumbre.</div>' : '') +
+      (!ej.sinPeso ? '<div class="ex-sube"><b>Sube de peso cuando:</b> cuando saques 15 repeticiones en las tres series. La próxima vez, 5 kg más (casi siempre la siguiente placa), y otra vez desde 10. No te quedes parado en el mismo peso solo por costumbre.</div>' : '') +
       (ej.alternativa ? '<div class="quiet" style="margin:0;">' + ej.alternativa + '</div>' : '') +
     '</div>' +
   '</details>';
@@ -6699,7 +6745,7 @@ function toggleTheme(){ toggleThemeManual(); }
    y a la misma altura en vez de aparecer en Hoy. */
 const CAMPOS_SESION = ['activa','tipo','modo','iEj','serie','descansando','finDescanso','hechos',
   'tanda','tandaObjetivo','cintaExtra','finTanda','pausada','restante',
-  'aguantando','finAguante','segAguante','hechasPor','historial','terminada','valorados','ultimoCompletado','inicio',
+  'aguantando','preparando','finAguante','segAguante','hechasPor','historial','terminada','valorados','ultimoCompletado','inicio',
   'reg','repsSel','calentando','finCalentar','calPaso','subeAguante','marcasHoy','nota'];
 
 function guardarSesion(){

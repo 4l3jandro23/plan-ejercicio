@@ -55,7 +55,7 @@ const LLENO = [
       'Mira la lista de abajo, coge la alternativa que esté libre y sigue.',
       'Si de un grupo no hay ninguna libre, sáltate ese grupo entero y sigue con el siguiente. Vuelves al final si te apetece.'
     ],
-    porQue:'La gente se atasca porque piensa que la rutina es una lista cerrada. No lo es: lo que importa es tocar cada zona del cuerpo, y a cada zona se llega por tres sitios distintos.',
+    porQue:'La gente se atasca porque piensa que la rutina es una lista cerrada. No lo es: lo que importa es tocar cada zona del cuerpo, y a cada zona se llega por dos o tres sitios distintos.',
     truco:'Esta es la que te va a servir más veces. Míratela una vez con calma en casa y luego ya la sabes.',
     verSustitutos:true
   },
