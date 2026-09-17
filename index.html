@@ -963,6 +963,21 @@
   }
   .checkin textarea:focus{border-color:var(--accent);}
   .saved-note{font-size:var(--t-xs); color:var(--accent); font-weight:700; margin-top:10px; min-height:18px;}
+  .extra-fila{display:flex; align-items:center; gap:7px; flex-wrap:wrap; margin-top:8px;}
+  .extra-fila > span{font-size:9px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px;}
+  .extra-fila button{
+    display:inline-flex; align-items:center; gap:5px; min-height:38px; padding:7px 12px;
+    border:1px solid var(--border); border-radius:999px; background:var(--card); color:var(--ink);
+    font-family:inherit; font-size:var(--t-xs); font-weight:600; cursor:pointer;
+  }
+  .extra-fila button.active{border-color:transparent; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff;}
+  .extra-fila button .ic-v{width:15px; height:15px;}
+  .fase-resumen{
+    display:flex; flex-direction:column; gap:4px; margin:14px 0 0; padding:14px 16px;
+    border:1px solid var(--border); border-radius:var(--r-md); background:var(--card);
+  }
+  .fase-resumen b{font-size:var(--t-base);}
+  .fase-resumen span{font-size:var(--t-sm); color:var(--muted); line-height:1.45;}
   .dia-fila{
     background:var(--pane); border:1px solid var(--border); border-radius:var(--r-md);
     padding:13px 15px; margin-bottom:8px; box-shadow:inset 0 1px 0 var(--glass-hl);
@@ -1645,6 +1660,7 @@
 <div id="tab-semana" class="tabpanel">
   <h2><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-grafico"/></svg></span>Cómo va</h2>
   <div class="statgrid" id="statGrid"></div>
+  <div id="faseResumen"></div>
 
   <!-- Todo este bloque se oculta hasta que haya una primera sesión: ocho ceros
        grises y un botón de "compartir mis números" sin números que compartir no
@@ -2157,17 +2173,18 @@ const K = {
   marcas:'planEjercicioMarcas', ghToken:'planEjercicioGhToken', gistId:'planEjercicioGistId',
   syncOk:'planEjercicioSyncOk', syncError:'planEjercicioSyncError',
   entrenos:'planEjercicioEntrenos', ajustesMaq:'planEjercicioAjustesMaquina',
-  aguante:'planEjercicioAguante', voz:'planEjercicioVoz', casaVariante:'planEjercicioCasaVariante'
+  aguante:'planEjercicioAguante', voz:'planEjercicioVoz', casaVariante:'planEjercicioCasaVariante',
+  andarExtra:'planEjercicioAndarExtra'
 };
 /* Qué viaja entre el móvil y el ordenador, y cómo se junta (ver fusionarEstado).
    Tema, tamaño de letra, contraste y 'al abrir la app' se quedan en cada
    dispositivo a propósito: el iPhone y el PC no tienen por qué verse igual. */
 const SYNC_CFG = {
   todas: [K.color, K.dias, K.lugar, K.descanso, K.sonido, K.tono,
-          K.log, K.pesos, K.check, K.sensacion, K.cintaExtra, K.pesosHist,
+          K.log, K.pesos, K.check, K.sensacion, K.cintaExtra, K.andarExtra, K.pesosHist,
           K.entrenos, K.ajustesMaq, K.aguante, K.casaVariante],
   objeto: [K.log, K.pesos, K.check, K.sensacion, K.entrenos, K.ajustesMaq, K.aguante, K.casaVariante],
-  union: { [K.cintaExtra]: 'fechas', [K.pesosHist]: 'historial' }
+  union: { [K.cintaExtra]: 'fechas', [K.andarExtra]: 'fechas', [K.pesosHist]: 'historial' }
 };
 /* Lo que nunca sale del dispositivo, ni en la copia descargada: el token de
    GitHub en un archivo .json suelto sería regalarlo. */
@@ -2279,6 +2296,32 @@ function sesionesFuerza(){ return contarTipo(['fuerza','minima']); }
    todavía" — aunque lleve meses haciendo los 15 minutos cuesta arriba de
    verdad. Por eso se lleva aparte un contador de esas cintas "de propina". */
 function diasCintaExtra(){ const l = loadJSON(K.cintaExtra, []); return Array.isArray(l) ? l : []; }
+/* Un día lleva UNA etiqueta: si no, un día de gimnasio con cinta contaría como
+   dos sesiones y el número dejaría de querer decir "días que hice algo". Pero
+   un día de fuerza puede acabar con cinta, o con un paseo: eso se marca aparte.
+   La cinta va a la misma lista que la que se apunta sola al terminar la sesión
+   guiada, así que también cuenta para el nivel de cinta. */
+function diasAndarExtra(){ const l = loadJSON(K.andarExtra, []); return Array.isArray(l) ? l : []; }
+function listaExtra(tipo){ return tipo === 'cinta' ? diasCintaExtra() : diasAndarExtra(); }
+function tieneExtra(key, tipo){ return listaExtra(tipo).indexOf(key) !== -1; }
+function toggleExtraDia(key, tipo){
+  const l = listaExtra(tipo).slice();
+  const i = l.indexOf(key);
+  if(i === -1) l.push(key); else l.splice(i, 1);
+  saveJSON(tipo === 'cinta' ? K.cintaExtra : K.andarExtra, l);
+  renderHoy();
+  renderSemana();
+}
+function limpiarExtras(key){
+  ['cinta', 'caminar'].forEach(t => {
+    saveJSON(t === 'cinta' ? K.cintaExtra : K.andarExtra, listaExtra(t).filter(k => k !== key));
+  });
+}
+/* Si el día pasa a ser justo eso (cinta o caminar), el "y además" del mismo
+   tipo sobra: contaría dos veces. */
+function quitarExtraSiSobra(key, tipo){
+  if(tieneExtra(key, tipo)) toggleExtraDia(key, tipo);
+}
 function sesionesCinta(){ return contarTipo(['cinta']) + diasCintaExtra().length; }
 
 /* Series: 2 al principio, 3 en los tres ejercicios grandes a partir de la 5ª
@@ -3255,6 +3298,8 @@ function desmarcar(){
 }
 function marcarDia(key, tipo){
   const log = getLog();
+  if(tipo === '' || tipo === 'descanso') limpiarExtras(key);
+  if(tipo === 'cinta' || tipo === 'caminar') quitarExtraSiSobra(key, tipo);
   if(tipo === '') delete log[key]; else log[key] = tipo;
   saveJSON(K.log, log);
   renderHoy();
@@ -4281,6 +4326,8 @@ function posponerAvisoCopia(){
 function novedadesId(){ return '2026-09-17'; }
 function novedadesNuevas(){
   return [
+    '<b>Y además:</b> en Semana, un día de fuerza puede llevar también cinta o un paseo. No cuenta como otra sesión, pero suma donde tiene que sumar.',
+    '<b>En qué punto estás:</b> arriba de Semana, qué toca ahora y qué cambia más adelante.',
     '<b>Plancha:</b> ahora tienes 10 segundos para colocarte antes de que empiece a contar. Si ya estás, «Ya estoy, empezar».',
     '<b>Avisos por voz:</b> la app pide al iPhone que no pare tu música al hablar. Si aun así se para, ponlos en No: el pitido no la para.',
     '<b>Remo sentado:</b> qué hacer si no notas nada en la espalda.'
@@ -6128,12 +6175,34 @@ function renderSemana(){
   const hist = document.getElementById('semanaHistorial');
   if(hist) hist.hidden = total === 0;
 
+  renderFaseResumen();
   renderCheckin();
   renderSemanaDias();
   renderProgresoPesos();
   renderEntrenos();
 }
 
+/* Lo mismo que cuenta Rutina, pero en la pestaña donde se miran los números:
+   en qué punto va la rutina y qué cambia más adelante. Sin fechas ni plazos,
+   porque depende solo de las sesiones que haga. */
+function renderFaseResumen(){
+  const el = document.getElementById('faseResumen');
+  if(!el) return;
+  if(!totalSesiones()){ el.innerHTML = ''; return; }
+  const n = sesionesFuerza();
+  let actual = 0;
+  FASES.forEach((f, i) => { if(n >= f.desde) actual = i; });
+  const sig = FASES[actual + 1];
+  const niv = nivelCinta();
+  const plancha = segundosDe(EJERCICIOS_GYM.find(e => e.id === 'plancha'));
+  el.innerHTML = '<div class="fase-resumen">' +
+    '<b>Ahora: ' + esc(FASES[actual].titulo.toLowerCase()) + '</b>' +
+    '<span>' + esc(FASES[actual].txt) + '</span>' +
+    '<span>Cinta: ' + niv.vel + ' km/h al ' + niv.inc + '%' + (plancha ? '. Plancha: ' + plancha + ' segundos.' : '.') + '</span>' +
+    (sig ? '<span>Llevas <b>' + n + (n === 1 ? ' sesión' : ' sesiones') + ' de fuerza</b>. Lo siguiente llega a las ' + sig.desde + ': ' + esc(sig.titulo.toLowerCase()) + '.</span>'
+         : '<span>Llevas <b>' + n + ' sesiones de fuerza</b>: ya estás en el último escalón de la progresión.</span>') +
+  '</div>';
+}
 function renderSemanaDias(){
   const log = getLog();
   const lunes = lunesDe(new Date());
@@ -6155,9 +6224,18 @@ function renderSemanaDias(){
              'onclick="marcarDia(\'' + key + '\',\'' + t + '\')">' +
              '<span class="ic">' + (e.ico ? ic(e.ico) : '—') + '</span><span class="tx">' + e.corto + '</span></button>';
     }).join('');
+    /* Un día de fuerza puede llevar además cinta o un paseo: se marca aquí y
+       no cuenta como otra sesión. */
+    const extras = (actual && actual !== 'descanso')
+      ? '<div class="extra-fila"><span>Y además</span>' +
+        ['cinta', 'caminar'].filter(t => t !== actual).map(t =>
+          '<button class="' + (tieneExtra(key, t) ? 'active' : '') + '" aria-pressed="' + tieneExtra(key, t) + '" ' +
+          'onclick="toggleExtraDia(&quot;' + key + '&quot;,&quot;' + t + '&quot;)">' + ic(etiqueta(t).ico) + etiqueta(t).corto + '</button>').join('') +
+        '</div>'
+      : '';
     html += '<div class="dia-fila"><div class="dl">' + DIAS_LARGOS[d.getDay()] + ' ' + d.getDate() +
             (key === hoy ? ' <em>· hoy</em>' : '') + '</div>' +
-            '<div class="opts dias" role="radiogroup">' + opciones + '</div></div>';
+            '<div class="opts dias" role="radiogroup">' + opciones + '</div>' + extras + '</div>';
   }
   document.getElementById('semanaDias').innerHTML = html;
 }
