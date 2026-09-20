@@ -2792,7 +2792,8 @@ function aforoAhora(d){
     cerrado: min >= 60 && min < 360,
     ahora: deHoy.filter(dentro)[0] || null,
     siguiente: siguiente,
-    esViernes: dia === 4
+    esViernes: dia === 4,
+    finde: dia >= 5
   };
 }
 function renderAforo(){
@@ -2838,6 +2839,12 @@ function renderAforo(){
     nivel = 'bien';
     titulo = 'No es hora punta, pero tampoco tu mejor hueco';
     texto = proximo + ' ' + a.siguiente.veredicto;
+  } else if(a.finde){
+    /* La hora punta apuntada es solo de lunes a viernes. Decir que el finde
+       "entra en hora punta" era inventárselo. */
+    nivel = 'bien';
+    titulo = 'Fin de semana: sin hora punta apuntada';
+    texto = 'Lo más tranquilo son las mañanas, de 9:00 a 11:30. Por la tarde no tengo datos de cuánta gente hay: si te apetece ir, mira al llegar. Abre hasta la 1:00.';
   } else {
     nivel = 'bien';
     titulo = 'Hoy ya no queda hueco bueno';
@@ -3294,8 +3301,12 @@ function renderHorario(){
     filas += '<div class="horario-row"><span>Abre a las 6:00 — antes de empezar a trabajar</span><span>6:45-8:00</span></div>';
     filas += '<div class="horario-row"><span>El viernes sales a las 15h: ese es tu mejor hueco</span><span>vie 15:30</span></div>';
   }
-  filas += '<div class="horario-row bad"><span>Entre semana por la tarde no hay nada que hacer</span><span>18:00-22:30</span></div>';
-  filas += '<div class="horario-row"><span>Cierra a la 1:00, así que aún queda margen luego</span><span>22:45+</span></div>';
+  if(entreSemana){
+    filas += '<div class="horario-row bad"><span>Entre semana por la tarde no hay nada que hacer</span><span>18:00-22:30</span></div>';
+  } else {
+    filas += '<div class="horario-row"><span>Por la tarde del fin de semana no tengo datos de aforo</span><span>mira al llegar</span></div>';
+  }
+  if(entreSemana) filas += '<div class="horario-row"><span>Cierra a la 1:00, así que aún queda margen luego</span><span>22:45+</span></div>';
 
   /* Plegado: la tarjeta de aforo de arriba ya dice lo de ahora mismo, y
      desplegado ocupaba 440 px al final de Hoy. */
@@ -4353,9 +4364,10 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-09-17'; }
+function novedadesId(){ return '2026-09-20'; }
 function novedadesNuevas(){
   return [
+    '<b>Fin de semana:</b> el aviso de aforo ya no dice que sábado y domingo por la tarde son hora punta. Esa hora punta solo está apuntada de lunes a viernes.',
     '<b>¿La cinta antes o después?</b> Explicado desde cero en Rutina, debajo de «Cerrar con cinta».',
     '<b>Cosas que igual no sabías:</b> en Guía, casi cincuenta cosas sobre músculo, cardio, técnica y descanso.',
     '<b>Y además:</b> en Semana, un día de fuerza puede llevar también cinta o un paseo. No cuenta como otra sesión, pero suma donde tiene que sumar.',
