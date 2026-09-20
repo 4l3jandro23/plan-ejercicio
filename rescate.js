@@ -231,18 +231,54 @@ const ANDAR = [
 /* ==========================================================================
    5. CUÁNDO ESTÁ VACÍO
    Datos suyos, no generales: no puede ir a mediodía en días de teletrabajo,
-   y su gimnasio está lleno hasta las 22:30 entre semana. Abre 6:00-1:00.
+   y su gimnasio está lleno de 17:00 a 22:30 entre semana. Abre 6:00-1:00.
+   Corregido el 20-09-2026 con las gráficas de Google Maps: lo de "el viernes
+   a las 15:30 está vacío" no era verdad, y estaba escrito en cuatro sitios.
    ========================================================================== */
 /* `dias` va en índices de lunes(0) a domingo(6), y `desde`/`hasta` en minutos
    desde medianoche. Está así para que la pestaña Hoy pueda decir a qué hora
    está lleno AHORA MISMO sin tener que interpretar el texto de `cuando`.
    Una sola fuente: si cambia un horario, cambia en los dos sitios. */
 const FRANJAS = [
-  { cuando:'Viernes, 15:30 - 17:00', nivel:'vacio', dias:[4], desde:930, hasta:1020, quePasa:'Sales de trabajar a las 15h y vas directo, sin pasar por casa.', veredicto:'El mejor hueco que tienes, con diferencia. Si solo vas un día a la semana, que sea este.' },
-  { cuando:'Sábado o domingo, 9:00 - 11:30', nivel:'bien', dias:[5,6], desde:540, hasta:690, quePasa:'Abre a las 6:00 también el finde.', veredicto:'Segundo mejor. A las 9 hay sitio de sobra y todavía te queda el día entero.' },
-  { cuando:'Entre semana, 6:45 - 8:00', nivel:'vacio', dias:[0,1,2,3,4], desde:405, hasta:480, quePasa:'Está prácticamente vacío. Existe de verdad.', veredicto:'Un extra, no la base: con tu sueño irregular no lo vas a sostener todas las semanas. Pero un día suelto que te despiertes pronto, es oro.' },
-  { cuando:'Entre semana, 22:45 - 00:30', nivel:'bien', dias:[0,1,2,3,4], desde:1365, hasta:1470, quePasa:'Cierra a la 1:00 y a esa hora ya se ha vaciado.', veredicto:'Funciona, pero entrenar tan tarde te descoloca el sueño, y el sueño ya lo tienes movido. Como excepción, no como plan.' },
-  { cuando:'Entre semana, 18:00 - 22:30', nivel:'lleno', dias:[0,1,2,3,4], desde:1080, hasta:1350, quePasa:'A reventar. Cinco horas seguidas.', veredicto:'Es la franja que llevas años intentando y es la razón por la que llevas tres meses sin ir. No es cabezonería tuya: es que a esa hora no cabe la gente.' }
+  { cuando:'Entre semana, 6:45 - 8:00', corto:'Antes de trabajar está vacío', nivel:'vacio', dias:[0,1,2,3,4], desde:405, hasta:480, quePasa:'Está prácticamente vacío. Lo confirma la gráfica de Google: es la hora más floja del día.', veredicto:'El mejor hueco real que tienes. Un extra, no la base: con tu sueño irregular no lo vas a sostener todas las semanas, pero un día suelto que te despiertes pronto, es oro.' },
+  { cuando:'Entre semana, 23:00 - 00:30', corto:'Después de cenar ya ha bajado', nivel:'bien', dias:[0,1,2,3], desde:1380, hasta:1470, quePasa:'A las 22:00 todavía hay bastante gente. La caída de verdad empieza sobre las 23:00.', veredicto:'Funciona, pero entrenar tan tarde te descoloca el sueño, y el sueño ya lo tienes movido. Como excepción, no como plan.' },
+  { cuando:'Entre semana, 17:00 - 22:30', corto:'Por la tarde no hay nada que hacer', nivel:'lleno', dias:[0,1,2,3], desde:1020, hasta:1350, quePasa:'Sube desde las 16:00 y no baja hasta pasadas las 22:00. El pico va de 19:00 a 21:00.', veredicto:'Es la franja que llevas años intentando y es la razón por la que estuviste tres meses sin ir. No es cabezonería tuya: es que a esa hora no cabe la gente.' },
+  { cuando:'Viernes, 15:00 - 21:00', corto:'Al salir de trabajar ya hay gente', nivel:'lleno', dias:[4], desde:900, hasta:1260, quePasa:'Aquí la app se equivocaba. Decía que las 15:30 del viernes eran tu hueco vacío, y la gráfica de Google dice que a esa hora ya va por tres cuartos de su hora más llena, subiendo.', veredicto:'Sigue siendo mejor que las 19:00 de un martes, pero no es el sitio vacío que ponía aquí antes. Si vas el viernes al salir de trabajar, ve sabiendo que habrá gente.' },
+  { cuando:'Viernes, 21:00 - 00:30', corto:'El viernes se vacía antes que el resto', nivel:'bien', dias:[4], desde:1260, hasta:1470, quePasa:'El viernes se vacía antes que el resto de días: a partir de las 21:00 cae rápido.', veredicto:'Si el viernes te da igual entrenar tarde, este rato es bastante mejor que la salida del trabajo.' },
+  { cuando:'Sábado o domingo, 8:00 - 11:00', corto:'Por la mañana, lo más tranquilo', nivel:'bien', dias:[5,6], desde:480, hasta:660, quePasa:'Abre a las 6:00 también el fin de semana, y las primeras horas son las más flojas.', veredicto:'Lo mejor del fin de semana. De tu gimnasio no tengo la gráfica del finde: esto sale de la de L\'Illa, donde el mediodía (12:00-14:00) es lo más lleno del día y la tarde se queda a media altura.' }
+];
+
+/* ==========================================================================
+   5 bis. LAS GRÁFICAS DE GOOGLE, LOS DOS GIMNASIOS
+   Leídas de las gráficas de "horas punta" de Google Maps el 20-09-2026. Cada
+   número es el % respecto a la hora MÁS llena de ESE gimnasio, que es como las
+   dibuja Google. Por eso sirven para ver CUÁNDO se vacía cada uno, y no para
+   decir cuál de los dos tiene menos gente en total: eso Google no lo dice.
+   Son una lectura a ojo de la gráfica, así que valen como orientación.
+   FRANJAS de arriba es el resumen en palabras de la curva de Berlín: si un día
+   cambia una, hay que cambiar la otra.
+   ========================================================================== */
+const GIMNASIOS = [
+  {
+    id:'berlin',
+    nombre:'Berlín',
+    detalle:'El tuyo, el que ya pagas.',
+    curvas:{
+      semana:  {6:15, 7:25, 8:30, 9:35, 10:38, 11:40, 12:38, 13:40, 14:45, 15:48, 16:58, 17:72, 18:85, 19:95, 20:100, 21:92, 22:75, 23:45, 24:30},
+      viernes: {6:12, 7:30, 8:45, 9:50, 10:52, 11:52, 12:50, 13:55, 14:62, 15:72, 16:80, 17:90, 18:92, 19:88, 20:82, 21:68, 22:52, 23:38, 24:28},
+      finde:   null
+    }
+  },
+  {
+    id:'illa',
+    nombre:"L'Illa Diagonal",
+    detalle:'Fitness Park, en el centro comercial. Tiene zona de boxeo.',
+    curvas:{
+      semana:  {6:20, 7:45, 8:48, 9:42, 10:40, 11:42, 12:42, 13:48, 14:55, 15:68, 16:72, 17:82, 18:90, 19:88, 20:85, 21:75, 22:52, 23:35, 24:38},
+      viernes: {6:10, 7:35, 8:38, 9:32, 10:38, 11:45, 12:42, 13:48, 14:55, 15:62, 16:72, 17:68, 18:80, 19:92, 20:95, 21:85, 22:58, 23:38, 24:30},
+      finde:   {6:18, 7:28, 8:30, 9:35, 10:45, 11:50, 12:62, 13:65, 14:60, 15:48, 16:42, 17:45, 18:50, 19:52, 20:48, 21:38, 22:32, 23:28, 24:25}
+    }
+  }
 ];
 
 
@@ -262,14 +298,14 @@ const DECISION = {
       icono:'i-reloj',
       aFavor:[
         'Ya lo tienes pagado y ya sabes dónde está cada máquina.',
-        'El viernes a las 15:30 es un hueco real que no has probado en serio.',
+        'A partir de las 22:00 entre semana se vacía, y esa hora no la has probado en serio.',
         'Abre de 6:00 a 1:00 todos los días del año: horario hay de sobra.'
       ],
       enContra:[
         'Depende de que el viernes salgas puntual de trabajar.',
         'Si el problema no era la hora sino que no te apetece ir, esto no lo arregla.'
       ],
-      queHacer:'Pruébalo tres viernes seguidos. No tres semanas de plan completo: tres viernes.'
+      queHacer:'Pruébalo tres veces a última hora. No tres semanas de plan completo: tres días sueltos.'
     },
     {
       titulo:'Cambiarte de gimnasio',
@@ -303,7 +339,7 @@ const DECISION = {
       queHacer:'Si te decides por aquí, da de baja el gimnasio el mismo día. Dejarlo "por si acaso" es pagar por la culpa.'
     }
   ],
-  recomendacion:'Prueba los tres viernes primero, porque es gratis y responde la pregunta de verdad. Si vas los tres, el problema era la hora y ya está resuelto. Si no vas ninguno, el problema no es el gimnasio — y entonces la buena es la tercera, no la segunda: darte de baja y montarlo en casa, con andar como base. Cambiar de gimnasio es la única de las tres que cuesta dinero y no responde nada.'
+  recomendacion:'Antes de pagar nada, prueba dos cosas que son gratis: ir un día entre semana a partir de las 22:00, y mirar en Google Maps la gráfica de horas punta del gimnasio al que irías, a la hora a la que irías de verdad. Si a tu hora ninguno está mejor, el problema no era el gimnasio — y entonces la buena es la tercera, no la segunda: darte de baja y montarlo en casa, con andar como base. Cambiar de gimnasio es la única de las tres que cuesta dinero y no responde nada.'
 };
 
 

@@ -963,6 +963,18 @@
   }
   .checkin textarea:focus{border-color:var(--accent);}
   .saved-note{font-size:var(--t-xs); color:var(--accent); font-weight:700; margin-top:10px; min-height:18px;}
+  .medidas-fila{display:flex; align-items:center; gap:10px; margin-bottom:9px;}
+  .medidas-fila label{flex:1; font-size:var(--t-sm);}
+  .medidas-fila input{
+    width:92px; padding:9px 10px; border:1px solid var(--border); border-radius:var(--r-sm);
+    background:var(--card); color:var(--ink); font-family:var(--font-mono); font-size:var(--t-base);
+    text-align:right; min-height:42px;
+  }
+  .medidas-cambio{
+    display:flex; flex-direction:column; gap:3px; margin:12px 0 0; padding:12px 14px;
+    border-radius:var(--r-sm); background:var(--accent-soft); font-size:var(--t-sm);
+  }
+  .medidas-hist{margin:12px 0 0; font-size:var(--t-xs); color:var(--muted); line-height:1.7;}
   .extra-fila{display:flex; align-items:center; gap:7px; flex-wrap:wrap; margin-top:8px;}
   .extra-fila > span{font-size:9px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px;}
   .extra-fila button{
@@ -1736,6 +1748,8 @@
     <div class="saved-note" id="savedNote" role="status"></div>
   </div>
 
+  <div id="medidasBox" style="margin-top:28px;"></div>
+
   <h3 style="margin-top:32px;">Días de esta semana</h3>
   <p class="lead" style="margin-bottom:4px;">Por si quieres corregir algo o marcar un día que se te pasó.</p>
   <div id="semanaDias"></div>
@@ -2204,7 +2218,7 @@ const K = {
   syncOk:'planEjercicioSyncOk', syncError:'planEjercicioSyncError',
   entrenos:'planEjercicioEntrenos', ajustesMaq:'planEjercicioAjustesMaquina',
   aguante:'planEjercicioAguante', voz:'planEjercicioVoz', casaVariante:'planEjercicioCasaVariante',
-  andarExtra:'planEjercicioAndarExtra'
+  andarExtra:'planEjercicioAndarExtra', medidas:'planEjercicioMedidas'
 };
 /* Qué viaja entre el móvil y el ordenador, y cómo se junta (ver fusionarEstado).
    Tema, tamaño de letra, contraste y 'al abrir la app' se quedan en cada
@@ -2212,8 +2226,8 @@ const K = {
 const SYNC_CFG = {
   todas: [K.color, K.dias, K.lugar, K.descanso, K.sonido, K.tono,
           K.log, K.pesos, K.check, K.sensacion, K.cintaExtra, K.andarExtra, K.pesosHist,
-          K.entrenos, K.ajustesMaq, K.aguante, K.casaVariante],
-  objeto: [K.log, K.pesos, K.check, K.sensacion, K.entrenos, K.ajustesMaq, K.aguante, K.casaVariante],
+          K.entrenos, K.ajustesMaq, K.aguante, K.casaVariante, K.medidas],
+  objeto: [K.log, K.pesos, K.check, K.sensacion, K.entrenos, K.ajustesMaq, K.aguante, K.casaVariante, K.medidas],
   union: { [K.cintaExtra]: 'fechas', [K.andarExtra]: 'fechas', [K.pesosHist]: 'historial' }
 };
 /* Lo que nunca sale del dispositivo, ni en la copia descargada: el token de
@@ -2727,7 +2741,7 @@ function abrirHoras(){
     cabSheet('Cuándo está vacío',
       'Tu gimnasio abre de <b>6:00 a 1:00 los 365 días del año</b>. El problema no es que no haya horario: es que solo has probado la peor franja.') +
     tarjetasFranjas() +
-    '<div class="veredicto"><b>Si solo vas a cambiar una cosa</b><br>Cambia la hora antes que el gimnasio. El viernes a las 15:30 es el único hueco que encaja con tu horario real sin depender de madrugar ni de trasnochar.</div>' +
+    '<div class="veredicto"><b>Si solo vas a cambiar una cosa</b><br>Cambia la hora antes que el gimnasio. Con tu horario, los dos ratos que de verdad están flojos son antes de trabajar (6:45) y a partir de las 23:00. El viernes por la tarde no es el hueco vacío que ponía aquí antes.</div>' +    (hayComparador() ? '<button class="btn-second" style="margin-top:10px;" onclick="abrirComparar(true)">' + ic('i-gente') + '¿A cuál voy ahora?</button>' : '') +
     '<button class="btn-second" onclick="abrirDecision()" style="margin-top:12px;">' + ic('i-euro') + 'Y si aun así me quiero cambiar...</button>');
 }
 
@@ -2773,6 +2787,87 @@ function hhmm(min){
   const m = ((min % 1440) + 1440) % 1440;
   return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
 }
+/* ===== LOS DOS GIMNASIOS, A ESTA HORA =====
+   Puede ir a dos: el suyo (Berlín) y el de L'Illa Diagonal. La pregunta que se
+   hace antes de coger la bolsa no es "cuál es mejor gimnasio", es "a cuál voy
+   ahora". Sale de las curvas de GIMNASIOS, leídas de Google Maps. */
+function curvaGym(g, d){
+  const dia = (d.getDay() + 6) % 7;
+  if(dia >= 5) return g.curvas.finde || null;
+  if(dia === 4) return g.curvas.viernes || null;
+  return g.curvas.semana || null;
+}
+/* % respecto a la hora más llena de ESE gimnasio, interpolando entre horas. */
+function pctGym(g, d){
+  const c = curvaGym(g, d);
+  if(!c) return null;
+  const min = d.getHours() * 60 + d.getMinutes();
+  const h = Math.floor(min / 60);
+  const a = c[h];
+  if(a == null) return null;
+  const b = c[h + 1];
+  if(b == null) return a;
+  return Math.round(a + (b - a) * ((min % 60) / 60));
+}
+function nivelPct(p){ return p <= 35 ? 'vacio' : p <= 68 ? 'bien' : 'lleno'; }
+/* Primera hora de hoy, de aquí en adelante, en la que ya no está lleno. */
+function proximaBajada(g, d){
+  const c = curvaGym(g, d);
+  if(!c) return null;
+  for(let h = d.getHours() + 1; h <= 24; h++){
+    if(c[h] != null && c[h] <= 50) return hhmm(h * 60);
+  }
+  return null;
+}
+function hayComparador(){
+  return typeof GIMNASIOS !== 'undefined' && Array.isArray(GIMNASIOS) && GIMNASIOS.length > 1;
+}
+function abrirComparar(apilar){
+  if(!hayComparador()) return;
+  const d = new Date();
+  const nombreNivel = { vacio:'Vacío', bien:'Hay sitio', lleno:'Lleno' };
+  let mejor = null;
+  GIMNASIOS.forEach(g => {
+    const p = pctGym(g, d);
+    if(p != null && (!mejor || p < mejor.p)) mejor = { g:g, p:p };
+  });
+  const tarjetas = GIMNASIOS.map(g => {
+    const p = pctGym(g, d);
+    if(p == null){
+      return '<div class="franja">' +
+        '<div class="franja-top"><b>' + esc(g.nombre) + '</b><span class="nivel bien">Sin datos</span></div>' +
+        '<p>' + esc(g.detalle) + '</p>' +
+        '<p>De este día no tengo su gráfica. Míralo en Google Maps si quieres salir de dudas.</p>' +
+      '</div>';
+    }
+    const n = nivelPct(p);
+    const baja = proximaBajada(g, d);
+    return '<div class="franja">' +
+      '<div class="franja-top"><b>' + esc(g.nombre) + '</b>' +
+        '<span class="nivel ' + n + '">' + ic(n === 'lleno' ? 'i-gente' : 'i-check') + nombreNivel[n] + '</span></div>' +
+      '<p>' + esc(g.detalle) + '</p>' +
+      '<p>Ahora va por el <b>' + p + '%</b> de su hora más llena. ' +
+        (baja ? 'Hoy afloja sobre las <b>' + baja + '</b>.' : 'Hoy ya no afloja antes de cerrar.') + '</p>' +
+    '</div>';
+  }).join('');
+  /* Con la gráfica de uno solo no se puede decir "es el que más vacío está":
+     no hay con qué compararlo. */
+  const conDatos = GIMNASIOS.filter(g => pctGym(g, d) != null).length;
+  const veredicto = !mejor ? ''
+    : '<div class="veredicto"><b>Si sales ahora</b><br>' +
+      (conDatos < 2
+        ? esc(mejor.g.nombre) + ' es el único del que tengo la gráfica de hoy, así que no puedo compararlos. Está en el ' + mejor.p + '% de su hora más llena.'
+        : nivelPct(mejor.p) === 'lleno'
+          ? 'Los dos están en su peor rato. Si puedes esperar, espera; y si no, ' + esc(mejor.g.nombre) + ' es el que menos mal va.'
+          : esc(mejor.g.nombre) + '. Es el que más vacío está a esta hora.') + '</div>';
+  abrirSheet('i-gente', 'Dónde',
+    cabSheet('¿A cuál voy ahora?',
+      'Puedes ir a dos gimnasios. Esto mira la hora que es y dice cuál de los dos está en su rato más flojo.') +
+    tarjetas + veredicto +
+    '<div class="sheet-nota"><b>Ojo con el porcentaje</b>Google dibuja cada gráfica comparada con la hora más llena de ese mismo gimnasio. O sea: dice cuándo se vacía cada uno, no cuál tiene menos gente en total. Para eso solo vale ir y verlo.</div>',
+    apilar);
+}
+
 function aforoAhora(d){
   d = d || new Date();
   const dia = (d.getDay() + 6) % 7;
@@ -2792,7 +2887,6 @@ function aforoAhora(d){
     cerrado: min >= 60 && min < 360,
     ahora: deHoy.filter(dentro)[0] || null,
     siguiente: siguiente,
-    esViernes: dia === 4,
     finde: dia >= 5
   };
 }
@@ -2824,17 +2918,12 @@ function renderAforo(){
             ic('i-gente') + 'Si vas igual, abre esto antes de entrar</button>';
   } else if(a.ahora && a.ahora.nivel === 'vacio'){
     nivel = 'vacio';
-    titulo = a.esViernes ? 'Ahora. Es tu mejor hueco de la semana' : 'Ahora mismo está vacío';
+    titulo = 'Ahora mismo está vacío';
     texto = a.ahora.quePasa + ' Dura hasta las ' + hhmm(a.ahora.hasta) + '.';
   } else if(a.ahora){
     nivel = 'bien';
     titulo = 'Ahora hay sitio';
     texto = a.ahora.veredicto;
-  } else if(a.siguiente && a.siguiente.nivel === 'vacio' && a.esViernes){
-    nivel = 'vacio';
-    titulo = 'Hoy tienes el mejor hueco de la semana';
-    texto = 'De ' + hhmm(a.siguiente.desde) + ' a ' + hhmm(a.siguiente.hasta) + ', saliendo de trabajar y ' +
-            'sin pasar por casa. Es el único rato en el que tu gimnasio está vacío de verdad.';
   } else if(a.siguiente){
     nivel = 'bien';
     titulo = 'No es hora punta, pero tampoco tu mejor hueco';
@@ -2844,7 +2933,7 @@ function renderAforo(){
        "entra en hora punta" era inventárselo. */
     nivel = 'bien';
     titulo = 'Fin de semana: sin hora punta apuntada';
-    texto = 'Lo más tranquilo son las mañanas, de 9:00 a 11:30. Por la tarde no tengo datos de cuánta gente hay: si te apetece ir, mira al llegar. Abre hasta la 1:00.';
+    texto = 'Lo más tranquilo son las mañanas, de 8:00 a 11:00. Por la tarde no tengo la gráfica de tu gimnasio: si te apetece ir, mira al llegar. Abre hasta la 1:00.';
   } else {
     nivel = 'bien';
     titulo = 'Hoy ya no queda hueco bueno';
@@ -2852,6 +2941,11 @@ function renderAforo(){
             'los planes de "está lleno" están hechos para esto.';
     boton = '<button class="btn-second" style="margin-top:10px;" onclick="abrirLleno()">' +
             ic('i-gente') + 'Ver los planes para gimnasio lleno</button>';
+  }
+
+  if(!a.cerrado && hayComparador()){
+    boton += '<button class="btn-second" style="margin-top:10px;" onclick="abrirComparar()">' +
+             ic('i-gente') + '¿Berlín o L\'Illa ahora?</button>';
   }
 
   const iconos = { lleno:'i-gente', vacio:'i-reloj', bien:'i-reloj', cerrado:'i-luna' };
@@ -3281,38 +3375,36 @@ function cenaHTML(){
 }
 
 let horarioAbierto = false;
+/* Las filas salen de las franjas de HOY, no de texto escrito aquí: antes esto
+   y FRANJAS decían horas distintas (22:45 aquí, 23:00 allí) y el viernes
+   aparecía dos veces, con la franja de entre semana y con la suya. */
 function renderHorario(){
   const ahora = new Date();
-  const dow = ahora.getDay();
-  const hora = ahora.getHours();
-  const entreSemana = dow >= 1 && dow <= 5;
+  const dia = (ahora.getDay() + 6) % 7;
+  const min = ahora.getHours() * 60 + ahora.getMinutes();
+  const deHoy = (typeof FRANJAS === 'undefined' ? [] : FRANJAS.filter(f => f.dias && f.dias.indexOf(dia) !== -1 && f.corto))
+    .slice().sort((a, b) => a.desde - b.desde);
 
   let filas = '';
-  if(entreSemana && ((hora >= 18 && hora < 22) || (hora === 22 && ahora.getMinutes() < 30))){
-    filas += '<div class="horario-row bad"><span><b>Ahora mismo está a reventar. Mejor no.</b></span><span>hasta 22:30</span></div>';
+  let cubierto = false;
+  deHoy.forEach(f => {
+    const dentro = min >= f.desde && min < f.hasta;
+    if(dentro) cubierto = true;
+    const cls = f.nivel === 'lleno' ? ' bad' : f.nivel === 'vacio' ? ' good' : '';
+    const txt = dentro ? '<b>' + esc(f.corto) + '</b>' : esc(f.corto);
+    filas += '<div class="horario-row' + cls + '"><span>' + txt + '</span>' +
+             '<span>' + esc(f.cuando.replace(/^[^,]+, /, '')) + '</span></div>';
+  });
+  if(!filas){
+    filas = '<div class="horario-row"><span>De hoy no tengo apuntadas las horas</span><span>mira al llegar</span></div>';
+  } else if(!cubierto){
+    filas += '<div class="horario-row"><span>De la hora que es ahora no tengo dato</span><span>mira al llegar</span></div>';
   }
-  if(dow === 5){
-    filas += '<div class="horario-row good"><span><b>Hoy es viernes: sales a las 15h y está vacío</b></span><span>15:30-17:00</span></div>';
-  }
-  if(dow === 0 || dow === 6){
-    filas += '<div class="horario-row good"><span><b>Fin de semana por la mañana, tranquilo</b></span><span>9:00-11:30</span></div>';
-  }
-  if(entreSemana && dow !== 5){
-    filas += '<div class="horario-row"><span>Abre a las 6:00 — antes de empezar a trabajar</span><span>6:45-8:00</span></div>';
-    filas += '<div class="horario-row"><span>El viernes sales a las 15h: ese es tu mejor hueco</span><span>vie 15:30</span></div>';
-  }
-  if(entreSemana){
-    filas += '<div class="horario-row bad"><span>Entre semana por la tarde no hay nada que hacer</span><span>18:00-22:30</span></div>';
-  } else {
-    filas += '<div class="horario-row"><span>Por la tarde del fin de semana no tengo datos de aforo</span><span>mira al llegar</span></div>';
-  }
-  if(entreSemana) filas += '<div class="horario-row"><span>Cierra a la 1:00, así que aún queda margen luego</span><span>22:45+</span></div>';
 
-  /* Plegado: la tarjeta de aforo de arriba ya dice lo de ahora mismo, y
-     desplegado ocupaba 440 px al final de Hoy. */
   document.getElementById('horarioBox').innerHTML =
     '<details class="horario-det"' + (horarioAbierto ? ' open' : '') + ' ontoggle="horarioAbierto = this.open">' +
       '<summary class="horario-title">Cuándo ir hoy</summary>' + filas +
+      (hayComparador() ? '<button class="btn-second" style="margin-top:8px;" onclick="abrirComparar()">' + ic('i-gente') + '¿A cuál voy ahora?</button>' : '') +
       '<button class="btn-second" style="margin-top:8px;" onclick="abrirHoras()">' + ic('i-reloj') + 'Ver todas las franjas y cuál te conviene</button>' +
     '</details>';
 }
@@ -4364,9 +4456,12 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-09-20'; }
+function novedadesId(){ return '2026-09-21'; }
 function novedadesNuevas(){
   return [
+    '<b>Horas corregidas:</b> la app decía que el viernes a las 15:30 estaba vacío. Las gráficas de Google dicen que no, así que está cambiado. Lo que sí está flojo de verdad: antes de las 8:00 y a partir de las 23:00.',
+    '<b>¿Berlín o L&#39;Illa?</b> En Hoy, un botón que mira la hora que es y te dice cuál de los dos está en su rato más flojo.',
+    '<b>Medidas:</b> en Semana, abajo del todo. Una vez al mes, opcional, sin avisos.',
     '<b>Fin de semana:</b> el aviso de aforo ya no dice que sábado y domingo por la tarde son hora punta. Esa hora punta solo está apuntada de lunes a viernes.',
     '<b>¿La cinta antes o después?</b> Explicado desde cero en Rutina, debajo de «Cerrar con cinta».',
     '<b>Cosas que igual no sabías:</b> en Guía, casi cincuenta cosas sobre músculo, cardio, técnica y descanso.',
@@ -6220,6 +6315,7 @@ function renderSemana(){
   if(hist) hist.hidden = total === 0;
 
   renderFaseResumen();
+  renderMedidas();
   renderCheckin();
   renderSemanaDias();
   renderProgresoPesos();
@@ -6246,6 +6342,84 @@ function renderFaseResumen(){
     (sig ? '<span>Llevas <b>' + n + (n === 1 ? ' sesión' : ' sesiones') + ' de fuerza</b>. Lo siguiente llega a las ' + sig.desde + ': ' + esc(sig.titulo.toLowerCase()) + '.</span>'
          : '<span>Llevas <b>' + n + ' sesiones de fuerza</b>: ya estás en el último escalón de la progresión.</span>') +
   '</div>';
+}
+/* ===== MEDIDAS =====
+   La báscula miente cuando a la vez ganas músculo y pierdes grasa; la cinta
+   métrica no. Va aquí, plegado y opcional, y a propósito NO hay recordatorio
+   ni aviso en Hoy: con su historia con la comida, medirse a menudo es justo
+   lo que no interesa. Una vez al mes y punto. */
+const CAMPOS_MEDIDAS = [
+  { id:'cintura', txt:'Cintura (a la altura del ombligo)' },
+  { id:'cadera',  txt:'Cadera (por la parte más ancha)' },
+  { id:'pecho',   txt:'Pecho' }
+];
+function getMedidas(){ const m = loadJSON(K.medidas, {}); return (m && typeof m === 'object') ? m : {}; }
+function mesKey(d){ d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+function mesTxt(k){
+  const p = k.split('-');
+  return MESES[parseInt(p[1], 10) - 1] + ' ' + p[0];
+}
+function guardarMedida(campo, valor){
+  const m = getMedidas();
+  const k = mesKey();
+  const n = parseFloat(String(valor).replace(',', '.'));
+  if(!m[k]) m[k] = {};
+  if(!isFinite(n) || n <= 0) delete m[k][campo];
+  else m[k][campo] = Math.round(n * 10) / 10;
+  if(!Object.keys(m[k]).length) delete m[k];
+  saveJSON(K.medidas, m);
+  renderMedidas();
+}
+let medidasAbierto = false;
+function renderMedidas(){
+  const el = document.getElementById('medidasBox');
+  if(!el) return;
+  const m = getMedidas();
+  const meses = Object.keys(m).sort();
+  const actual = m[mesKey()] || {};
+
+  const filas = CAMPOS_MEDIDAS.map(c =>
+    '<div class="medidas-fila">' +
+      '<label for="med-' + c.id + '">' + esc(c.txt) + '</label>' +
+      '<input id="med-' + c.id + '" type="number" inputmode="decimal" step="0.5" min="0" placeholder="cm" ' +
+        'value="' + (actual[c.id] != null ? actual[c.id] : '') + '" ' +
+        'onchange="guardarMedida(&quot;' + c.id + '&quot;, this.value)">' +
+    '</div>'
+  ).join('');
+
+  /* El cambio solo aparece cuando hay dos meses distintos que comparar: con un
+     solo dato no hay nada que decir, y un número suelto invita a mirarlo mucho. */
+  let cambio = '';
+  const conDatos = meses.filter(k => CAMPOS_MEDIDAS.some(c => m[k][c.id] != null));
+  if(conDatos.length > 1){
+    const primero = conDatos[0], ultimo = conDatos[conDatos.length - 1];
+    const lineas = CAMPOS_MEDIDAS.map(c => {
+      const a = m[primero][c.id], b = m[ultimo][c.id];
+      if(a == null || b == null) return '';
+      const d = Math.round((b - a) * 10) / 10;
+      const txt = d === 0 ? 'igual' : (d > 0 ? '+' + d : d) + ' cm';
+      return '<span>' + esc(c.id.charAt(0).toUpperCase() + c.id.slice(1)) + ': <b>' + txt + '</b></span>';
+    }).filter(Boolean).join('');
+    if(lineas){
+      cambio = '<div class="medidas-cambio"><b>Desde ' + esc(mesTxt(primero)) + '</b>' + lineas + '</div>';
+    }
+  }
+
+  const hist = conDatos.length
+    ? '<p class="medidas-hist">' + conDatos.slice().reverse().map(k =>
+        esc(mesTxt(k)) + ': ' + CAMPOS_MEDIDAS.filter(c => m[k][c.id] != null)
+          .map(c => c.id + ' ' + m[k][c.id]).join(' · ')
+      ).join('<br>') + '</p>'
+    : '';
+
+  el.innerHTML =
+    '<details' + (medidasAbierto ? ' open' : '') + ' ontoggle="medidasAbierto = this.open">' +
+      '<summary class="horario-title">Medidas · opcional, una vez al mes</summary>' +
+      '<p class="lead" style="margin:10px 0;">Si ganas músculo y pierdes grasa a la vez, la báscula casi no se mueve pero la cintura sí. Una cinta métrica de costura vale 2 o 3 euros.</p>' +
+      filas +
+      cambio + hist +
+      '<p style="font-size:var(--t-xs); color:var(--muted); margin-top:12px;">Mídete siempre igual: por la mañana, antes de desayunar, en el mismo sitio del cuerpo. Una vez al mes es suficiente; más a menudo solo enseña ruido. Si notas que medirte te cambia el humor o que lo estás haciendo cada dos por tres, déjalo y quédate con la pregunta de la ropa de aquí arriba.</p>' +
+    '</details>';
 }
 function renderSemanaDias(){
   const log = getLog();
