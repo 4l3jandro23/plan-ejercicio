@@ -965,6 +965,11 @@
   .saved-note{font-size:var(--t-xs); color:var(--accent); font-weight:700; margin-top:10px; min-height:18px;}
   .medidas-fila{display:flex; align-items:center; gap:10px; margin-bottom:9px;}
   .medidas-fila label{flex:1; font-size:var(--t-sm);}
+  .medidas-fila label small{display:block; font-size:var(--t-xs); color:var(--muted); line-height:1.35; margin-top:2px;}
+  .medidas-sub{margin:18px 0 4px; font-size:var(--t-sm); font-weight:700;}
+  .medidas-sub span{display:block; font-weight:400; font-size:var(--t-xs); color:var(--muted);}
+  .medidas-tallas{display:flex; flex-direction:column; gap:3px; margin:12px 0 0; padding:12px 14px; border-radius:var(--r-sm); background:var(--accent-soft); font-size:var(--t-sm);}
+  .medidas-tallas small{color:var(--muted); font-size:var(--t-xs); margin-top:4px;}
   .medidas-fila input{
     width:92px; padding:9px 10px; border:1px solid var(--border); border-radius:var(--r-sm);
     background:var(--card); color:var(--ink); font-family:var(--font-mono); font-size:var(--t-base);
@@ -2218,7 +2223,7 @@ const K = {
   syncOk:'planEjercicioSyncOk', syncError:'planEjercicioSyncError',
   entrenos:'planEjercicioEntrenos', ajustesMaq:'planEjercicioAjustesMaquina',
   aguante:'planEjercicioAguante', voz:'planEjercicioVoz', casaVariante:'planEjercicioCasaVariante',
-  andarExtra:'planEjercicioAndarExtra', medidas:'planEjercicioMedidas'
+  andarExtra:'planEjercicioAndarExtra', medidas:'planEjercicioMedidas', medidasRopa:'planEjercicioMedidasRopa'
 };
 /* Qué viaja entre el móvil y el ordenador, y cómo se junta (ver fusionarEstado).
    Tema, tamaño de letra, contraste y 'al abrir la app' se quedan en cada
@@ -2226,8 +2231,8 @@ const K = {
 const SYNC_CFG = {
   todas: [K.color, K.dias, K.lugar, K.descanso, K.sonido, K.tono,
           K.log, K.pesos, K.check, K.sensacion, K.cintaExtra, K.andarExtra, K.pesosHist,
-          K.entrenos, K.ajustesMaq, K.aguante, K.casaVariante, K.medidas],
-  objeto: [K.log, K.pesos, K.check, K.sensacion, K.entrenos, K.ajustesMaq, K.aguante, K.casaVariante, K.medidas],
+          K.entrenos, K.ajustesMaq, K.aguante, K.casaVariante, K.medidas, K.medidasRopa],
+  objeto: [K.log, K.pesos, K.check, K.sensacion, K.entrenos, K.ajustesMaq, K.aguante, K.casaVariante, K.medidas, K.medidasRopa],
   union: { [K.cintaExtra]: 'fechas', [K.andarExtra]: 'fechas', [K.pesosHist]: 'historial' }
 };
 /* Lo que nunca sale del dispositivo, ni en la copia descargada: el token de
@@ -4483,9 +4488,10 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-09-21b'; }
+function novedadesId(){ return '2026-09-22'; }
 function novedadesNuevas(){
   return [
+    '<b>Medidas ampliadas</b> (Semana, abajo): brazo y muslo para el gimnasio, y cuello, cintura del pantalón, largo de pierna y de brazo para la ropa, con tu talla aproximada. Cada medida dice dónde se toma.',
     '<b>Subidas de peso más grandes</b> cuando te sobra mucho: si te salen 20 o más en todas, la sesión te propone el peso con el que te saldrían unas 12, no solo +5 kg.',
     '<b>Horas corregidas:</b> la app decía que el viernes a las 15:30 estaba vacío. Las gráficas de Google dicen que no, así que está cambiado. Lo que sí está flojo de verdad: antes de las 8:00 y a partir de las 23:00.',
     '<b>¿Berlín o L&#39;Illa?</b> En Hoy, un botón que mira la hora que es y te dice cuál de los dos está en su rato más flojo.',
@@ -6380,44 +6386,98 @@ function renderFaseResumen(){
    métrica no. Va aquí, plegado y opcional, y a propósito NO hay recordatorio
    ni aviso en Hoy: con su historia con la comida, medirse a menudo es justo
    lo que no interesa. Una vez al mes y punto. */
+/* Dos grupos. Las del gimnasio se apuntan una vez al mes y se comparan con
+   el primer mes. Las de la ropa no se comparan: son las últimas que te tomaste
+   y sirven para sacar la talla aproximada al comprar. */
 const CAMPOS_MEDIDAS = [
-  { id:'cintura', txt:'Cintura (a la altura del ombligo)' },
-  { id:'cadera',  txt:'Cadera (por la parte más ancha)' },
-  { id:'pecho',   txt:'Pecho' }
+  { id:'cintura', corto:'Cintura', txt:'Cintura', pista:'A la altura del ombligo. Suelta el aire normal y mide al final, sin meter tripa.' },
+  { id:'cadera',  corto:'Cadera',  txt:'Cadera',  pista:'Por la parte más ancha del culo, con los pies juntos. Mírate de lado en el espejo.' },
+  { id:'pecho',   corto:'Pecho',   txt:'Pecho',   pista:'A la altura de los pezones, brazos relajados a los lados.' },
+  { id:'brazo',   corto:'Brazo',   txt:'Brazo',   pista:'El derecho, relajado y colgando, a mitad entre el hombro y el codo.' },
+  { id:'muslo',   corto:'Muslo',   txt:'Muslo',   pista:'El derecho, de pie, justo por debajo del pliegue del culo.' }
+];
+const CAMPOS_ROPA = [
+  { id:'cuello',    txt:'Cuello',               pista:'Por debajo de la nuez, con un dedo entre la cinta y el cuello. Para camisas.' },
+  { id:'pantalon',  txt:'Cintura del pantalón', pista:'Donde te abrochas el pantalón, no en el ombligo: suele dar distinto.' },
+  { id:'pierna',    txt:'Largo de pierna',      pista:'Por dentro, de la entrepierna al suelo, descalzo. Más fácil: en un pantalón que te quede bien, de la costura del centro al bajo.' },
+  { id:'manga',     txt:'Largo de brazo',       pista:'Brazo recto, del hueso del hombro a la muñeca.' }
 ];
 function getMedidas(){ const m = loadJSON(K.medidas, {}); return (m && typeof m === 'object') ? m : {}; }
+function getMedidasRopa(){ const m = loadJSON(K.medidasRopa, {}); return (m && typeof m === 'object') ? m : {}; }
 function mesKey(d){ d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
 function mesTxt(k){
   const p = k.split('-');
   return MESES[parseInt(p[1], 10) - 1] + ' ' + p[0];
 }
+function numMedida(valor){
+  const n = parseFloat(String(valor).replace(',', '.'));
+  return (isFinite(n) && n > 0) ? Math.round(n * 10) / 10 : null;
+}
 function guardarMedida(campo, valor){
   const m = getMedidas();
   const k = mesKey();
-  const n = parseFloat(String(valor).replace(',', '.'));
+  const n = numMedida(valor);
   if(!m[k]) m[k] = {};
-  if(!isFinite(n) || n <= 0) delete m[k][campo];
-  else m[k][campo] = Math.round(n * 10) / 10;
+  if(n == null) delete m[k][campo];
+  else m[k][campo] = n;
   if(!Object.keys(m[k]).length) delete m[k];
   saveJSON(K.medidas, m);
   renderMedidas();
 }
+function guardarMedidaRopa(campo, valor){
+  const m = getMedidasRopa();
+  const n = numMedida(valor);
+  if(n == null) delete m[campo];
+  else m[campo] = n;
+  if(CAMPOS_ROPA.some(c => m[c.id] != null)) m.f = hoyKey(); else delete m.f;
+  saveJSON(K.medidasRopa, m);
+  renderMedidas();
+}
+/* El pecho de la ropa es el último que apuntaste en las del gimnasio. */
+function ultimoPecho(){
+  const m = getMedidas();
+  const k = Object.keys(m).sort().reverse().find(x => m[x] && m[x].pecho != null);
+  return k ? m[k].pecho : null;
+}
+/* Tallas de hombre, aproximadas: cada marca talla distinto, así que esto es
+   para saber por dónde empezar, no para comprar sin mirar su guía. */
+function tallasRopa(){
+  const r = getMedidasRopa();
+  const pecho = ultimoPecho();
+  const t = [];
+  if(pecho){
+    const cortes = [[88,'XS'],[96,'S'],[104,'M'],[112,'L'],[120,'XL'],[128,'XXL'],[136,'3XL']];
+    const c = cortes.find(x => pecho < x[0]);
+    t.push('Camiseta o sudadera: <b>' + (c ? c[1] : '4XL') + '</b> (pecho ' + pecho + ' cm)');
+  }
+  if(r.cuello) t.push('Camisa: <b>talla ' + Math.round(r.cuello) + '</b> de cuello' + (r.manga ? ', manga unos ' + Math.round(r.manga) + ' cm' : ''));
+  if(r.pantalon){
+    const eu = Math.round(r.pantalon / 4) * 2;
+    let txt = 'Pantalón: <b>talla ' + eu + '</b>. Vaqueros: <b>W' + Math.round(r.pantalon / 2.54);
+    if(r.pierna) txt += ' L' + Math.round(r.pierna / 2.54 / 2) * 2;
+    t.push(txt + '</b>');
+  }
+  return t;
+}
 let medidasAbierto = false;
+function filaMedida(c, valor, fn){
+  return '<div class="medidas-fila">' +
+    '<label for="med-' + c.id + '">' + esc(c.txt) + '<small>' + esc(c.pista) + '</small></label>' +
+    '<input id="med-' + c.id + '" type="number" inputmode="decimal" step="0.5" min="0" placeholder="cm" ' +
+      'value="' + (valor != null ? valor : '') + '" ' +
+      'onchange="' + fn + '(&quot;' + c.id + '&quot;, this.value)">' +
+  '</div>';
+}
 function renderMedidas(){
   const el = document.getElementById('medidasBox');
   if(!el) return;
   const m = getMedidas();
   const meses = Object.keys(m).sort();
   const actual = m[mesKey()] || {};
+  const ropa = getMedidasRopa();
 
-  const filas = CAMPOS_MEDIDAS.map(c =>
-    '<div class="medidas-fila">' +
-      '<label for="med-' + c.id + '">' + esc(c.txt) + '</label>' +
-      '<input id="med-' + c.id + '" type="number" inputmode="decimal" step="0.5" min="0" placeholder="cm" ' +
-        'value="' + (actual[c.id] != null ? actual[c.id] : '') + '" ' +
-        'onchange="guardarMedida(&quot;' + c.id + '&quot;, this.value)">' +
-    '</div>'
-  ).join('');
+  const filas = CAMPOS_MEDIDAS.map(c => filaMedida(c, actual[c.id], 'guardarMedida')).join('');
+  const filasRopa = CAMPOS_ROPA.map(c => filaMedida(c, ropa[c.id], 'guardarMedidaRopa')).join('');
 
   /* El cambio solo aparece cuando hay dos meses distintos que comparar: con un
      solo dato no hay nada que decir, y un número suelto invita a mirarlo mucho. */
@@ -6430,10 +6490,11 @@ function renderMedidas(){
       if(a == null || b == null) return '';
       const d = Math.round((b - a) * 10) / 10;
       const txt = d === 0 ? 'igual' : (d > 0 ? '+' + d : d) + ' cm';
-      return '<span>' + esc(c.id.charAt(0).toUpperCase() + c.id.slice(1)) + ': <b>' + txt + '</b></span>';
+      return '<span>' + esc(c.corto) + ': <b>' + txt + '</b></span>';
     }).filter(Boolean).join('');
     if(lineas){
-      cambio = '<div class="medidas-cambio"><b>Desde ' + esc(mesTxt(primero)) + '</b>' + lineas + '</div>';
+      cambio = '<div class="medidas-cambio"><b>Desde ' + esc(mesTxt(primero)) + '</b>' + lineas +
+        '<small style="color:var(--muted); font-size:var(--t-xs);">Brazo y pecho pueden subir: es el músculo de las máquinas. La que manda es la cintura.</small></div>';
     }
   }
 
@@ -6444,13 +6505,22 @@ function renderMedidas(){
       ).join('<br>') + '</p>'
     : '';
 
+  const tallas = tallasRopa();
+  const cajaTallas = tallas.length
+    ? '<div class="medidas-tallas"><b>Tu talla aproximada</b>' + tallas.map(t => '<span>' + t + '</span>').join('') +
+      '<small>Cada marca talla distinto. Úsalo para saber por dónde empezar y mira la guía de tallas de la tienda con estas medidas.' +
+      (ropa.f ? ' Medido el ' + desdeKey(ropa.f).getDate() + ' de ' + MESES[desdeKey(ropa.f).getMonth()] + '.' : '') + '</small></div>'
+    : '';
+
   el.innerHTML =
     '<details' + (medidasAbierto ? ' open' : '') + ' ontoggle="medidasAbierto = this.open">' +
-      '<summary class="horario-title">Medidas · opcional, una vez al mes</summary>' +
-      '<p class="lead" style="margin:10px 0;">Si ganas músculo y pierdes grasa a la vez, la báscula casi no se mueve pero la cintura sí. Una cinta métrica de costura vale 2 o 3 euros.</p>' +
-      filas +
-      cambio + hist +
-      '<p style="font-size:var(--t-xs); color:var(--muted); margin-top:12px;">Mídete siempre igual: por la mañana, antes de desayunar, en el mismo sitio del cuerpo. Una vez al mes es suficiente; más a menudo solo enseña ruido. Si notas que medirte te cambia el humor o que lo estás haciendo cada dos por tres, déjalo y quédate con la pregunta de la ropa de aquí arriba.</p>' +
+      '<summary class="horario-title">Medidas · gimnasio y ropa</summary>' +
+      '<p class="lead" style="margin:10px 0;">Mídete por la mañana, antes de desayunar, sin ropa, de pie y relajado, delante de un espejo para ver que la cinta va recta. Ajustada pero sin apretar. Mide dos veces cada sitio: si no coinciden, apunta la media.</p>' +
+      '<div class="medidas-sub">Para ver cómo cambias<span>Una vez al mes. Se guarda por meses.</span></div>' +
+      filas + cambio + hist +
+      '<div class="medidas-sub">Para comprar ropa<span>Cuando la necesites. Se queda la última que apuntes.</span></div>' +
+      filasRopa + cajaTallas +
+      '<p style="font-size:var(--t-xs); color:var(--muted); margin-top:12px;">Una vez al mes es suficiente: más a menudo solo enseña ruido (el cuerpo varía 1-2 cm de un día a otro por agua y comida). Si notas que medirte te cambia el humor, déjalo y quédate con la pregunta de la ropa de aquí arriba.</p>' +
     '</details>';
 }
 function renderSemanaDias(){
