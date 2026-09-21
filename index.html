@@ -1969,7 +1969,7 @@ const EJERCICIOS_EXTRA = [
   }
 ];
 const FASES = [
-  { desde:0,           titulo:'Aprender las seis', txt:'3 series de 10 a 15 en las seis máquinas. Cuando salen 15 en las tres, +5 kg y otra vez desde 10.' },
+  { desde:0,           titulo:'Aprender las seis', txt:'3 series de 10 a 15 en las seis máquinas. Cuando salen 15 en las tres, se sube (+5 kg, o +2,5 en pesos pequeños; más si te sobra mucho) y otra vez desde 10.' },
   { desde:FASE_EXTRAS, titulo:'Se suman dos ejercicios', txt:'Hombro lateral, brazos y parte de atrás del muslo, turnándose: un día dos, el siguiente los otros dos.' },
   { desde:12,          titulo:'4 series en los cuatro grandes', txt:'Prensa, jalón, pecho y remo pasan a 4 series. Aquí la sesión completa ya es un entreno de gimnasio en toda regla.' }
 ];
@@ -3262,7 +3262,34 @@ function proximoPeso(e){
   if(!e || e.sinPeso) return 0;
   const s = getSensaciones()[e.id];
   const kg = getPesos()[e.id];
-  return (s && kg && s.kg === kg && s.v === 'sobra') ? kg + 5 : 0;
+  return (s && kg && s.kg === kg && s.v === 'sobra') ? pesoSubida(e.id, kg, s) : 0;
+}
+/* Cuánto subir. Con 15 justas, +5 kg como siempre. Pero si salieron 20, 25
+   o 30 en todas, +5 se queda corto y tardaría semanas en llegar a un peso
+   que le cueste (le pasó: 3x20-30 con todo "sobra"). Entonces se estima el
+   peso con el que saldrían unas 12 (fórmula de Epley, la de siempre en
+   gimnasios) y se sube hasta ahí, con dos frenos: nunca menos de +5 y nunca
+   más de un 30 % de golpe, redondeado a 2,5 kg hacia abajo. Por debajo de
+   15 kg (mancuernas de hombros) el paso normal es +2,5: +5 sobre 7,5 kg es
+   casi el doble de golpe. */
+function pasoBase(kg){ return kg < 15 ? kg + 2.5 : kg + 5; }
+function minRepsUltima(id, kg, s){
+  if(s && typeof s.rmin === 'number') return s.rmin;
+  const u = ultimoRegistro(id);
+  if(u && u.x && u.x.kg === kg && Array.isArray(u.x.r)){
+    const rs = u.x.r.filter(n => n > 0);
+    if(rs.length) return Math.min.apply(null, rs);
+  }
+  return 15;
+}
+function pesoSubida(id, kg, s){
+  const base = pasoBase(kg);
+  const r = minRepsUltima(id, kg, s);
+  if(r < 18) return base;
+  const para12 = kg * (1 + r / 30) / (1 + 12 / 30);
+  const tope = kg * 1.3;
+  const est = Math.floor(Math.min(para12, tope) / 2.5) * 2.5;
+  return Math.max(base, est);
 }
 /* En el descanso antes de cambiar de máquina: qué peso y qué ajuste poner,
    para llegar a ella sabiéndolo en vez de abrir la app delante de la gente. */
@@ -4130,7 +4157,7 @@ function autoValorar(i){
   if(!rs.length) return;
   const v = rs.every(n => n >= 15) ? 'sobra' : Math.min.apply(null, rs) >= 10 ? 'justo' : 'corto';
   const s = getSensaciones();
-  s[e.id] = { v: v, kg: getPesos()[e.id], f: hoyKey() };
+  s[e.id] = { v: v, kg: getPesos()[e.id], f: hoyKey(), rmin: Math.min.apply(null, rs) };
   saveJSON(K.sensacion, s);
   S.valorados[i] = v;
 }
@@ -4456,9 +4483,10 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-09-21'; }
+function novedadesId(){ return '2026-09-21b'; }
 function novedadesNuevas(){
   return [
+    '<b>Subidas de peso más grandes</b> cuando te sobra mucho: si te salen 20 o más en todas, la sesión te propone el peso con el que te saldrían unas 12, no solo +5 kg.',
     '<b>Horas corregidas:</b> la app decía que el viernes a las 15:30 estaba vacío. Las gráficas de Google dicen que no, así que está cambiado. Lo que sí está flojo de verdad: antes de las 8:00 y a partir de las 23:00.',
     '<b>¿Berlín o L&#39;Illa?</b> En Hoy, un botón que mira la hora que es y te dice cuál de los dos está en su rato más flojo.',
     '<b>Medidas:</b> en Semana, abajo del todo. Una vez al mes, opcional, sin avisos.',
@@ -4948,8 +4976,12 @@ function sugerenciaPeso(e){
   const actual = getPesos()[e.id];
   if(!s || !actual || s.kg !== actual) return '';
   if(s.v === 'sobra'){
-    const nuevo = actual + 5;
-    return '<div class="ses-sugerencia">La última vez sacaste <b>15 en las tres series</b> con ' + actual + ' kg. Toca subir: <b>' + nuevo + ' kg</b>, y vuelves a empezar desde 10.' +
+    const nuevo = pesoSubida(e.id, actual, s);
+    const r = minRepsUltima(e.id, actual, s);
+    const texto = nuevo > pasoBase(actual)
+      ? 'La última vez te salieron <b>' + r + ' o más en todas</b> con ' + actual + ' kg: te sobraba bastante. Esta vez sube más: <b>' + nuevo + ' kg</b>. Busca que te salgan 10-12 costando. Si no llegas a 8, baja un poco, no pasa nada.'
+      : 'La última vez sacaste <b>15 en las tres series</b> con ' + actual + ' kg. Toca subir: <b>' + nuevo + ' kg</b>, y vuelves a empezar desde 10.';
+    return '<div class="ses-sugerencia">' + texto +
       '<button class="btn-undo" onclick="aplicarPeso(&quot;' + e.id + '&quot;,' + nuevo + ')">Poner ' + nuevo + ' kg</button></div>';
   }
   if(s.v === 'corto'){
