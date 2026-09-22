@@ -649,6 +649,12 @@
   }
   .sesion.show{display:flex; animation:entrarSesion .3s var(--ease);}
   @keyframes entrarSesion{from{opacity:0; transform:scale(.985);} to{opacity:1; transform:scale(1);}}
+  .chispa-frase{font-size:var(--t-lg); line-height:1.35; font-weight:700; margin:0 0 14px;}
+  .chispa-queda{margin:0 0 14px; font-size:var(--t-base); color:var(--muted);}
+  .chispa-datos{display:flex; flex-direction:column; gap:7px; padding:14px 16px; border-radius:var(--r-lg); background:var(--accent-soft); font-size:var(--t-sm); line-height:1.45;}
+  .chispa-datos > b{font-size:var(--t-xs); text-transform:uppercase; letter-spacing:.5px; color:var(--muted);}
+  .chispa-botones{display:flex; flex-direction:column; gap:9px; margin-top:16px;}
+  .chispa-pie{margin:14px 0 0; font-size:var(--t-xs); color:var(--muted); line-height:1.5;}
   .ses-top{display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:14px;}
   .ses-salir{background:none; border:none; color:var(--muted); font-family:inherit; font-size:var(--t-sm); font-weight:700; cursor:pointer; padding:6px 0; display:inline-flex; align-items:center; gap:5px;}
   .ses-salir .ic-v{width:15px; height:15px; transform:rotate(180deg);}
@@ -1292,10 +1298,11 @@
     <div class="settings-row">
       <div class="lbl">Avisos por voz</div>
       <div class="style-options" id="vozOpts">
-        <button class="style-opt" data-voz="si" onclick="setVoz('si')">Sí</button>
+        <button class="style-opt" data-voz="si" onclick="setVoz('si')">Completo</button>
+        <button class="style-opt" data-voz="corto" onclick="setVoz('corto')">Corto</button>
         <button class="style-opt" data-voz="no" onclick="setVoz('no')">No</button>
       </div>
-      <div class="settings-hint">Al empezar cada descanso te dice cuánto descansas y, si toca cambiar de máquina, cuál es, con qué peso y cómo la dejaste. Con los auriculares puestos no hace falta mirar el móvil. Es de este móvil: no pasa al ordenador. Con la pantalla bloqueada puede que el iPhone no lo diga. Si al hablar se te para la música, ponlo en No: el pitido no la para.</div>
+      <div class="settings-hint"><b>Corto</b> es lo que menos corta la música: no dice nada entre series y, al cambiar de máquina, solo el nombre y el peso («prensa, 70 kilos»), unos dos segundos. <b>Completo</b> añade el descanso y cómo dejaste la máquina. Mientras la web habla, el iPhone baja o para la música y eso no se puede evitar desde aquí: si te molesta, ponlo en <b>No</b> y quédate con el pitido, que no la toca. Es de este móvil: no pasa al ordenador.</div>
     </div>
 
     <div class="settings-row">
@@ -1397,6 +1404,7 @@
       <button class="btn-second" onclick="registrarCaminata(10)"><svg class="ic-v" aria-hidden="true"><use href="#i-andar"/></svg>Me da para caminar 10 minutos</button>
       <button class="btn-second" onclick="marcar('activo')"><svg class="ic-v" aria-hidden="true"><use href="#i-andar"/></svg>Me he movido, pero no fue entreno</button>
       <button class="btn-second" onclick="marcar('descanso')"><svg class="ic-v" aria-hidden="true"><use href="#i-sofa"/></svg>Hoy descanso. Punto.</button>
+      <button class="btn-second" onclick="abrirChispa('antes')"><svg class="ic-v" aria-hidden="true"><use href="#i-fuego"/></svg>Antes de decidir, dame una razón</button>
     </div>
   </div>
 
@@ -2324,7 +2332,7 @@ function getContraste(){ return getPref(K.contraste, ['si','no'],            'no
 function getTono(){      return getPref(K.tono,      ['normal','seco'],      'normal'); }
 function getInicio(){    return getPref(K.inicio,    ['ultima','hoy'],       'ultima'); }
 function getTema(){      return getPref(K.theme,     ['light','dark','auto'],'auto'); }
-function getVoz(){       return getPref(K.voz,       ['si','no'],            'no'); }
+function getVoz(){       return getPref(K.voz,       ['si','corto','no'],    'no'); }
 
 /* Modo seco: mismo contenido, menos palabras. No cambia lo que la app permite
    hacer, solo cuánto texto hay que leer para hacerlo. */
@@ -2972,6 +2980,9 @@ function renderSos(){
     '<button class="sos-btn" onclick="abrirNoVoy()">' +
       '<span class="sos-ico" style="background:' + degradado('novoy') + '">' + ic('i-casa') + '</span>' +
       '<span><b>Hoy no voy</b><span>Casa, andar, escaleras</span></span></button>' +
+    '<button class="sos-btn" onclick="abrirChispa(\'antes\')">' +
+      '<span class="sos-ico" style="background:' + degradado('chispa') + '">' + ic('i-fuego') + '</span>' +
+      '<span><b>No me apetece</b><span>Dame una razón</span></span></button>' +
     '<button class="sos-btn ancho" onclick="rescateAlAzar()">' +
       '<span class="sos-ico" style="background:' + degradado('azar') + '">' + ic('i-dado') + '</span>' +
       '<span><b>Elige tú por mí</b><span>Una sola cosa, sin pensar. Para cuando decidir ya es demasiado.</span></span></button>';
@@ -3472,6 +3483,114 @@ function marcarDia(key, tipo){
 }
 function toggleEscape(){ document.getElementById('escapeCard').classList.toggle('show'); }
 
+
+/* ===================== CHISPA =====================
+   Lo pidió él: algo que le dé ganas de entrenar cuando duda, y algo que le
+   sostenga si se le cae la moral a mitad de sesión. Dos reglas que lo separan
+   de la típica frase motivacional:
+     - Solo sale si lo abre él. Nunca salta solo, nunca por sorpresa.
+     - Lo que más convence son SUS datos, no las frases: lo que ya ha subido,
+       lo que ya ha hecho, lo que escribió el día que fue sin ganas.
+   Y siempre deja la puerta abierta a no ir: presionar es lo que le ha hecho
+   abandonar otras veces. */
+function frasesChispa(momento){
+  return momento === 'dentro' ? [
+    'Lo que estás haciendo ahora mismo es lo difícil. Lo de antes era decidirlo.',
+    'No tienes que acabar bien. Solo acabar.',
+    'Si ahora lo dejas no pasa nada, pero mira: estás dentro. Salir cuesta lo mismo que quedarse.',
+    'Las series que menos te apetecen son las que separan una racha de un intento.',
+    'No hace falta que esta sea buena. Hace falta que exista.',
+    'Estás cansado porque está funcionando. Es literalmente el mecanismo.',
+    'Nadie del gimnasio se acuerda mañana de lo que hiciste aquí. Tú sí.'
+  ] : [
+    'No necesitas ganas. Las ganas llegan a los diez minutos, y no antes.',
+    'El día que menos te apetece es el que más cuenta, porque es el que rompe el patrón.',
+    'Puedes ir y hacerlo mal. Hacerlo mal está permitido; lo que no suma es no ir.',
+    'Tu problema nunca ha sido la intensidad. Ha sido dejar de aparecer.',
+    'Media hora de esto es el 2 % de tu día.',
+    'En 2018 aguantaste un año de CrossFit. No te falta capacidad: te sobra exigencia.',
+    'No lo pienses como entrenar. Piénsalo como ir, ponerte los cascos y ver qué pasa.',
+    'Ir hoy con desgana es mejor que ir el lunes con ilusión, porque el lunes también existirá.',
+    'Si sales de allí igual de mal que has entrado, has perdido 40 minutos. Si sales mejor, has ganado la semana.'
+  ];
+}
+/* Razones sacadas de lo suyo, no inventadas: si el dato no está, no se enseña. */
+function razonesChispa(){
+  const r = [];
+  const log = getLog();
+  const claves = Object.keys(log).filter(k => esSesion(log[k])).sort();
+  const total = claves.length;
+  if(total){
+    const desde = desdeKey(claves[0]);
+    r.push('Llevas <b>' + total + (total === 1 ? ' sesión' : ' sesiones') + '</b> apuntadas desde el ' + desde.getDate() + ' de ' + MESES[desde.getMonth()] + '. Ninguna se borra.');
+  }
+  const hist = loadJSON(K.pesosHist, {}) || {};
+  const pesos = getPesos();
+  const subidas = [];
+  EJERCICIOS_GYM.forEach(e => {
+    const h = Array.isArray(hist[e.id]) ? hist[e.id].slice().sort((a, b) => (a.f < b.f ? -1 : 1)) : [];
+    const ahora = pesos[e.id];
+    if(h.length && ahora && ahora > h[0].kg) subidas.push(e.nombre.toLowerCase() + ' de ' + h[0].kg + ' a ' + ahora + ' kg');
+  });
+  if(subidas.length) r.push('Has subido <b>' + subidas.slice(0, 3).join('</b>, <b>') + '</b>. Eso no te lo ha regalado nadie.');
+  const ag = loadJSON(K.aguante, {}) || {};
+  if(ag.plancha) r.push('La plancha te aguanta ya <b>' + ag.plancha + ' segundos</b>.');
+  const ent = getEntrenos();
+  const minutos = Object.keys(ent).reduce((a, k) => a + (ent[k].min || 0), 0);
+  if(minutos > 45) r.push('Son <b>' + Math.round(minutos / 60) + (Math.round(minutos / 60) === 1 ? ' hora' : ' horas') + '</b> de entreno que ya has hecho. Hoy solo toca sumar un rato más.');
+  /* Lo que escribió el día que fue sin ganas: es su propia letra, y es lo que
+     más peso tiene de todo lo que hay aquí. */
+  const conNota = Object.keys(ent).filter(k => ent[k].nota && /cansad|agotad|sin ganas|pereza|mal|costó|costo/i.test(ent[k].nota)).sort();
+  if(conNota.length){
+    const k = conNota[conNota.length - 1];
+    const d = desdeKey(k);
+    r.push('El ' + d.getDate() + ' de ' + MESES[d.getMonth()] + ' escribiste: «' + esc(ent[k].nota) + '». Fuiste igual, y quedó apuntado.');
+  }
+  return r;
+}
+function quedaChispaTxt(){
+  if(!S.activa || S.tipo === 'cinta') return '';
+  const total = S.lista.reduce((a, e, i) => a + seriesDe(e, i), 0);
+  const hechas = S.lista.reduce((a, e, i) => a + Math.min(S.hechasPor[i] || 0, seriesDe(e, i)), 0);
+  const faltan = Math.max(0, total - hechas);
+  if(!faltan) return 'Estás en la última. Literalmente ya está.';
+  return 'Te quedan <b>' + faltan + (faltan === 1 ? ' serie' : ' series') + '</b>. Unos ' + Math.max(1, Math.round(faltan * 1.5)) + ' minutos.';
+}
+let chispaVistas = [];
+function fraseChispa(momento){
+  const todas = frasesChispa(momento);
+  const quedan = todas.filter(f => chispaVistas.indexOf(f) === -1);
+  const pool = quedan.length ? quedan : (chispaVistas = [], todas);
+  const f = pool[Math.floor(Math.random() * pool.length)];
+  chispaVistas.push(f);
+  return f;
+}
+function abrirChispa(momento, apilar){
+  const dentro = momento === 'dentro';
+  const razones = razonesChispa();
+  const queda = dentro ? quedaChispaTxt() : '';
+  const cuerpo =
+    '<p class="chispa-frase">' + fraseChispa(momento) + '</p>' +
+    (queda ? '<p class="chispa-queda">' + queda + '</p>' : '') +
+    (razones.length
+      ? '<div class="chispa-datos"><b>Esto es tuyo, no es una frase</b>' +
+        razones.map(x => '<span>' + x + '</span>').join('') + '</div>'
+      : '') +
+    '<div class="chispa-botones">' +
+      '<button class="btn-second" onclick="abrirChispa(\'' + momento + '\')">Otra</button>' +
+      (dentro
+        ? '<button class="btn-main" onclick="cerrarSheet()">Sigo</button>'
+        : (esSesion(getLog()[hoyKey()])
+            ? '<button class="btn-main" onclick="cerrarSheet()">Vale</button>'
+            : '<button class="btn-main" onclick="cerrarSheet(); empezarSesion(\'fuerza\')">Venga, voy</button>' +
+              '<button class="btn-second" onclick="cerrarSheet(); empezarSesion(\'minima\')">Voy, pero solo los 3 primeros</button>')) +
+    '</div>' +
+    '<p class="chispa-pie">' + (dentro
+      ? 'Y si hoy no puede ser, cierras y lo que llevas se guarda igual. No se pierde nada.'
+      : 'Y si después de leer esto sigues sin querer ir, no vas y no pasa nada. Eso también es una respuesta.') + '</p>';
+  abrirSheet('i-fuego', dentro ? 'Un empujón' : '¿Voy o no voy?', cuerpo, apilar);
+}
+
 /* ===================== RESPIRACIÓN =====================
    Respiración en caja, 4-4-4-4, seis ciclos ≈ 96 segundos. Se eligió esta y no
    la 4-7-8 porque con el pulso ya acelerado aguantar 7 segundos cuesta y sale
@@ -3948,6 +4067,7 @@ function pintarDescanso(ej, nSeries){
         '<button class="btn-timer" onclick="finDescanso()">Seguir ya</button>' +
       '</div>' +
       '<div class="ses-siguiente">Siguiente: <b>' + esc(siguiente) + '</b></div>' +
+      '<button class="btn-undo" onclick="abrirChispa(\'dentro\')">Me falta chispa</button>' +
       quedaHTML() +
       (S.serie >= nSeries && sigIdx !== -1 ? siguienteMaquinaHTML(sigIdx) : '') +
       /* El descanso es justo cuando te das cuenta de que has tocado el botón
@@ -4183,24 +4303,38 @@ function detalleSeries(x){
 function audioDeFondo(){
   try{ if(navigator.audioSession && navigator.audioSession.type !== 'ambient') navigator.audioSession.type = 'ambient'; }catch(e){}
 }
+/* La música se para mientras la web habla: lo decide el iPhone y desde aquí no
+   se puede impedir del todo. Lo que sí está en nuestra mano es que hable lo
+   menos posible y lo más corto posible, y no cortarse a sí misma con cancel(),
+   que es lo que hacía que la música tardara más en volver. */
 function decir(txt){
-  if(!txt || getVoz() !== 'si' || !('speechSynthesis' in window)) return;
+  const modo = getVoz();
+  if(!txt || modo === 'no' || !('speechSynthesis' in window)) return;
   audioDeFondo();
   try{
-    window.speechSynthesis.cancel();
+    /* Si ya está hablando, esto es un aviso viejo que ya no interesa: se deja
+       terminar en vez de cortarlo y volver a arrancar el audio. */
+    if(window.speechSynthesis.speaking || window.speechSynthesis.pending) return;
     const u = new SpeechSynthesisUtterance(txt);
     u.lang = 'es-ES';
-    u.rate = 1.05;
+    u.rate = modo === 'corto' ? 1.15 : 1.05;
     const voces = window.speechSynthesis.getVoices() || [];
     const v = voces.find(x => /^es[-_]ES/i.test(x.lang)) || voces.find(x => /^es/i.test(x.lang));
     if(v) u.voice = v;
+    /* Al acabar, se vuelve a marcar el audio como de fondo: en iOS es lo que
+       hace que la música vuelva antes. */
+    u.onend = audioDeFondo;
     window.speechSynthesis.speak(u);
   }catch(e){}
 }
 function avisarPorVoz(ej, nSeries){
-  if(getVoz() !== 'si') return;
+  const modo = getVoz();
+  if(modo === 'no') return;
   const seg = descansoActual();
   if(S.serie < nSeries){
+    /* En corto, entre series no dice nada: el pitido ya avisa y lo que toca
+       no ha cambiado. Hablar aquí era la mitad de los cortes de música. */
+    if(modo === 'corto') return;
     const quedan = nSeries - S.serie;
     decir('Descansa ' + seg + ' segundos. ' + (quedan === 1 ? 'Te queda una serie.' : 'Te quedan ' + quedan + ' series.'));
     return;
@@ -4210,8 +4344,10 @@ function avisarPorVoz(ej, nSeries){
   if(!e) return;
   const kg = e.sinPeso ? 0 : (proximoPeso(e) || getPesos()[e.id] || 0);
   const aj = getAjustesMaq()[e.id];
+  const kgTxt = kg ? ', ' + String(kg).replace('.', ',') + ' kilos' : '';
+  if(modo === 'corto'){ decir(e.nombre.toLowerCase() + kgTxt + '.'); return; }
   decir('Hecho. Descansa ' + seg + ' segundos. Luego, ' + e.nombre.toLowerCase() +
-    (kg ? ', ' + String(kg).replace('.', ',') + ' kilos' : '') + (aj ? '. ' + aj : '') + '.');
+    kgTxt + (aj ? '. ' + aj : '') + '.');
 }
 
 /* ---------- Cuánto dura ----------
@@ -4488,9 +4624,11 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-09-22'; }
+function novedadesId(){ return '2026-09-22b'; }
 function novedadesNuevas(){
   return [
+    '<b>«No me apetece»</b> en Hoy, y <b>«Me falta chispa»</b> en el descanso: una razón para ir (o para seguir) sacada de tus propios datos. Solo sale si la abres tú.',
+    '<b>Avisos por voz en corto:</b> en Ajustes. Habla dos segundos en vez de ocho y solo al cambiar de máquina, para que la música se corte lo menos posible.',
     '<b>Medidas ampliadas</b> (Semana, abajo): brazo y muslo para el gimnasio, y cuello, cintura del pantalón, largo de pierna y de brazo para la ropa, con tu talla aproximada. Cada medida dice dónde se toma.',
     '<b>Subidas de peso más grandes</b> cuando te sobra mucho: si te salen 20 o más en todas, la sesión te propone el peso con el que te saldrían unas 12, no solo +5 kg.',
     '<b>Horas corregidas:</b> la app decía que el viernes a las 15:30 estaba vacío. Las gráficas de Google dicen que no, así que está cambiado. Lo que sí está flojo de verdad: antes de las 8:00 y a partir de las 23:00.',
@@ -6663,7 +6801,7 @@ function marcarOpts(sel, attr, valor){
   });
 }
 function setSonido(v){ setLS(K.sonido, v); renderAjustes(); if(v === 'si') prepararSonido(); }
-function setVoz(v){ setRaw(K.voz, v); renderAjustes(); if(v === 'si') decir('Así sonarán los avisos entre series.'); }
+function setVoz(v){ setRaw(K.voz, v); renderAjustes(); if(v === 'si') decir('Así sonarán los avisos entre series.'); else if(v === 'corto') decir('Prensa, 70 kilos.'); }
 function setTam(v){ setLS(K.tam, v); aplicarTam(); renderAjustes(); }
 function setContraste(v){ setLS(K.contraste, v); aplicarContraste(); renderAjustes(); }
 function setTono(v){ setLS(K.tono, v); renderAjustes(); renderHoy(); }
