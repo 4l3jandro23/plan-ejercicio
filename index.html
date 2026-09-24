@@ -655,6 +655,7 @@
   .chispa-datos > b{font-size:var(--t-xs); text-transform:uppercase; letter-spacing:.5px; color:var(--muted);}
   .chispa-botones{display:flex; flex-direction:column; gap:9px; margin-top:16px;}
   .chispa-pie{margin:14px 0 0; font-size:var(--t-xs); color:var(--muted); line-height:1.5;}
+  .cinta-fase{margin:0 0 10px; padding:10px 14px; border-radius:var(--r-sm); background:var(--accent-soft); font-size:var(--t-sm); line-height:1.45;}
   .ses-top{display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:14px;}
   .ses-salir{background:none; border:none; color:var(--muted); font-family:inherit; font-size:var(--t-sm); font-weight:700; cursor:pointer; padding:6px 0; display:inline-flex; align-items:center; gap:5px;}
   .ses-salir .ic-v{width:15px; height:15px; transform:rotate(180deg);}
@@ -1451,7 +1452,7 @@
       <tr><td>15 a 22</td><td>6,2 km/h</td><td>14%</td></tr>
       <tr><td>23 en adelante</td><td>6,5 km/h</td><td>15%</td></tr>
     </table>
-    <p style="font-size:var(--t-xs); color:var(--muted);">A 6,5 km/h ya estás en el límite de andar: más rápido sería correr. Y con un 15% de cuesta, eso es un entreno duro de verdad. De ahí en adelante manda tu criterio.</p>
+    <p style="font-size:var(--t-xs); color:var(--muted);">A 6,5 km/h ya estás en el límite de andar: más rápido sería correr. Y un 15% es el máximo de tu cinta: eso ya es un entreno duro de verdad. De ahí en adelante no se sube más la cuesta: se meten cambios de ritmo en la segunda tanda.</p>
 
     <div class="tip">
       <b>Cinta y fuerza el mismo día: la fuerza primero.</b> Si haces 30 minutos de cuesta y luego vas a las máquinas, llegas con las piernas muertas y la fuerza no sirve de nada. Al revés sí funciona: los 6 ejercicios y después 15 minutos de cinta, que es lo que te propone la sesión guiada al terminar. Esta media hora en dos tandas es para los días que solo haces cinta.
@@ -2062,7 +2063,7 @@ const CINTA_NIVELES = [
   { n:2, hasta:8,        vel:'5,5',     inc:'9',     nota:'Aquí ya empieza a apretar. Si te sobra al acabar, sube la inclinación un punto la próxima.' },
   { n:3, hasta:14,       vel:'6,0',     inc:'12',    nota:'Esto ya es un entreno serio. A este ritmo mucha gente del gimnasio pasaría a correr.' },
   { n:4, hasta:22,       vel:'6,2',     inc:'14',    nota:'Nivel alto de verdad. Caminar a esta velocidad con esta cuesta es duro y lo estás haciendo.' },
-  { n:5, hasta:Infinity, vel:'6,5',     inc:'15',    nota:'Techo de caminar: más rápido que esto ya sería correr. A partir de aquí manda tu criterio — sube lo que te pida el cuerpo.' }
+  { n:5, hasta:Infinity, vel:'6,5',     inc:'15',    nota:'Estás en el máximo de cuesta de tu cinta (15 %). Si te sobra, no busques más cuesta: en la segunda tanda, haz 2 minutos a tu ritmo y 1 minuto 0,5 km/h más rápido, y repite. Siempre andando, sin correr.' }
 ];
 
 const EJERCICIOS_CASA = [
@@ -4142,6 +4143,7 @@ function pintarCintaDentro(){
       '<div class="cinta-num"><b>' + niv.vel + '</b><span>km/h</span></div>' +
       '<div class="cinta-num"><b>' + niv.inc + '%</b><span>de cuesta</span></div>' +
     '</div>' +
+    '<div class="cinta-fase" id="cintaFase"></div>' +
     '<div class="ses-recuerda"><b>La regla que no se salta:</b> si te tienes que agarrar a las barras, baja la cuesta o la velocidad. Tienes que poder andar sin tocarlas.</div>' +
     '<div class="ses-descanso" style="padding-top:6px;">' + anilloHTML('15:00') +
       '<p>' + esc(niv.nota) + '</p>' +
@@ -4624,9 +4626,10 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-09-22b'; }
+function novedadesId(){ return '2026-09-24'; }
 function novedadesNuevas(){
   return [
+    '<b>Cinta:</b> nunca pasa del 15 % (el máximo de tu cinta). Durante la tanda, una línea te dice cuándo arrancar suave y cuándo soltar; el resto del tiempo, igual.',
     '<b>«No me apetece»</b> en Hoy, y <b>«Me falta chispa»</b> en el descanso: una razón para ir (o para seguir) sacada de tus propios datos. Solo sale si la abres tú.',
     '<b>Avisos por voz en corto:</b> en Ajustes. Habla dos segundos en vez de ocho y solo al cambiar de máquina, para que la música se corte lo menos posible.',
     '<b>Medidas ampliadas</b> (Semana, abajo): brazo y muslo para el gimnasio, y cuello, cintura del pantalón, largo de pierna y de brazo para la ropa, con tu talla aproximada. Cada medida dice dónde se toma.',
@@ -5849,6 +5852,27 @@ function arrancarTick(){
 }
 function pararTick(){ if(S.tick){ clearInterval(S.tick); S.tick = null; } cancelarPitos(); }
 
+/* Lo que toca en cada momento de la tanda. Casi todo el rato, lo mismo:
+   cambiar cosas cada minuto obliga a mirar el móvil y es otra decisión más.
+   Solo dos cambios: arrancar suave los 2 primeros minutos de la primera
+   tanda (las piernas y el pulso entran poco a poco) y soltar el último
+   minuto de la última (bajar de golpe de 15 % a nada marea a algunos). */
+function numCinta(s){ return parseFloat(String(s).replace(',', '.')) || 0; }
+function faseCintaHTML(quedan){
+  const niv = nivelCinta();
+  const total = TANDA_MIN * 60;
+  const pasado = total - quedan;
+  const ultima = (S.tanda + 1) >= (S.tandaObjetivo || 2);
+  const vel = numCinta(niv.vel), inc = numCinta(niv.inc);
+  const fmt = n => String(Math.round(n * 10) / 10).replace('.', ',');
+  if(S.tanda === 0 && pasado < 120){
+    return '<b>Arranca suave:</b> ' + fmt(Math.max(4, vel - 0.5)) + ' km/h y ' + fmt(Math.max(0, inc - 4)) + '% hasta el minuto 2. Luego sube a lo de arriba.';
+  }
+  if(ultima && quedan <= 60){
+    return '<b>Último minuto:</b> baja la cuesta a la mitad (' + fmt(Math.round(inc / 2)) + '%) para ir soltando.';
+  }
+  return '<b>Así hasta el final.</b> No hace falta cambiar nada.';
+}
 function actualizarRing(forzar){
   const txt = document.getElementById('ringTxt');
   const anillo = document.getElementById('ringAvance');
@@ -5871,6 +5895,8 @@ function actualizarRing(forzar){
     ? Math.floor(quedan/60) + ':' + String(quedan % 60).padStart(2,'0')
     : String(quedan);
   anillo.setAttribute('stroke-dashoffset', String(552.9 * (1 - Math.min(1, quedan / Math.max(1,total)))));
+  const fase = document.getElementById('cintaFase');
+  if(fase && enTanda) fase.innerHTML = faseCintaHTML(quedan);
 }
 
 function cerrarSesion(){
