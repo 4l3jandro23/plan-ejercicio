@@ -3843,6 +3843,7 @@ function empezarCinta(){
   S.tipo = 'cinta'; S.modo = 'cinta'; S.activa = true; S.hechos = 0;
   S.tanda = 0; S.tandaObjetivo = 2; S.cintaExtra = false;
   S.descansando = false; S.pausada = false; S.calentando = false;
+  S.terminada = false; S.aguantando = false; S.preparando = false; S.viendoLista = false;
   S.reg = {}; S.repsSel = {}; S.subeAguante = {}; S.nota = '';
   S.finTanda = Date.now() + TANDA_MIN * 60000;
   S.inicio = Date.now();
@@ -4148,6 +4149,7 @@ function pintarCintaDentro(){
     '</div>' +
     '<div class="cinta-fase" id="cintaFase"></div>' +
     '<div class="ses-recuerda"><b>La regla que no se salta:</b> si te tienes que agarrar a las barras, baja la cuesta o la velocidad. Tienes que poder andar sin tocarlas.</div>' +
+    '<details class="ses-alt"><summary>¿Todas las cintas ocupadas?</summary><div class="content">Cualquiera de estas vale lo mismo, con el mismo tiempo:<br>1. <b>Remo de cardio</b> (el del asiento que se desliza y pantalla): nivel 4-6, a un ritmo en el que puedas hablar a trozos. Empuja con las piernas primero y tira con los brazos al final.<br>2. <b>Bici estática</b>, con resistencia media.<br>3. <b>Elíptica</b>.<br>Cuenta igual para tu progresión de cinta.</div></details>' +
     '<div class="ses-descanso" style="padding-top:6px;">' + anilloHTML('15:00') +
       '<p>' + esc(niv.nota) + '</p>' +
       '<div style="display:flex; gap:8px;">' +
@@ -4663,9 +4665,12 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-09-26b'; }
+function novedadesId(){ return '2026-09-27'; }
 function novedadesNuevas(){
   return [
+    '<b>Máquina sin peso apuntado</b> (como el remo ahora): la sesión te dice con cuánto empezar.',
+    '<b>¿Todas las cintas ocupadas?</b> Dentro de la sesión de cinta: el remo de cardio, la bici o la elíptica valen igual.',
+    '<b>Arreglado:</b> empezar una cinta después de una sesión de fuerza sin cerrar la app arrastraba datos de la anterior.',
     '<b>Remo sentado:</b> la ficha explica cuál es la máquina (el asiento no se mueve; la de remar con asiento que se desliza es de cardio). Los 2 kg apuntados eran el nivel de esa otra máquina: la próxima vez te pregunta el peso de nuevo.',
     '<b>«Que las cuente la app»</b>, debajo de las repeticiones: un tic cada 3 segundos marca el ritmo y cuenta por ti. Cuando no puedas más, «He parado». No corta la música.',
     '<b>Jalón lleno:</b> cuatro alternativas en «¿Está ocupada?» y en Sustitutos (dominadas asistidas, otra polea alta, remo con mancuerna).',
@@ -5164,6 +5169,9 @@ function preguntaSensacion(i){
 function sugerenciaPeso(e){
   const s = getSensaciones()[e.id];
   const actual = getPesos()[e.id];
+  if(!actual && !e.sinPeso && !segundosDe(e)){
+    return '<div class="ses-sugerencia"><b>No tienes peso apuntado aquí.</b> Haz una serie de prueba con poco peso para ver cómo va la máquina y luego pon uno con el que te salgan <b>unas 12 costando</b>. Si salen más de 15, sube; si no llegas a 8, baja. Escríbelo arriba y la próxima vez ya lo tendrá.</div>';
+  }
   if(!s || !actual || s.kg !== actual) return '';
   if(s.v === 'sobra'){
     const nuevo = pesoSubida(e.id, actual, s);
