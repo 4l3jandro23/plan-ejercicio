@@ -1852,10 +1852,10 @@ const EJERCICIOS_GYM = [
   },
   {
     id:'remo', nombre:'Remo sentado',
-    alias:'En la máquina pone "Seated Row" o "Remo"',
+    alias:'En la máquina pone "Seated Row", "Low Row" o "Remo". El asiento NO se mueve',
     series:3, reps:'10-15 repeticiones',
     musculo:'La espalda del medio: la que te mantiene derecho. Muy útil si pasas ocho horas sentado delante de un ordenador, que es tu caso.',
-    maquina:'Te sientas y tiras de dos asas hacia tu barriga, como si remaras.',
+    maquina:'Te sientas y tiras de dos asas hacia tu barriga, como si remaras. Ojo: no es la máquina de remar de cardio, la que tiene el asiento que se desliza por un raíl, pedales con correas y una pantalla. Esta tiene una pila de placas de peso con un pasador (o discos), y tú te quedas quieto en el asiento. Muchas veces es una polea baja con un asa en forma de V.',
     ajuste:'Si la máquina tiene una almohadilla para el pecho, ajústala para apoyarte en ella; así la espalda baja no trabaja de más.',
     pasos:[
       'Siéntate derecho, pecho apoyado si hay almohadilla.',
@@ -1866,7 +1866,7 @@ const EJERCICIOS_GYM = [
     bien:'Notas que se juntan las paletillas y trabaja el centro de la espalda.',
     mal:'Si te balanceas adelante y atrás para tirar, baja el peso. Y si no notas nada en la espalda, estás tirando solo con los brazos: saca pecho, lleva los codos hacia atrás pegados al cuerpo y aguanta un segundo con las paletillas juntas antes de volver.',
     clave:'Tira con la espalda: codos atrás y paletillas juntas un segundo. Sin balancearte.',
-    alternativa:'Si está ocupado: haz el <b>jalón al pecho</b> (el número 2) y vuelve luego. Si también está pillado, cualquier polea donde puedas tirar hacia ti sentado vale.'
+    alternativa:'Si está ocupado o no la encuentras: <b>remo con pecho apoyado</b> (Chest Supported Row), <b>remo con mancuerna</b> apoyado en un banco (10-12 por brazo), o cualquier <b>polea baja</b> sentado tirando hacia la barriga. La de remar con asiento que se desliza no vale: esa es de cardio.'
   },
   {
     id:'hombros', nombre:'Press de hombros',
@@ -4663,9 +4663,10 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-09-26'; }
+function novedadesId(){ return '2026-09-26b'; }
 function novedadesNuevas(){
   return [
+    '<b>Remo sentado:</b> la ficha explica cuál es la máquina (el asiento no se mueve; la de remar con asiento que se desliza es de cardio). Los 2 kg apuntados eran el nivel de esa otra máquina: la próxima vez te pregunta el peso de nuevo.',
     '<b>«Que las cuente la app»</b>, debajo de las repeticiones: un tic cada 3 segundos marca el ritmo y cuenta por ti. Cuando no puedas más, «He parado». No corta la música.',
     '<b>Jalón lleno:</b> cuatro alternativas en «¿Está ocupada?» y en Sustitutos (dominadas asistidas, otra polea alta, remo con mancuerna).',
     '<b>Plancha:</b> la app vuelve a pedir que la pantalla no se apague al empezarla y con cada toque.',
@@ -7435,6 +7436,18 @@ if('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
 /* Al irse a segundo plano: guardar todo, y si había cambios esperando para
    subir, intentarlo ya — puede que iOS no deje hacerlo después. */
+(function arregloRemoCardio(){
+  try{
+    if(localStorage.getItem('planEjercicioArregloRemo')) return;
+    const p = getPesos();
+    if(p.remo && p.remo < 5){
+      delete p.remo; saveJSON(K.pesos, p);
+      const s = getSensaciones();
+      if(s.remo){ delete s.remo; saveJSON(K.sensacion, s); }
+    }
+    localStorage.setItem('planEjercicioArregloRemo', '1');
+  }catch(e){}
+})();
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'hidden'){
     guardarSesion();
