@@ -117,7 +117,10 @@ const SUSTITUTOS = [
     opciones:[
       { m:'Remo sentado', en:'Seated Row', nota:'Es el número 4 de tu propia rutina. Si el jalón está pillado, haz este y vuelve luego.' },
       { m:'Cualquier polea de tirar', en:'Cable Row / Pulldown', nota:'Si te puedes sentar y tirar de un cable hacia ti, sirve. No hace falta que sea la máquina exacta.' },
-      { m:'Remo con pecho apoyado', en:'Chest Supported Row', nota:'La que tiene una almohadilla donde apoyas el pecho. Es de las más fáciles de hacer bien.' }
+      { m:'Remo con pecho apoyado', en:'Chest Supported Row', nota:'La que tiene una almohadilla donde apoyas el pecho. Es de las más fáciles de hacer bien.' },
+      { m:'Dominadas asistidas', en:'Assisted Pull-up / Assisted Dip-Chin', nota:'La máquina donde te arrodillas en una plataforma que te empuja hacia arriba. Es el mismo movimiento que el jalón pero al revés. Más peso en la máquina = más fácil.' },
+      { m:'Jalón en otra polea alta', en:'Cable Station / Functional Trainer', nota:'Cualquier polea con el cable arriba: engancha una barra o una cuerda, arrodíllate delante y tira hacia el pecho. Igual que el jalón, sin su asiento.' },
+      { m:'Remo con mancuerna', en:'One-arm Dumbbell Row', nota:'Una rodilla y una mano en un banco, la mancuerna en la otra mano, y tiras de ella hacia la cadera. 10-12 por brazo. Mancuernas siempre hay.' }
     ]
   },
   {

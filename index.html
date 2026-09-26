@@ -656,6 +656,7 @@
   .chispa-botones{display:flex; flex-direction:column; gap:9px; margin-top:16px;}
   .chispa-pie{margin:14px 0 0; font-size:var(--t-xs); color:var(--muted); line-height:1.5;}
   .cinta-fase{margin:0 0 10px; padding:10px 14px; border-radius:var(--r-sm); background:var(--accent-soft); font-size:var(--t-sm); line-height:1.45;}
+  .contador-btn{display:block; margin:0 auto; font-size:var(--t-sm) !important;}
   .ses-top{display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:14px;}
   .ses-salir{background:none; border:none; color:var(--muted); font-family:inherit; font-size:var(--t-sm); font-weight:700; cursor:pointer; padding:6px 0; display:inline-flex; align-items:center; gap:5px;}
   .ses-salir .ic-v{width:15px; height:15px; transform:rotate(180deg);}
@@ -1829,7 +1830,7 @@ const EJERCICIOS_GYM = [
     bien:'Notas que trabajan los laterales de la espalda, debajo de las axilas.',
     mal:'Si te echas muy hacia atrás o das tirones con todo el cuerpo, el peso es demasiado. Bájalo, en serio, no pasa nada.',
     clave:'Tira hacia el pecho, no hacia la nuca. Y sin dar tirones.',
-    alternativa:'Si está ocupado: haz el <b>remo sentado</b> (el número 4) y vuelve al jalón después. Trabajan la misma zona desde otro ángulo, así que no pierdes nada por cambiar el orden.'
+    alternativa:'Si está ocupado, cualquiera de estas vale igual, en este orden:<br>1. <b>Remo sentado</b> (el número 4) y vuelves al jalón después.<br>2. <b>Dominadas asistidas</b> (Assisted Pull-up): te arrodillas en una plataforma que te ayuda a subir. Más peso en la máquina es más fácil.<br>3. <b>Otra polea alta</b> con barra o cuerda, de rodillas delante, tirando hacia el pecho.<br>4. <b>Remo con mancuerna</b>, una mano y una rodilla en un banco, 10-12 por brazo.<br>Y si está siempre lleno, hazlo <b>el primero</b> nada más llegar: el orden da igual.'
   },
   {
     id:'pecho', nombre:'Press de pecho',
@@ -3991,7 +3992,8 @@ function pintarSesionDentro(){
         '<span class="ses-reps-num" id="repsNum" aria-live="polite">' + repsActual(S.iEj) + '</span>' +
         '<button onclick="cambiarReps(1)" aria-label="Una repetición más">' + ic('i-mas') + '</button>' +
       '</div>' +
-    '</div>';
+    '</div>' +
+    '<button class="btn-undo contador-btn" id="contadorBtn" onclick="alternarContador()">' + (CONT.id ? 'He parado: apuntar ' + repsActual(S.iEj) : 'Que las cuente la app') + '</button>';
 
   const alt = ej.alternativa ?
     '<details class="ses-alt"><summary>¿Está ocupada?</summary><div class="content">' + ej.alternativa + '</div></details>' : '';
@@ -4050,6 +4052,7 @@ function pintarAguante(ej, nSeries){
       '</div>' +
       '<div class="ses-siguiente">Si sueltas antes de tiempo, cuenta igual. ' +
       'Con las rodillas apoyadas también cuenta.</div>' +
+      (pantallaSinGarantia() ? '<div class="ses-siguiente"><b>Si se te apaga la pantalla:</b> en el iPhone, Ajustes → Pantalla y brillo → Bloqueo automático → 5 minutos. Con la pantalla apagada no puedo avisarte.</div>' : '') +
     '</div>';
   actualizarRing(true);
 }
@@ -4273,6 +4276,40 @@ function cambiarReps(d){
   const el = document.getElementById('repsNum');
   if(el) el.textContent = n;
   guardarSesion();
+}
+/* Contar a la vez que empujas, con música, es de lo que más cuesta. La app
+   marca el ritmo con un tic cada 3 segundos (1 para subir, 2 para bajar
+   controlando, que es como mejor trabaja el músculo) y suma una repetición
+   en cada tic. Tú solo sigues el tic; cuando no puedes más, tocas «He parado».
+   Cada 5 suena doble, para saber por dónde vas sin mirar. El tic va por el
+   mismo canal que los pitidos: no corta la música. */
+const CONT = { id: null, i: -1 };
+const RITMO_MS = 3000;
+function alternarContador(){
+  if(CONT.id){ pararContador(); pintarSesion(); guardarSesion(); return; }
+  prepararSonido();
+  CONT.i = S.iEj;
+  S.repsSel[S.iEj] = 0;
+  const num = document.getElementById('repsNum');
+  if(num) num.textContent = '0';
+  pito('cuenta');
+  CONT.id = setInterval(() => {
+    if(!S.activa || S.iEj !== CONT.i || S.descansando || S.terminada){ pararContador(); return; }
+    const n = (S.repsSel[S.iEj] || 0) + 1;
+    S.repsSel[S.iEj] = n;
+    pito(n % 5 === 0 ? 'seguir' : 'cuenta');
+    const el = document.getElementById('repsNum');
+    if(el) el.textContent = n;
+    const b = document.getElementById('contadorBtn');
+    if(b) b.textContent = 'He parado: apuntar ' + n;
+    if(n >= 40) pararContador();
+  }, RITMO_MS);
+  const b = document.getElementById('contadorBtn');
+  if(b) b.textContent = 'He parado: apuntar 0';
+}
+function pararContador(){
+  if(CONT.id){ clearInterval(CONT.id); CONT.id = null; }
+  if(S.repsSel && S.repsSel[CONT.i] === 0) delete S.repsSel[CONT.i];
 }
 function repsDe(i){ return (S.reg[i] || []).map(x => x.r).filter(n => n > 0); }
 /* Con las repeticiones apuntadas, la pregunta de "¿cuántas te han salido?"
@@ -4626,9 +4663,12 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-09-24'; }
+function novedadesId(){ return '2026-09-26'; }
 function novedadesNuevas(){
   return [
+    '<b>«Que las cuente la app»</b>, debajo de las repeticiones: un tic cada 3 segundos marca el ritmo y cuenta por ti. Cuando no puedas más, «He parado». No corta la música.',
+    '<b>Jalón lleno:</b> cuatro alternativas en «¿Está ocupada?» y en Sustitutos (dominadas asistidas, otra polea alta, remo con mancuerna).',
+    '<b>Plancha:</b> la app vuelve a pedir que la pantalla no se apague al empezarla y con cada toque.',
     '<b>Cinta:</b> nunca pasa del 15 % (el máximo de tu cinta). Durante la tanda, una línea te dice cuándo arrancar suave y cuándo soltar; el resto del tiempo, igual.',
     '<b>«No me apetece»</b> en Hoy, y <b>«Me falta chispa»</b> en el descanso: una razón para ir (o para seguir) sacada de tus propios datos. Solo sale si la abres tú.',
     '<b>Avisos por voz en corto:</b> en Ajustes. Habla dos segundos en vez de ocho y solo al cambiar de máquina, para que la música se corte lo menos posible.',
@@ -4892,6 +4932,7 @@ function empezarAguante(){
   if(!seg) return serieHecha();
   /* Diez segundos para colocarse antes de contar: tumbarse y ponerse en
      plancha con el cronómetro ya corriendo era perder un tercio de la serie. */
+  pantallaEncendida(true);
   S.aguantando = true;
   S.preparando = true;
   S.segAguante = seg;
@@ -4947,6 +4988,7 @@ function siguientePendiente(desde){
 function pendientes(){ return S.lista.map((e, i) => i).filter(i => !completo(i)); }
 
 function serieHecha(){
+  pararContador();
   const ej = S.lista[S.iEj];
   const nSeries = seriesDe(ej, S.iEj);
   if(S.serie >= nSeries) return pintarSesion();
@@ -5900,6 +5942,7 @@ function actualizarRing(forzar){
 }
 
 function cerrarSesion(){
+  pararContador();
   S.activa = false;
   pararTick();
   borrarSesionGuardada();
@@ -7347,6 +7390,11 @@ function restaurarSesion(){
    acabes cerrando la app. iOS la suelta al irse a segundo plano, así que se
    vuelve a pedir al volver. */
 let wakeLock = null;
+/* El iPhone a veces suelta el «pantalla encendida» sin avisar. Cada toque
+   durante la sesión lo vuelve a pedir, y también al empezar la plancha, que
+   es justo cuando no tocas el móvil. */
+document.addEventListener('click', () => { if(S.activa && !wakeLock) pantallaEncendida(true); }, true);
+function pantallaSinGarantia(){ return !('wakeLock' in navigator) || !wakeLock; }
 async function pantallaEncendida(encender){
   try{
     if(encender){
