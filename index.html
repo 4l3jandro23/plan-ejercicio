@@ -384,6 +384,7 @@
   /* ===== Cómo está el gimnasio ahora =====
      El naranja de "lleno" no es un regaño: es el aforo, que no depende de ti.
      Por eso el aviso es informativo y viene con una salida, no con un "deberías". */
+  .aforo-plegado > summary{cursor:pointer; font-size:var(--t-sm); color:var(--muted); padding:4px 0 8px;}
   .aforo{
     display:flex; gap:12px; align-items:flex-start; margin:0 0 14px;
     padding:13px 14px; border-radius:var(--r-md);
@@ -2964,11 +2965,16 @@ function renderAforo(){
   }
 
   const iconos = { lleno:'i-gente', vacio:'i-reloj', bien:'i-reloj', cerrado:'i-luna' };
-  cont.innerHTML =
+  const tarjeta =
     '<div class="aforo aforo-' + nivel + '">' +
       '<span class="aforo-ico">' + ic(iconos[nivel]) + '</span>' +
       '<div class="aforo-txt"><b>' + titulo + '</b><p>' + texto + '</p>' + boton + '</div>' +
     '</div>';
+  const hoy = new Date();
+  const tranquilo = tipoDeDia(hoy) === 'libre' || esSesion(getLog()[hoyKey()]);
+  cont.innerHTML = tranquilo
+    ? '<details class="aforo-plegado"><summary>¿Cómo está el gimnasio ahora?</summary>' + tarjeta + '</details>'
+    : tarjeta;
 }
 
 /* ===== Los tres botones de rescate en Hoy ===== */
@@ -3923,6 +3929,7 @@ function pintarSesionDentro(){
         '<h3>' + (S.modo === 'fuerza' ? 'Sesión completa'
                 : S.modo === 'express' ? 'Hecho'
                 : S.modo === 'viaje'   ? 'Sesión de viaje hecha'
+                : S.modo === 'casa'    ? 'Sesión en casa hecha'
                 : 'Sesión mínima hecha') + '</h3>' +
         '<p>' + (S.modo === 'express'
           ? 'Ocho minutos en un día malo valen más que una sesión perfecta dentro de dos semanas. Cuenta igual que cualquier otra.'
@@ -4665,9 +4672,11 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-09-27c'; }
+function novedadesId(){ return '2026-09-27d'; }
 function novedadesFechadas(){
   return [
+    { id:'2026-09-27d', t:'<b>Días libres más tranquilos:</b> «Ahora mismo está a reventar» ya no sale en grande si hoy no toca o ya has entrenado. Está plegado, por si vas igual.' },
+    { id:'2026-09-27d', t:'<b>Pequeños arreglos:</b> la sesión en casa ya no dice «mínima» al acabar, y la cabecera de la cinta no repite los minutos.' },
     { id:'2026-09-27c', t:'<b>Historial de pesos arreglado:</b> si cambiabas el peso a mitad de un ejercicio, se quedaba con el de la primera serie. Ahora cuenta el último que usas. Los 2 kg del remo de cardio ya no salen en «Lo que has subido».' },
     { id:'2026-09-27c', t:'<b>Qué hay de nuevo</b> ya solo enseña lo que no has visto, no la lista entera.' },
     { id:'2026-09-27c', t:'<b>Volver</b> ya no dice que llevas tres meses sin ir: ahora mira tus datos.' },
@@ -5136,7 +5145,7 @@ function ajustarCabecera(){
   /* Cuánto llevas. Se pinta con cada toque, no con un reloj aparte: entre
      serie y serie ya se toca la pantalla cada minuto o dos. */
   const cuenta = document.getElementById('sesCuenta');
-  if(cuenta && cuenta.textContent && S.inicio && !S.terminada) cuenta.textContent += ' · ' + minutosSesion() + ' min';
+  if(cuenta && cuenta.textContent && S.inicio && !S.terminada) cuenta.textContent = cuenta.textContent.replace(/( · \d+ min)+$/, '') + ' · ' + minutosSesion() + ' min';
   const b = document.getElementById('sesListaBtn');
   if(!b) return;
   b.hidden = S.tipo === 'cinta' || S.terminada || S.calentando || S.lista.length < 2;
@@ -5324,7 +5333,7 @@ function resumenFinHTML(){
   if(!series && !min) return '';
   const dato = (n, txt) => '<div><b>' + n + '</b><span>' + txt + '</span></div>';
   return '<div class="ses-resumen">' +
-      (min ? dato(min, 'minutos') : '') + dato(series, 'series') + dato(hechos.length, hechos.length === 1 ? 'ejercicio' : 'ejercicios') +
+      (min ? dato(min, min === 1 ? 'minuto' : 'minutos') : '') + dato(series, 'series') + dato(hechos.length, hechos.length === 1 ? 'ejercicio' : 'ejercicios') +
     '</div>' +
     (subidas ? '<div class="ses-subidas"><b>Hoy has subido:</b><ul>' + subidas + '</ul></div>' : '') + marcasHoyHTML();
 }
