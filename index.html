@@ -4665,9 +4665,10 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-09-27'; }
+function novedadesId(){ return '2026-09-27b'; }
 function novedadesNuevas(){
   return [
+    '<b>Plancha con pitido:</b> tic-tic-tic en los últimos 3 segundos y una melodía larga y distinta al acabar. Suena aunque tengas la música puesta o el móvil en el suelo.',
     '<b>Máquina sin peso apuntado</b> (como el remo ahora): la sesión te dice con cuánto empezar.',
     '<b>¿Todas las cintas ocupadas?</b> Dentro de la sesión de cinta: el remo de cardio, la bici o la elíptica valen igual.',
     '<b>Arreglado:</b> empezar una cinta después de una sesión de fuerza sin cerrar la app arrastraba datos de la anterior.',
@@ -4944,6 +4945,7 @@ function empezarAguante(){
   S.segAguante = seg;
   S.finAguante = Date.now() + (prepAguanteSeg() + seg) * 1000;
   arrancarTick();
+  programarPitosAguante(prepAguanteSeg(), prepAguanteSeg() + seg);
   pintarSesion();
   guardarSesion();
 }
@@ -4953,6 +4955,7 @@ function empezarYaAguante(){
   S.preparando = false;
   S.finAguante = Date.now() + S.segAguante * 1000;
   arrancarTick();
+  programarPitosAguante(0, S.segAguante);
   pintarSesion();
   guardarSesion();
 }
@@ -5875,13 +5878,13 @@ function arrancarTick(){
         if(sesionEnCasa()) siguienteCalentarCasa();
         else { pito('tanda'); finCalentar(); }
       } else if(S.aguantando && S.preparando){
-        pito('seguir');
+        if(!pitosProgramados.length) pito('seguir');
         S.preparando = false;
         pintarSesion();
         guardarSesion();
-        arrancarTick();
+        return;
       } else if(S.aguantando){
-        pito('seguir');
+        if(pitosProgramados.length){ avisoYaProgramado(); pitosProgramados = []; } else pito('plancha');
         finAguante();
       } else if(S.tipo === 'cinta' && !S.descansando){
         /* Última tanda: es el fin de la sesión, no un cambio de tanda. */
@@ -5897,7 +5900,7 @@ function arrancarTick(){
        coger el agarre antes del pitido de seguir, sin mirar la pantalla. */
     const quedanSeg = Math.ceil((objetivo - Date.now()) / 1000);
     if(quedanSeg > 3) S.ultimoAviso = 0;
-    else if(((S.descansando && S.tipo !== 'cinta') || S.preparando) && quedanSeg !== S.ultimoAviso){ S.ultimoAviso = quedanSeg; if(!pitosProgramados.length) pito('cuenta'); }
+    else if(((S.descansando && S.tipo !== 'cinta') || S.aguantando) && quedanSeg !== S.ultimoAviso){ S.ultimoAviso = quedanSeg; if(!pitosProgramados.length) pito('cuenta'); }
     actualizarRing();
   }, 250);
 }
@@ -6034,7 +6037,8 @@ const PITOS = {
   seguir: [{f:880, t:0, d:0.14}, {f:880, t:0.18, d:0.14}],
   tanda:  [{f:660, t:0, d:0.13}, {f:880, t:0.16, d:0.13}, {f:1100, t:0.32, d:0.20}],
   fin:    [{f:1100, t:0, d:0.18}, {f:880, t:0.22, d:0.18}, {f:587, t:0.46, d:0.42}],
-  cuenta: [{f:660, t:0, d:0.07}]
+  cuenta: [{f:660, t:0, d:0.07}],
+  plancha: [{f:880, t:0, d:0.16}, {f:1175, t:0.2, d:0.16}, {f:880, t:0.4, d:0.16}, {f:1175, t:0.6, d:0.16}, {f:1480, t:0.82, d:0.5}]
 };
 function pito(cual){
   const notas = PITOS[cual] || PITOS.seguir;
@@ -6083,6 +6087,23 @@ function programarPitos(segundos){
     const t0 = audioCtx.currentTime + segundos;
     [3, 2, 1].forEach(d => { if(segundos - d > 0.3) sonarEn(PITOS.cuenta, t0 - d); });
     sonarEn(PITOS.seguir, t0);
+  }catch(e){ cancelarPitos(); }
+}
+/* Plancha: con los segundos que quedan para empezar (0 si ya está en marcha)
+   y los que quedan para acabar. */
+function programarPitosAguante(hastaEmpezar, hastaAcabar){
+  cancelarPitos();
+  if(getSonido() === 'no' || !(hastaAcabar > 0)) return;
+  prepararSonido();
+  if(!audioCtx || audioCtx.state !== 'running') return;
+  try{
+    const ahora = audioCtx.currentTime;
+    if(hastaEmpezar > 0){
+      [3, 2, 1].forEach(d => { if(hastaEmpezar - d > 0.3) sonarEn(PITOS.cuenta, ahora + hastaEmpezar - d); });
+      sonarEn(PITOS.seguir, ahora + hastaEmpezar);
+    }
+    [3, 2, 1].forEach(d => { if(hastaAcabar - d > hastaEmpezar + 0.3) sonarEn(PITOS.cuenta, ahora + hastaAcabar - d); });
+    sonarEn(PITOS.plancha, ahora + hastaAcabar);
   }catch(e){ cancelarPitos(); }
 }
 function cancelarPitos(){
