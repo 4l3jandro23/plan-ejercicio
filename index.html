@@ -1572,7 +1572,7 @@
     <button class="btn-main" onclick="abrirDecision()"><svg class="ic-v" aria-hidden="true"><use href="#i-euro"/></svg>Ver las tres opciones comparadas</button>
   </div>
   <div class="quiet" style="margin-top:14px;">
-    <b>El resumen, por si no quieres abrir nada:</b> la pregunta no es <i>qué gimnasio</i>, es <i>a qué hora</i>. Si el gimnasio nuevo lo pisarías a las siete de la tarde, estarías pagando una matrícula nueva por exactamente el mismo problema. Prueba tres viernes a las 15:30 en el que ya tienes pagado — eso es gratis y responde la pregunta.
+    <b>El resumen, por si no quieres abrir nada:</b> la pregunta no es <i>qué gimnasio</i>, es <i>a qué hora</i>. Si el gimnasio nuevo lo pisarías a las siete de la tarde, estarías pagando una matrícula nueva por exactamente el mismo problema. Prueba unas semanas en los huecos flojos del que ya tienes pagado (fin de semana por la mañana, el viernes a partir de las 21:00, o antes de las 8:00) — eso es gratis y responde la pregunta.
   </div>
 
   <h2><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-sol"/></svg></span>Si el cansancio no es solo el gimnasio</h2>
@@ -1683,8 +1683,8 @@
   <p style="font-size:var(--t-base);">Léelo otra vez: el problema nunca ha sido que no puedas, ni que no sepas, ni que te falte intensidad. Eres perfectamente capaz de hacer 39 sesiones en un mes. Lo que falla es lo de después. Por eso esta app no intenta que entrenes más — intenta que <b>el hueco entre una racha y la siguiente sea más corto</b>.</p>
 
   <div class="card">
-    <h3 style="margin-top:0;">Los tres meses que llevas</h3>
-    <p style="font-size:var(--t-base);">Lo digo sin rodeos porque es lo que hay y porque no cambia nada malo: llevas unos tres meses sin ir, y el motivo que das es que el gimnasio está lleno y te agobia. Eso no es una excusa ni una recaída — es un plan que solo tenía una puerta de entrada, y esa puerta llevaba meses cerrada de 18:00 a 22:30.</p>
+    <h3 style="margin-top:0;" id="volverTitulo">Los tres meses que llevas</h3>
+    <p style="font-size:var(--t-base);" id="volverTexto">Lo digo sin rodeos porque es lo que hay y porque no cambia nada malo: llevas unos tres meses sin ir, y el motivo que das es que el gimnasio está lleno y te agobia. Eso no es una excusa ni una recaída — es un plan que solo tenía una puerta de entrada, y esa puerta llevaba meses cerrada de 18:00 a 22:30.</p>
     <p style="font-size:var(--t-base); margin-bottom:0;">Lo que ha cambiado en la app es justo eso: ahora hay más de una puerta. El botón <b>«Está lleno»</b> de la pestaña Hoy da seis maneras de entrenar sin depender de encontrar máquina, y el de <b>«Hoy no voy»</b> da seis que no pasan por el gimnasio.</p>
     <div class="actions" style="margin-top:14px;">
       <button class="btn-main" onclick="empezarSesion('express')"><svg class="ic-v" aria-hidden="true"><use href="#i-rayo"/></svg>Volver hoy en 8 minutos</button>
@@ -3415,7 +3415,7 @@ function cenaHTML(){
     snack = '<p class="cena-nota"><b>Al salir:</b> si la cena queda a más de dos horas, un yogur o un vaso de leche. Llegar a la cena con hambre acumulada es lo que dispara el picoteo de después.</p>';
   }
 
-  return '<div class="hoy-manana"><span>Cena hoy sobre las</span><b>' + hora + '</b></div>' +
+  return '<div class="hoy-manana"><span>' + (hora === 'ya' ? 'Cena hoy' : 'Cena hoy sobre las') + '</span><b>' + (hora === 'ya' ? 'cuanto antes' : hora) + '</b></div>' +
          '<p class="cena-nota">' + porque + '</p>' + snack;
 }
 
@@ -4323,7 +4323,7 @@ function autoValorar(i){
   if(!rs.length) return;
   const v = rs.every(n => n >= 15) ? 'sobra' : Math.min.apply(null, rs) >= 10 ? 'justo' : 'corto';
   const s = getSensaciones();
-  s[e.id] = { v: v, kg: getPesos()[e.id], f: hoyKey(), rmin: Math.min.apply(null, rs) };
+  s[e.id] = { v: v, kg: kgUsado(i, e), f: hoyKey(), rmin: Math.min.apply(null, rs) };
   saveJSON(K.sensacion, s);
   S.valorados[i] = v;
 }
@@ -4665,35 +4665,39 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-09-27b'; }
-function novedadesNuevas(){
+function novedadesId(){ return '2026-09-27c'; }
+function novedadesFechadas(){
   return [
-    '<b>Plancha con pitido:</b> tic-tic-tic en los últimos 3 segundos y una melodía larga y distinta al acabar. Suena aunque tengas la música puesta o el móvil en el suelo.',
-    '<b>Máquina sin peso apuntado</b> (como el remo ahora): la sesión te dice con cuánto empezar.',
-    '<b>¿Todas las cintas ocupadas?</b> Dentro de la sesión de cinta: el remo de cardio, la bici o la elíptica valen igual.',
-    '<b>Arreglado:</b> empezar una cinta después de una sesión de fuerza sin cerrar la app arrastraba datos de la anterior.',
-    '<b>Remo sentado:</b> la ficha explica cuál es la máquina (el asiento no se mueve; la de remar con asiento que se desliza es de cardio). Los 2 kg apuntados eran el nivel de esa otra máquina: la próxima vez te pregunta el peso de nuevo.',
-    '<b>«Que las cuente la app»</b>, debajo de las repeticiones: un tic cada 3 segundos marca el ritmo y cuenta por ti. Cuando no puedas más, «He parado». No corta la música.',
-    '<b>Jalón lleno:</b> cuatro alternativas en «¿Está ocupada?» y en Sustitutos (dominadas asistidas, otra polea alta, remo con mancuerna).',
-    '<b>Plancha:</b> la app vuelve a pedir que la pantalla no se apague al empezarla y con cada toque.',
-    '<b>Cinta:</b> nunca pasa del 15 % (el máximo de tu cinta). Durante la tanda, una línea te dice cuándo arrancar suave y cuándo soltar; el resto del tiempo, igual.',
-    '<b>«No me apetece»</b> en Hoy, y <b>«Me falta chispa»</b> en el descanso: una razón para ir (o para seguir) sacada de tus propios datos. Solo sale si la abres tú.',
-    '<b>Avisos por voz en corto:</b> en Ajustes. Habla dos segundos en vez de ocho y solo al cambiar de máquina, para que la música se corte lo menos posible.',
-    '<b>Medidas ampliadas</b> (Semana, abajo): brazo y muslo para el gimnasio, y cuello, cintura del pantalón, largo de pierna y de brazo para la ropa, con tu talla aproximada. Cada medida dice dónde se toma.',
-    '<b>Subidas de peso más grandes</b> cuando te sobra mucho: si te salen 20 o más en todas, la sesión te propone el peso con el que te saldrían unas 12, no solo +5 kg.',
-    '<b>Horas corregidas:</b> la app decía que el viernes a las 15:30 estaba vacío. Las gráficas de Google dicen que no, así que está cambiado. Lo que sí está flojo de verdad: antes de las 8:00 y a partir de las 23:00.',
-    '<b>¿Berlín o L&#39;Illa?</b> En Hoy, un botón que mira la hora que es y te dice cuál de los dos está en su rato más flojo.',
-    '<b>Medidas:</b> en Semana, abajo del todo. Una vez al mes, opcional, sin avisos.',
-    '<b>Fin de semana:</b> el aviso de aforo ya no dice que sábado y domingo por la tarde son hora punta. Esa hora punta solo está apuntada de lunes a viernes.',
-    '<b>¿La cinta antes o después?</b> Explicado desde cero en Rutina, debajo de «Cerrar con cinta».',
-    '<b>Cosas que igual no sabías:</b> en Guía, casi cincuenta cosas sobre músculo, cardio, técnica y descanso.',
-    '<b>Y además:</b> en Semana, un día de fuerza puede llevar también cinta o un paseo. No cuenta como otra sesión, pero suma donde tiene que sumar.',
-    '<b>En qué punto estás:</b> arriba de Semana, qué toca ahora y qué cambia más adelante.',
-    '<b>Plancha:</b> ahora tienes 10 segundos para colocarte antes de que empiece a contar. Si ya estás, «Ya estoy, empezar».',
-    '<b>Avisos por voz:</b> la app pide al iPhone que no pare tu música al hablar. Si aun así se para, ponlos en No: el pitido no la para.',
-    '<b>Remo sentado:</b> qué hacer si no notas nada en la espalda.'
+    { id:'2026-09-27c', t:'<b>Historial de pesos arreglado:</b> si cambiabas el peso a mitad de un ejercicio, se quedaba con el de la primera serie. Ahora cuenta el último que usas. Los 2 kg del remo de cardio ya no salen en «Lo que has subido».' },
+    { id:'2026-09-27c', t:'<b>Qué hay de nuevo</b> ya solo enseña lo que no has visto, no la lista entera.' },
+    { id:'2026-09-27c', t:'<b>Volver</b> ya no dice que llevas tres meses sin ir: ahora mira tus datos.' },
+    { id:'2026-09-27b', t:'<b>Plancha con pitido:</b> tic-tic-tic en los últimos 3 segundos y una melodía larga y distinta al acabar. Suena aunque tengas la música puesta o el móvil en el suelo.' },
+    { id:'2026-09-27', t:'<b>Máquina sin peso apuntado</b> (como el remo ahora): la sesión te dice con cuánto empezar.' },
+    { id:'2026-09-27', t:'<b>¿Todas las cintas ocupadas?</b> Dentro de la sesión de cinta: el remo de cardio, la bici o la elíptica valen igual.' },
+    { id:'2026-09-27', t:'<b>Arreglado:</b> empezar una cinta después de una sesión de fuerza sin cerrar la app arrastraba datos de la anterior.' },
+    { id:'2026-09-26b', t:'<b>Remo sentado:</b> la ficha explica cuál es la máquina (el asiento no se mueve; la de remar con asiento que se desliza es de cardio). Los 2 kg apuntados eran el nivel de esa otra máquina: la próxima vez te pregunta el peso de nuevo.' },
+    { id:'2026-09-26', t:'<b>«Que las cuente la app»</b>, debajo de las repeticiones: un tic cada 3 segundos marca el ritmo y cuenta por ti. Cuando no puedas más, «He parado». No corta la música.' },
+    { id:'2026-09-26', t:'<b>Jalón lleno:</b> cuatro alternativas en «¿Está ocupada?» y en Sustitutos (dominadas asistidas, otra polea alta, remo con mancuerna).' },
+    { id:'2026-09-26', t:'<b>Plancha:</b> la app vuelve a pedir que la pantalla no se apague al empezarla y con cada toque.' },
+    { id:'2026-09-24', t:'<b>Cinta:</b> nunca pasa del 15 % (el máximo de tu cinta). Durante la tanda, una línea te dice cuándo arrancar suave y cuándo soltar; el resto del tiempo, igual.' },
+    { id:'2026-09-23', t:'<b>«No me apetece»</b> en Hoy, y <b>«Me falta chispa»</b> en el descanso: una razón para ir (o para seguir) sacada de tus propios datos. Solo sale si la abres tú.' },
+    { id:'2026-09-23', t:'<b>Avisos por voz en corto:</b> en Ajustes. Habla dos segundos en vez de ocho y solo al cambiar de máquina, para que la música se corte lo menos posible.' },
+    { id:'2026-09-23', t:'<b>Medidas ampliadas</b> (Semana, abajo): brazo y muslo para el gimnasio, y cuello, cintura del pantalón, largo de pierna y de brazo para la ropa, con tu talla aproximada. Cada medida dice dónde se toma.' },
+    { id:'2026-09-23', t:'<b>Subidas de peso más grandes</b> cuando te sobra mucho: si te salen 20 o más en todas, la sesión te propone el peso con el que te saldrían unas 12, no solo +5 kg.' },
+    { id:'2026-09-23', t:'<b>Horas corregidas:</b> la app decía que el viernes a las 15:30 estaba vacío. Las gráficas de Google dicen que no, así que está cambiado. Lo que sí está flojo de verdad: antes de las 8:00 y a partir de las 23:00.' },
+    { id:'2026-09-23', t:'<b>¿Berlín o L&#39;Illa?</b> En Hoy, un botón que mira la hora que es y te dice cuál de los dos está en su rato más flojo.' },
+    { id:'2026-09-23', t:'<b>Medidas:</b> en Semana, abajo del todo. Una vez al mes, opcional, sin avisos.' },
+    { id:'2026-09-23', t:'<b>Fin de semana:</b> el aviso de aforo ya no dice que sábado y domingo por la tarde son hora punta. Esa hora punta solo está apuntada de lunes a viernes.' },
+    { id:'2026-09-23', t:'<b>¿La cinta antes o después?</b> Explicado desde cero en Rutina, debajo de «Cerrar con cinta».' },
+    { id:'2026-09-23', t:'<b>Cosas que igual no sabías:</b> en Guía, casi cincuenta cosas sobre músculo, cardio, técnica y descanso.' },
+    { id:'2026-09-23', t:'<b>Y además:</b> en Semana, un día de fuerza puede llevar también cinta o un paseo. No cuenta como otra sesión, pero suma donde tiene que sumar.' },
+    { id:'2026-09-23', t:'<b>En qué punto estás:</b> arriba de Semana, qué toca ahora y qué cambia más adelante.' },
+    { id:'2026-09-23', t:'<b>Plancha:</b> ahora tienes 10 segundos para colocarte antes de que empiece a contar. Si ya estás, «Ya estoy, empezar».' },
+    { id:'2026-09-23', t:'<b>Avisos por voz:</b> la app pide al iPhone que no pare tu música al hablar. Si aun así se para, ponlos en No: el pitido no la para.' },
+    { id:'2026-09-23', t:'<b>Remo sentado:</b> qué hacer si no notas nada en la espalda.' }
   ];
 }
+function novedadesNuevas(){ return novedadesFechadas().filter(n => n.id === novedadesId()).map(n => n.t); }
 function novedadesAntes17(){
   return [
     '<b>Cómo se mueve cada máquina:</b> una figura hace el ejercicio con su ritmo. Sale en la sesión las primeras veces, y siempre en Rutina.',
@@ -4721,8 +4725,12 @@ function novedadesHTML(){
   try{ vistas = localStorage.getItem('planEjercicioNovedades') || ''; }catch(e){}
   if(vistas === novedadesId()) return '';
   if(totalSesiones() === 0){ setRaw('planEjercicioNovedades', novedadesId()); return ''; }
-  return '<div class="card aviso-hoy"><h3>Qué hay de nuevo</h3><ul>' + novedadesNuevas().map(n => '<li>' + n + '</li>').join('') + '</ul>' +
-    '<details class="novedades-antes"><summary>Y lo de estos días</summary><ul>' + novedades().map(n => '<li>' + n + '</li>').join('') + '</ul></details>' +
+  const todas = novedadesFechadas();
+  let nuevas = todas.filter(n => n.id > vistas);
+  if(!nuevas.length) nuevas = todas.filter(n => n.id === novedadesId());
+  const antes = todas.filter(n => nuevas.indexOf(n) === -1).map(n => n.t).concat(novedades());
+  return '<div class="card aviso-hoy"><h3>Qué hay de nuevo</h3><ul>' + nuevas.map(n => '<li>' + n.t + '</li>').join('') + '</ul>' +
+    '<details class="novedades-antes"><summary>Lo de antes</summary><ul>' + antes.map(n => '<li>' + n + '</li>').join('') + '</ul></details>' +
     '<button class="btn-second" onclick="cerrarNovedades()">Entendido</button></div>';
 }
 function cerrarNovedades(){
@@ -5010,8 +5018,8 @@ function serieHecha(){
   comprobarMarca(ej, apunte);
   S.serie++;
   S.historial.push(S.iEj);
-  /* Primera serie completada de este ejercicio: el peso ya se ha usado. */
-  if(S.serie === 1 && !ej.sinPeso) registrarPeso(ej.id, getPesos()[ej.id]);
+  /* Cada serie: si cambias el peso a mitad, cuenta el último que usaste. */
+  if(!ej.sinPeso && apunte.kg) registrarPeso(ej.id, apunte.kg);
   anotarSerieActual();
   if(S.serie >= nSeries){
     S.hechos++;
@@ -5248,13 +5256,18 @@ function seriesSesion(){
   if(S.tipo === 'cinta' && !S.cintaExtra) return 0;
   return S.lista.reduce((a, e, i) => a + Math.min(S.hechasPor[i] || 0, seriesDe(e, i)), 0);
 }
+function kgUsado(i, e){
+  const a = (S.reg && S.reg[i]) || [];
+  for(let k = a.length - 1; k >= 0; k--) if(a[k] && a[k].kg > 0) return a[k].kg;
+  return getPesos()[e.id] || 0;
+}
 function fotoEntreno(tipo){
   const pesos = getPesos();
   const ej = (S.tipo === 'cinta' && !S.cintaExtra) ? [] : S.lista.map((e, i) => {
     const s = Math.min(S.hechasPor[i] || 0, seriesDe(e, i));
     if(!s) return null;
     const o = { id: e.id, s: s };
-    if(!e.sinPeso && pesos[e.id]) o.kg = pesos[e.id];
+    if(!e.sinPeso && kgUsado(i, e)) o.kg = kgUsado(i, e);
     if(S.valorados[i]) o.v = S.valorados[i];
     const apuntes = (S.reg && S.reg[i]) || [];
     const r = apuntes.map(x => x.r).filter(n => n > 0);
@@ -5990,9 +6003,12 @@ function registrarPeso(id, kg){
   if(!id || !kg || kg <= 0) return;
   const hist = getPesosHist();
   const lista = Array.isArray(hist[id]) ? hist[id] : [];
+  const hoy = hoyKey();
+  /* Si ya había uno de hoy, cuenta el último que has usado. */
+  if(lista.length && lista[lista.length - 1].f === hoy) lista.pop();
   const ultimo = lista.length ? lista[lista.length - 1] : null;
-  if(ultimo && ultimo.kg === kg) return;        // mismo peso que la última vez
-  lista.push({ f: hoyKey(), kg: kg });
+  if(ultimo && ultimo.kg === kg){ hist[id] = lista; saveJSON(K.pesosHist, hist); return; }   // mismo peso que la última vez
+  lista.push({ f: hoy, kg: kg });
   if(lista.length > 60) lista.shift();          // no crece sin fin
   hist[id] = lista;
   saveJSON(K.pesosHist, hist);
@@ -6981,7 +6997,7 @@ function unirClave(tipo, lr, rr){
     new Set(Object.keys(a).concat(Object.keys(b))).forEach(id => {
       const vistos = {};
       const lista = [].concat(Array.isArray(a[id]) ? a[id] : [], Array.isArray(b[id]) ? b[id] : [])
-        .filter(p => p && p.f && typeof p.kg === 'number')
+        .filter(p => p && p.f && typeof p.kg === 'number' && !(id === 'remo' && p.kg < 5))
         .filter(p => { const k = p.f + '|' + p.kg; if(vistos[k]) return false; vistos[k] = true; return true; })
         .sort((x, y) => x.f < y.f ? -1 : x.f > y.f ? 1 : 0);
       const limpia = lista.filter((p, i) => i === 0 || p.kg !== lista[i - 1].kg).slice(-60);
@@ -7477,6 +7493,38 @@ if('scrollRestoration' in history) history.scrollRestoration = 'manual';
     localStorage.setItem('planEjercicioArregloRemo', '1');
   }catch(e){}
 })();
+(function arregloHistorialPesos(){
+  try{
+    if(localStorage.getItem('planEjercicioArregloHist')) return;
+    const todos = getEntrenos();
+    let tocado = false;
+    Object.keys(todos).forEach(f => {
+      (Array.isArray(todos[f].ej) ? todos[f].ej : []).forEach(x => {
+        if(x.id === 'remo' && x.kg > 0 && x.kg < 5){ delete x.kg; delete x.r; delete x.v; tocado = true; }
+      });
+    });
+    if(tocado) saveJSON(K.entrenos, todos);
+    const hist = getPesosHist();
+    if(Array.isArray(hist.remo)) hist.remo = hist.remo.filter(p => p.kg >= 5);
+    Object.keys(todos).sort().forEach(f => {
+      (Array.isArray(todos[f].ej) ? todos[f].ej : []).forEach(x => {
+        if(!x.id || !(x.kg > 0)) return;
+        /* El del entreno es el último peso de ese día: va detrás del que ya
+           hubiera, así se ve tanto el de empezar como el de acabar. */
+        const l = Array.isArray(hist[x.id]) ? hist[x.id] : [];
+        l.push({ f: f, kg: x.kg });
+        hist[x.id] = l;
+      });
+    });
+    Object.keys(hist).forEach(id => {
+      const orden = (hist[id] || []).slice().sort((a, b) => a.f < b.f ? -1 : a.f > b.f ? 1 : 0);
+      const limpia = orden.filter((p, i) => i === 0 || p.kg !== orden[i - 1].kg).slice(-60);
+      if(limpia.length) hist[id] = limpia; else delete hist[id];
+    });
+    saveJSON(K.pesosHist, hist);
+    localStorage.setItem('planEjercicioArregloHist', '1');
+  }catch(e){}
+})();
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'hidden'){
     guardarSesion();
@@ -7493,6 +7541,27 @@ window.addEventListener('pagehide', () => { guardarSesion(); guardarVuelta(); })
 function scrollBehavior(){
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 }
+/* La tarjeta de Volver se escribió cuando llevaba tres meses sin ir. Si ha
+   entrenado estas semanas, lo dice con sus datos; si lleva tiempo sin ir,
+   dice cuánto, sin dramatizar. */
+function pintarVolver(){
+  const t = document.getElementById('volverTitulo'), p = document.getElementById('volverTexto');
+  if(!t || !p) return;
+  const log = getLog();
+  const fechas = Object.keys(log).filter(k => esSesion(log[k])).sort();
+  if(!fechas.length) return;
+  const ultima = fechas[fechas.length - 1];
+  const dias = Math.round((desdeKey(hoyKey()) - desdeKey(ultima)) / 86400000);
+  const hace3 = new Date(); hace3.setDate(hace3.getDate() - 21);
+  const recientes = fechas.filter(f => desdeKey(f) >= hace3).length;
+  if(dias <= 10){
+    t.textContent = 'Ahora mismo estás dentro';
+    p.innerHTML = 'Llevas <b>' + recientes + ' ' + (recientes === 1 ? 'sesión' : 'sesiones') + ' en las últimas tres semanas</b>. Esta pestaña no es para hoy: se queda aquí para el día que la necesites, y ese día no habrá que empezar de cero.';
+  } else {
+    t.textContent = 'Los ' + dias + ' días que llevas';
+    p.innerHTML = 'Tu última sesión fue hace ' + dias + ' días. No es una recaída ni hay nada que recuperar: se retoma con la mínima y ya está.';
+  }
+}
 function showTab(name, btn){
   /* Arriba del todo ANTES de cambiar de panel, y de golpe.
      Con scroll suave y después del cambio, el navegador re-anclaba la posición
@@ -7507,6 +7576,7 @@ function showTab(name, btn){
   btn.classList.add('active');
   btn.setAttribute('aria-current', 'page');
   setLS(K.tab, name);
+  if(name === 'volver') pintarVolver();
 }
 const TABS = ['hoy','rutina','guia','volver','semana'];
 function showTabByName(name){
