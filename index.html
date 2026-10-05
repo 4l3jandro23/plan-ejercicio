@@ -365,6 +365,9 @@
     padding:13px 15px; margin:15px 0 0; animation:fade .35s var(--ease);
   }
   .hoy-hecho b{font-family:var(--font-display); font-size:var(--t-md); display:flex; align-items:center; gap:8px; margin-bottom:2px;}
+  .hoy-subidas{margin-top:10px; padding:10px 12px; border-radius:var(--r-md, 12px); background:rgba(255,255,255,.16); font-size:var(--t-sm);}
+  .hoy-subidas > b{display:block; margin-bottom:3px;}
+  .hoy-subidas span{display:block;}
   .hoy-hecho b .ic-v{width:18px; height:18px;}
   .hoy-hecho span{font-size:var(--t-sm); opacity:.88;}
   .aviso-nivel{
@@ -3074,6 +3077,7 @@ function renderHoy(){
               : T('Guardado. Ya está, no hay que hacer nada más.', 'Guardado.')) + '</span>' +
         '</div>'
       ) : '') +
+      (marcado ? subidasHoyHTML() : '') +
       avisosHTML(tipo, marcado) +
     '</div>';
 
@@ -4672,9 +4676,10 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-09-27e'; }
+function novedadesId(){ return '2026-10-05'; }
 function novedadesFechadas(){
   return [
+    { id:'2026-10-05', t:'<b>Tus subidas, el mismo día:</b> al acabar una sesión, Hoy te dice qué pesos has subido respecto a la vez anterior.' },
     { id:'2026-09-27e', t:'<b>¿Tienes agujetas?</b> Al calentar, qué hacer con el peso ese día y cuándo parar.' },
     { id:'2026-09-27d', t:'<b>Días libres más tranquilos:</b> «Ahora mismo está a reventar» ya no sale en grande si hoy no toca o ya has entrenado. Está plegado, por si vas igual.' },
     { id:'2026-09-27d', t:'<b>Pequeños arreglos:</b> la sesión en casa ya no dice «mínima» al acabar, y la cabecera de la cinta no repite los minutos.' },
@@ -5993,6 +5998,20 @@ function cerrarSesion(){
    no hace falta un tipo nuevo en el historial para distinguirlas. */
 function tipoDeModo(){ return (S.modo === 'fuerza' || S.modo === 'casa') ? 'fuerza' : 'minima'; }
 
+function subidasDeHoy(){
+  const hist = getPesosHist(), hoy = hoyKey();
+  return EJERCICIOS_GYM.concat(EJERCICIOS_EXTRA).filter(e => !e.sinPeso).map(e => {
+    const l = hist[e.id];
+    if(!Array.isArray(l) || l.length < 2) return null;
+    const a = l[l.length - 1], b = l[l.length - 2];
+    return a.f === hoy && a.kg > b.kg ? { nombre: e.nombre, antes: b.kg, ahora: a.kg } : null;
+  }).filter(Boolean);
+}
+function subidasHoyHTML(){
+  const s = subidasDeHoy();
+  if(!s.length) return '';
+  return '<div class="hoy-subidas"><b>Hoy has subido peso</b>' + s.map(x => '<span>' + esc(x.nombre) + ': ' + x.antes + ' → <b>' + x.ahora + ' kg</b></span>').join('') + '</div>';
+}
 function terminarSesion(){
   const tipo = tipoDeModo();
   S.hechos = S.lista.length;
