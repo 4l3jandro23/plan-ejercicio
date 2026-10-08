@@ -2405,7 +2405,26 @@ function nivelCinta(){
   let i = 0;
   while(i < CINTA_NIVELES.length - 1 && hechas >= CINTA_NIVELES[i].hasta) i++;
   if(enReentrada() && i > 0) i--;
-  return CINTA_NIVELES[i];
+  const niv = CINTA_NIVELES[i];
+  const ya = incCintaReciente();
+  return ya > parseFloat(niv.inc) ? Object.assign({}, niv, { inc: String(ya).replace('.', ',') }) : niv;
+}
+/* La cuesta de la última cinta de las tres últimas semanas, si la apuntó. */
+function incCintaReciente(){
+  const todos = getEntrenos();
+  const limite = new Date(); limite.setDate(limite.getDate() - 21);
+  const f = Object.keys(todos).filter(k => todos[k] && todos[k].cinta && todos[k].inc > 0 && desdeKey(k) >= limite).sort().pop();
+  return f ? Math.min(15, todos[f].inc) : 0;
+}
+function guardarIncCinta(f, v){
+  const todos = getEntrenos();
+  if(!todos[f]) return;
+  const n = parseFloat(String(v).replace(',', '.'));
+  if(isNaN(n) || n <= 0 || n > 15) delete todos[f].inc; else todos[f].inc = Math.round(n * 10) / 10;
+  saveJSON(K.entrenos, todos);
+  entrenoAbierto = f;
+  renderEntrenos(); renderHoy();
+  toast(todos[f].inc ? 'Cuesta apuntada: ' + todos[f].inc + ' %' : 'Cuesta quitada');
 }
 
 /* ===================== FECHAS ===================== */
@@ -4676,9 +4695,10 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-10-05'; }
+function novedadesId(){ return '2026-10-08'; }
 function novedadesFechadas(){
   return [
+    { id:'2026-10-08', t:'<b>La cuesta de la cinta se apunta:</b> en Semana, dentro de una cinta, pones el % que usaste. La siguiente te propone, como mínimo, el que ya hiciste hace poco (si hiciste 9 %, no vuelve a decirte 6 %).' },
     { id:'2026-10-05', t:'<b>Tus subidas, el mismo día:</b> al acabar una sesión, Hoy te dice qué pesos has subido respecto a la vez anterior.' },
     { id:'2026-09-27e', t:'<b>¿Tienes agujetas?</b> Al calentar, qué hacer con el peso ese día y cuándo parar.' },
     { id:'2026-09-27d', t:'<b>Días libres más tranquilos:</b> «Ahora mismo está a reventar» ya no sale en grande si hoy no toca o ya has entrenado. Está plegado, por si vas igual.' },
@@ -5295,6 +5315,7 @@ function fotoEntreno(tipo){
     return o;
   }).filter(Boolean);
   const foto = { tipo: tipo, modo: S.modo, min: minutosSesion(), ej: ej, cinta: S.tipo === 'cinta' ? (S.tanda || 0) * TANDA_MIN : 0 };
+  if(foto.cinta){ const inc = parseFloat(String(nivelCinta().inc).replace(',', '.')); if(inc > 0) foto.inc = inc; }
   const nota = String(S.nota || '').trim().slice(0, 200);
   if(nota) foto.nota = nota;
   return foto;
@@ -5309,7 +5330,7 @@ function guardarEntreno(tipo){
      suman en vez de pisarse. */
   if(previo){
     if(!foto.ej.length && Array.isArray(previo.ej)) foto.ej = previo.ej;
-    if(!foto.cinta && previo.cinta) foto.cinta = previo.cinta;
+    if(!foto.cinta && previo.cinta){ foto.cinta = previo.cinta; if(previo.inc) foto.inc = previo.inc; }
     if(!foto.nota && previo.nota) foto.nota = previo.nota;
     if(!foto.andar && previo.andar) foto.andar = previo.andar;
     if(previo.min && previo.modo !== foto.modo) foto.min += previo.min;
@@ -5650,7 +5671,7 @@ function renderEntrenos(){
       const filas = lista.map(x =>
         '<tr><td>' + esc(nombreEj(x.id)) + '<small>' + esc(detalleSeries(x)) + '</small></td>' +
         '<td>' + (x.kg ? x.kg + ' kg' : '') + '</td></tr>').join('') +
-        (e.cinta ? '<tr><td>Cinta en cuesta</td><td>' + e.cinta + ' min</td></tr>' : '') +
+        (e.cinta ? '<tr><td>Cinta en cuesta' + (e.inc ? '<small>al ' + String(e.inc).replace('.', ',') + ' %</small>' : '') + '</td><td>' + e.cinta + ' min</td></tr>' : '') +
         (e.andar ? '<tr><td>Andando</td><td>' + e.andar + ' min</td></tr>' : '');
       return '<details class="entreno"' + (f === entrenoAbierto ? ' open' : '') + '><summary><span class="ex-head">' +
           DIAS_LARGOS[d.getDay()].replace(/^./, c => c.toUpperCase()) + ' ' + d.getDate() + ' de ' + MESES[d.getMonth()] +
@@ -5658,6 +5679,8 @@ function renderEntrenos(){
         '<div class="content">' + (entrenoEditando === f ? formCorreccionHTML(f, lista) :
           '<table class="pesos-lista">' + filas + '</table>' +
           (e.nota ? '<p class="nota-entreno"><b>Tu nota:</b> ' + esc(e.nota) + '</p>' : '') +
+          (e.cinta ? '<label class="ses-ajuste" style="margin:10px 0 6px;"><span>Cuesta que pusiste (%)</span>' +
+            '<input type="number" inputmode="decimal" min="0" max="15" step="1" value="' + (e.inc || '') + '" placeholder="9" onchange="guardarIncCinta(\'' + f + '\', this.value)"></label>' : '') +
           (lista.length ? '<button class="btn-undo" onclick="corregirEntreno(\'' + f + '\')">Corregir pesos o repeticiones</button>' : '')) +
         '</div></details>';
     }).join('') +
@@ -5674,17 +5697,17 @@ function csvCampo(v){
 }
 function entrenosCSV(){
   const todos = getEntrenos();
-  const filas = [['Fecha', 'Tipo', 'Minutos', 'Ejercicio', 'Series', 'Kg', 'Serie 1', 'Serie 2', 'Serie 3', 'Serie 4', 'Cinta (min)', 'Andando (min)', 'Nota']];
+  const filas = [['Fecha', 'Tipo', 'Minutos', 'Ejercicio', 'Series', 'Kg', 'Serie 1', 'Serie 2', 'Serie 3', 'Serie 4', 'Cinta (min)', 'Cuesta (%)', 'Andando (min)', 'Nota']];
   Object.keys(todos).sort().forEach(f => {
     const e = todos[f] || {};
     const base = [f, etiqueta(e.tipo).corto, e.min || ''];
     const lista = Array.isArray(e.ej) ? e.ej : [];
-    const extra = [e.cinta || '', e.andar || '', e.nota || ''];
+    const extra = [e.cinta || '', e.inc || '', e.andar || '', e.nota || ''];
     if(!lista.length){ filas.push(base.concat(['', '', '', '', '', '', ''], extra)); return; }
     lista.forEach((x, i) => {
       const vals = Array.isArray(x.seg) && x.seg.length ? x.seg : (Array.isArray(x.r) ? x.r : []);
       const series = [0, 1, 2, 3].map(j => vals[j] != null ? vals[j] : '');
-      filas.push(base.concat([nombreEj(x.id), x.s || '', x.kg ? String(x.kg).replace('.', ',') : ''], series, i === 0 ? extra : ['', '', '']));
+      filas.push(base.concat([nombreEj(x.id), x.s || '', x.kg ? String(x.kg).replace('.', ',') : ''], series, i === 0 ? extra : ['', '', '', '']));
     });
   });
   return '\ufeff' + filas.map(r => r.map(csvCampo).join(';')).join('\r\n');
