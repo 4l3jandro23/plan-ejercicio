@@ -3309,7 +3309,7 @@ function proximoPeso(e){
   if(!e || e.sinPeso) return 0;
   const s = getSensaciones()[e.id];
   const kg = getPesos()[e.id];
-  return (s && kg && s.kg === kg && s.v === 'sobra' && !muyDuroLaUltima(e.id)) ? pesoSubida(e.id, kg, s) : 0;
+  return (s && kg && s.kg === kg && s.v === 'sobra' && !muyDuroLaUltima(e.id) && !(S.activa && S.suave)) ? pesoSubida(e.id, kg, s) : 0;
 }
 /* Cuánto subir. Con 15 justas, +5 kg como siempre. Pero si salieron 20, 25
    o 30 en todas, +5 se queda corto y tardaría semanas en llegar a un peso
@@ -3837,7 +3837,7 @@ const S = {
   tanda:0, tandaObjetivo:2, cintaExtra:false, finTanda:0, pausada:false, restante:0, ultimoSeg:-1,
   aguantando:false, preparando:false, finAguante:0, segAguante:0,
   hechasPor:[], historial:[], terminada:false, valorados:{}, dureza:{}, ultimoCompletado:null, viendoLista:false,
-  inicio:0, reg:{}, repsSel:{}, calentando:false, finCalentar:0, subeAguante:{}, segHecho:null, marcasHoy:{}, nota:''
+  inicio:0, reg:{}, repsSel:{}, calentando:false, finCalentar:0, subeAguante:{}, segHecho:null, marcasHoy:{}, nota:'', suave:false
 };
 const TANDA_MIN = 15;
 const DESCANSO_TANDAS = 120;   // 2 min entre las dos tandas de cinta
@@ -3854,7 +3854,7 @@ function empezarSesion(modo){
   S.modo = modo; S.iEj = 0; S.serie = 0; S.activa = true; S.descansando = false; S.aguantando = false; S.preparando = false; S.hechos = 0;
   S.hechasPor = S.lista.map(() => 0); S.historial = []; S.terminada = false;
   S.valorados = {}; S.dureza = {}; S.ultimoCompletado = null; S.viendoLista = false;
-  S.reg = {}; S.repsSel = {}; S.subeAguante = {}; S.segHecho = null; S.marcasHoy = {}; S.nota = '';
+  S.reg = {}; S.repsSel = {}; S.subeAguante = {}; S.segHecho = null; S.marcasHoy = {}; S.nota = ''; S.suave = false;
   /* La sesión empieza calentando: en el gimnasio, en la cinta; en casa, con
      los movimientos guiados. En express y viaje no: son la salida rápida y
      tienen que empezar ya. */
@@ -4256,7 +4256,8 @@ function segundosDe(ej){
   const m = /(\d+)\s*segundo/.exec(ej.reps || '');
   if(!m) return 0;
   const g = getAguante()[ej.id];
-  return (g >= 30 && g <= 60) ? g : parseInt(m[1], 10);
+  const t = (g >= 30 && g <= 60) ? g : parseInt(m[1], 10);
+  return (S.activa && S.suave) ? Math.min(t, 30) : t;
 }
 /* La plancha empezaba en 20 segundos y ahí se quedaba para siempre. Ahora
    empieza en 30 y sube 5 cada vez que aguanta el tiempo entero en todas las
@@ -4264,6 +4265,7 @@ function segundosDe(ej){
 const AGUANTE_MAX = 60;
 function getAguante(){ const a = loadJSON(K.aguante, {}); return (a && typeof a === 'object') ? a : {}; }
 function subirAguante(i){
+  if(S.suave) return;
   const e = S.lista[i];
   const obj = segundosDe(e);
   if(!obj || obj >= AGUANTE_MAX) return;
@@ -4696,9 +4698,10 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-10-09'; }
+function novedadesId(){ return '2026-10-11'; }
 function novedadesFechadas(){
   return [
+    { id:'2026-10-11', t:'<b>«Hoy voy suave»:</b> al calentar, un botón para días con agujetas, resaca o poco sueño. Ese día no se propone subir peso y la plancha se queda en 30 s. Queda apuntado en Semana.' },
     { id:'2026-10-09', t:'<b>¿Cómo de duro ha sido? (1-5):</b> al acabar cada ejercicio, también la plancha, puedes puntuar cuánto te ha costado. Es opcional. Si marcas 5 («al límite»), la app no te manda subir peso ni segundos. Y si corriges una plancha en Semana con menos segundos, el objetivo baja a eso.' },
     { id:'2026-10-08', t:'<b>La cuesta de la cinta se apunta:</b> en Semana, dentro de una cinta, pones el % que usaste. La siguiente te propone, como mínimo, el que ya hiciste hace poco (si hiciste 9 %, no vuelve a decirte 6 %).' },
     { id:'2026-10-05', t:'<b>Tus subidas, el mismo día:</b> al acabar una sesión, Hoy te dice qué pesos has subido respecto a la vez anterior.' },
@@ -4897,6 +4900,8 @@ function pintarCalentar(){
     ultimaNotaHTML() +
     '<details class="ses-alt"><summary>¿Tienes agujetas?</summary><div class="content">Se entrena igual. Casi siempre se van en cuanto el músculo se calienta.<br>1. <b>Calienta más:</b> 8-10 minutos en vez de 5.<br>2. <b>Primera serie de cada máquina con menos peso</b> (un 20-30 % menos), de prueba.<br>3. <b>Decide ahí:</b> si ya casi no las notas, el peso de la última vez, sin subir. Si siguen tirando, un 10-20 % menos y tus series normales.<br>4. Deja 2 o 3 repeticiones en la recámara: hoy no toca marca.<br><b>Para:</b> si es un dolor punzante o en una articulación (rodilla, hombro, codo): eso no son agujetas, sáltate esa máquina. Y si te cuesta andar o levantar los brazos, hoy mejor 20-30 minutos de cinta suave: moverse también las alivia.</div></details>' +
 
+    '<div class="ses-sensacion"><p>' + (S.suave ? '<b>Hoy voy suave.</b> No se propone subir peso, la plancha se queda en 30 s y las series piden 2-3 repeticiones de reserva.' : '¿No te encuentras al 100 %? Agujetas, resaca, poco sueño.') + '</p>' +
+      '<div class="ses-sensacion-ops"><button class="' + (S.suave ? 'on' : '') + '" onclick="alternarSuave()">' + (S.suave ? 'Voy suave (quitar)' : 'Hoy voy suave') + '</button></div></div>' +
     '<ol class="ses-pasos">' +
       '<li>Cinta andando rápido con un 5-6% de cuesta, o bici estática suave.</li>' +
       '<li>Nada de estirar ahora: en frío no previene lesiones y quita algo de fuerza. Los estiramientos van al final.</li>' +
@@ -4965,6 +4970,12 @@ function siguienteCalentarCasa(){
   decir(CALENTAR_CASA[i].nombre + '. ' + CALENTAR_CASA[i].seg + ' segundos.');
   arrancarTick();
   pintarSesion();
+}
+function alternarSuave(){
+  S.suave = !S.suave;
+  guardarSesion();
+  pintarSesion();
+  toast(S.suave ? 'Hoy vas suave: sin subidas' : 'Vuelves al plan normal');
 }
 function empezarCalentar(){
   if(sesionEnCasa()){
@@ -5254,6 +5265,9 @@ function sugerenciaPeso(e){
     return '<div class="ses-sugerencia"><b>No tienes peso apuntado aquí.</b> Haz una serie de prueba con poco peso para ver cómo va la máquina y luego pon uno con el que te salgan <b>unas 12 costando</b>. Si salen más de 15, sube; si no llegas a 8, baja. Escríbelo arriba y la próxima vez ya lo tendrá.</div>';
   }
   if(!s || !actual || s.kg !== actual) return '';
+  if(S.activa && S.suave && s.v === 'sobra'){
+    return '<div class="ses-sugerencia">Hoy vas suave: mismo peso con ' + actual + ' kg, sin subir. Dos o tres repeticiones de reserva. La subida queda para otro día.</div>';
+  }
   if(s.v === 'sobra' && muyDuroLaUltima(e.id)){
     return '<div class="ses-sugerencia">La última vez salieron las repeticiones, pero marcaste <b>5 de 5: al límite</b>. Mismo peso con ' + actual + ' kg. Cuando te cueste menos, subes.</div>';
   }
@@ -5354,6 +5368,7 @@ function fotoEntreno(tipo){
   if(foto.cinta){ const inc = parseFloat(String(nivelCinta().inc).replace(',', '.')); if(inc > 0) foto.inc = inc; }
   const nota = String(S.nota || '').trim().slice(0, 200);
   if(nota) foto.nota = nota;
+  if(S.suave) foto.suave = 1;
   return foto;
 }
 function guardarEntreno(tipo){
@@ -5713,7 +5728,8 @@ function renderEntrenos(){
       const filas = lista.map(x =>
         '<tr><td>' + esc(nombreEj(x.id)) + '<small>' + esc(detalleSeries(x)) + '</small></td>' +
         '<td>' + (x.kg ? x.kg + ' kg' : '') + '</td></tr>').join('') +
-        (e.cinta ? '<tr><td>Cinta en cuesta' + (e.inc ? '<small>al ' + String(e.inc).replace('.', ',') + ' %</small>' : '') + '</td><td>' + e.cinta + ' min</td></tr>' : '') +
+        (e.suave ? '<tr><td>Día suave<small>sin subir peso</small></td><td>sí</td></tr>' : '') +
+          (e.cinta ? '<tr><td>Cinta en cuesta' + (e.inc ? '<small>al ' + String(e.inc).replace('.', ',') + ' %</small>' : '') + '</td><td>' + e.cinta + ' min</td></tr>' : '') +
         (e.andar ? '<tr><td>Andando</td><td>' + e.andar + ' min</td></tr>' : '');
       return '<details class="entreno"' + (f === entrenoAbierto ? ' open' : '') + '><summary><span class="ex-head">' +
           DIAS_LARGOS[d.getDay()].replace(/^./, c => c.toUpperCase()) + ' ' + d.getDate() + ' de ' + MESES[d.getMonth()] +
@@ -7494,7 +7510,7 @@ function toggleTheme(){ toggleThemeManual(); }
 const CAMPOS_SESION = ['activa','tipo','modo','iEj','serie','descansando','finDescanso','hechos',
   'tanda','tandaObjetivo','cintaExtra','finTanda','pausada','restante',
   'aguantando','preparando','finAguante','segAguante','hechasPor','historial','terminada','valorados','dureza','ultimoCompletado','inicio',
-  'reg','repsSel','calentando','finCalentar','calPaso','subeAguante','marcasHoy','nota'];
+  'reg','repsSel','calentando','finCalentar','calPaso','subeAguante','marcasHoy','nota','suave'];
 
 function guardarSesion(){
   if(!S.activa) return;
