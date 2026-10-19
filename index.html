@@ -1405,8 +1405,8 @@
     <h4>Vale. No pasa nada.</h4>
     <p>De verdad que no pasa nada. Elige lo que te encaje ahora mismo — las cinco son respuestas correctas.</p>
     <div class="actions">
-      <button class="btn-second" onclick="empezarSesion('minima')"><svg class="ic-v" aria-hidden="true"><use href="#i-pesa"/></svg>Voy, pero solo los 3 primeros (15 min)</button>
-      <button class="btn-second" onclick="empezarSesion('express')"><svg class="ic-v" aria-hidden="true"><use href="#i-rayo"/></svg>Lo mínimo de lo mínimo (8 min)</button>
+      <button class="btn-second" onclick="empezarSesion('minima')"><svg class="ic-v" aria-hidden="true"><use href="#i-pesa"/></svg>Voy, pero solo los 3 primeros (unos <span data-minplan="minima">25</span> min)</button>
+      <button class="btn-second" onclick="empezarSesion('express')"><svg class="ic-v" aria-hidden="true"><use href="#i-rayo"/></svg>Lo mínimo de lo mínimo (unos <span data-minplan="express">5</span> min)</button>
       <button class="btn-second" onclick="registrarCaminata(10)"><svg class="ic-v" aria-hidden="true"><use href="#i-andar"/></svg>Me da para caminar 10 minutos</button>
       <button class="btn-second" onclick="marcar('activo')"><svg class="ic-v" aria-hidden="true"><use href="#i-andar"/></svg>Me he movido, pero no fue entreno</button>
       <button class="btn-second" onclick="marcar('descanso')"><svg class="ic-v" aria-hidden="true"><use href="#i-sofa"/></svg>Hoy descanso. Punto.</button>
@@ -1447,7 +1447,7 @@
 
     <h3>Cómo subir de nivel</h3>
     <p style="font-size:var(--t-base);">La app sube sola según las sesiones que llevas hechas — <b>no según las semanas que pasan</b>. Si paras un mes y vuelves, no te va a exigir el nivel de donde lo dejaste, te baja uno. Volver siempre es más suave.</p>
-    <p style="font-size:var(--t-base);">Y una cosa técnica que importa: <b>sube una sola variable cada vez</b>. Primero la cuesta, y cuando llegues arriba, la velocidad. Si subes las dos a la vez llegas en dos semanas a un punto que no aguantas.</p>
+    <p style="font-size:var(--t-base);">Si un día pones más cuesta de la que propone y te encuentras bien, apúntala en Semana: la siguiente cinta parte de ahí, no vuelve atrás. Y una cosa técnica que importa: <b>sube una sola variable cada vez</b>. Primero la cuesta, y cuando llegues arriba, la velocidad. Si subes las dos a la vez llegas en dos semanas a un punto que no aguantas.</p>
 
     <table>
       <tr><th>Sesiones</th><th>Velocidad</th><th>Cuesta</th></tr>
@@ -1467,24 +1467,24 @@
   <div id="vistaGym">
     <div id="fasesBox"></div>
     <div class="quiet">
-      Las 6 son máquinas de <b>placas con pin</b> (Technogym y Gym80, la zona de "musculación guiada"). Si no tienes claro cuáles son, están explicadas en la pestaña <b>Guía</b>.
+      Las cinco máquinas son de <b>placas con pin</b> (Technogym y Gym80, la zona de "musculación guiada"). Si no tienes claro cuáles son, están explicadas en la pestaña <b>Guía</b>.
     </div>
     <h3>Calentar — 5 minutos</h3>
     <p style="font-size:var(--t-base); margin-top:0;">Cinta andando rápido en cuesta, o bici estática, suave: tienes que acabar pudiendo hablar sin esfuerzo. Luego, en la primera máquina, una serie de prueba con menos peso que no se apunta. La sesión guiada empieza por aquí y te cuenta los 5 minutos.</p>
     <p style="font-size:var(--t-base);"><b>Antes de las máquinas no se estira.</b> Estirar en frío no evita lesiones y quita un poco de fuerza en ese momento. Los estiramientos van al final, o en casa.</p>
 
     <h3 style="margin-top:26px;">Los 6 ejercicios</h3>
-    <p class="lead" style="margin-bottom:4px;">Todos en máquina y sentado. Las máquinas te obligan a hacer el movimiento bien: es físicamente difícil hacerlo mal. Por eso empiezas aquí y no con pesas sueltas.</p>
+    <p class="lead" style="margin-bottom:4px;">Cinco en máquina y sentado, y la sexta es la plancha, en el suelo. Las máquinas te obligan a hacer el movimiento bien: es físicamente difícil hacerlo mal. Por eso empiezas aquí y no con pesas sueltas.</p>
     <div id="listaGym"></div>
     <!-- La regla del peso vivía arriba del todo, antes de la rutina: un muro de
          texto entre tú y los seis ejercicios, cada vez que abrías la pestaña.
          Aquí debajo sigue estando, que es donde de verdad la vas a leer. -->
     <div class="tip" style="margin-top:18px;">
       <b>La regla del peso, que es la única que importa:</b><br>
-      El primer día pon <b>el peso más bajo</b> en todo: el pin, arriba del todo de la torre de placas. Haz <b>entre 10 y 15 repeticiones</b>. Cuando te salgan 15 en las tres series, la próxima vez subes 5 kg (casi siempre es bajar el pin una placa) y vuelves a empezar desde 10. Ya está. No existe el peso "correcto" — si te quedas corto, lo subes el día siguiente y no ha pasado nada.
+      El primer día pon <b>el peso más bajo</b> en todo: el pin, arriba del todo de la torre de placas. Haz <b>entre 10 y 15 repeticiones</b>. Cuando te salgan 15 en las tres series, la próxima vez subes (5 kg, o 2,5 en los pesos pequeños; más si te sobraba mucho) y vuelves a empezar desde 10. Si marcas «5, al límite» o es un día suave, la app no te manda subir. Ya está. No existe el peso "correcto" — si te quedas corto, lo subes el día siguiente y no ha pasado nada.
     </div>
     <h3 style="margin-top:26px;">Tras 6 sesiones: dos más, que se turnan</h3>
-    <p style="font-size:var(--t-base); margin-top:0;">Los seis de arriba cubren todo el cuerpo, pero se quedan cortos en lo que más se ve: la anchura de hombros, los brazos y la parte de atrás del muslo. Cuando las seis máquinas ya no te den corte, la sesión completa añade dos de estos después del press de hombros: un día los dos primeros, el siguiente los otros dos. Lo hace sola.</p>
+    <p style="font-size:var(--t-base); margin-top:0;">Los seis de arriba cubren todo el cuerpo, pero se quedan cortos en lo que más se ve: la anchura de hombros, los brazos y la parte de atrás del muslo. Cuando los seis ya no te den corte, la sesión completa añade dos de estos después del press de hombros: un día los dos primeros, el siguiente los otros dos. Lo hace sola.</p>
     <div id="listaExtra"></div>
     <div class="quiet" style="margin-top:22px;">
       <b>Descanso entre series:</b> de 60 a 90 segundos. Si usas la sesión guiada, el tiempo lo cuenta ella y no tienes que pensarlo.
@@ -1525,7 +1525,7 @@
   </div>
 
   <div id="vistaCasa" style="display:none;">
-    <p class="lead">Sin material, sin salir de casa, unos 20 minutos. Esto no es "la versión mala": los días que el gimnasio no va a pasar, esto es lo que evita que la semana entera se vaya a cero.</p>
+    <p class="lead">Sin material, sin salir de casa, unos <span data-minplan="casa">35</span> minutos. Esto no es "la versión mala": los días que el gimnasio no va a pasar, esto es lo que evita que la semana entera se vaya a cero.</p>
     <h3 style="margin-top:6px;">Calentar primero</h3>
     <p style="font-size:var(--t-base); margin-top:0;">La sesión de casa empieza por aquí y te va cantando cada movimiento: seis seguidos, sin material y sin saltos, así que vale en un piso.</p>
     <div id="listaCalentarCasa"></div>
@@ -1534,7 +1534,7 @@
     <div id="casaVariantes"></div>
     <button class="btn-second" style="margin-top:12px;" onclick="abrirEstira()"><svg class="ic-v" aria-hidden="true"><use href="#i-respirar"/></svg>Y después, estirar 7 minutos</button>
 
-    <h3 style="margin-top:32px;">Versión viaje — 10 minutos</h3>
+    <h3 style="margin-top:32px;">Versión viaje — unos <span data-minplan="viaje">5</span> minutos</h3>
     <p style="font-size:var(--t-base);">Para cuando estés fuera de Barcelona: hotel, casa de tu padre, donde sea. Los <b>cuatro primeros</b> de la lista de arriba, una sola serie de cada, sin descanso largo entre medias. Caben en el hueco entre la ducha y salir por la puerta, y no necesitas ni zapatillas.</p>
     <button class="btn-main" onclick="empezarSesion('viaje')"><svg class="ic-v" aria-hidden="true"><use href="#i-play"/></svg>Empezar la versión viaje</button>
     <div class="quiet" style="margin-top:16px;">
@@ -1691,7 +1691,7 @@
     <p style="font-size:var(--t-base);" id="volverTexto">Lo digo sin rodeos porque es lo que hay y porque no cambia nada malo: llevas unos tres meses sin ir, y el motivo que das es que el gimnasio está lleno y te agobia. Eso no es una excusa ni una recaída — es un plan que solo tenía una puerta de entrada, y esa puerta llevaba meses cerrada de 18:00 a 22:30.</p>
     <p style="font-size:var(--t-base); margin-bottom:0;">Lo que ha cambiado en la app es justo eso: ahora hay más de una puerta. El botón <b>«Está lleno»</b> de la pestaña Hoy da seis maneras de entrenar sin depender de encontrar máquina, y el de <b>«Hoy no voy»</b> da seis que no pasan por el gimnasio.</p>
     <div class="actions" style="margin-top:14px;">
-      <button class="btn-main" onclick="empezarSesion('express')"><svg class="ic-v" aria-hidden="true"><use href="#i-rayo"/></svg>Volver hoy en 8 minutos</button>
+      <button class="btn-main" onclick="empezarSesion('express')"><svg class="ic-v" aria-hidden="true"><use href="#i-rayo"/></svg>Volver hoy en <span data-minplan="express">5</span> minutos</button>
       <button class="btn-second" onclick="marcar('reconocimiento')"><svg class="ic-v" aria-hidden="true"><use href="#i-brujula"/></svg>Ir solo a mirar, y que cuente</button>
     </div>
   </div>
@@ -1699,7 +1699,7 @@
   <h3>El plan de vuelta, después de un parón</h3>
   <p style="font-size:var(--t-base);">Da exactamente igual si has estado dos semanas o cinco meses sin ir. El plan es el mismo:</p>
   <ul style="font-size:var(--t-base);">
-    <li><b>Primera sesión: la mínima.</b> Los 3 primeros ejercicios, peso bajo, 15 minutos. Aunque te sientas con fuerza para más. Sobre todo si te sientes con fuerza para más.</li>
+    <li><b>Primera sesión: la mínima.</b> Los 3 primeros ejercicios, peso bajo, unos <span data-minplan="minima">25</span> minutos. Aunque te sientas con fuerza para más. Sobre todo si te sientes con fuerza para más.</li>
     <li><b>Segunda sesión: la mínima otra vez.</b> Sí, otra vez.</li>
     <li><b>Tercera ya sí, la completa</b> — si te apetece. Si no, sigues con la mínima las que hagan falta.</li>
   </ul>
@@ -1988,7 +1988,7 @@ const EJERCICIOS_EXTRA = [
   }
 ];
 const FASES = [
-  { desde:0,           titulo:'Aprender las seis', txt:'3 series de 10 a 15 en las seis máquinas. Cuando salen 15 en las tres, se sube (+5 kg, o +2,5 en pesos pequeños; más si te sobra mucho) y otra vez desde 10.' },
+  { desde:0,           titulo:'Aprender las seis', txt:'3 series de 10 a 15 en los seis ejercicios (la plancha, por segundos). Cuando salen 15 en las tres, se sube (+5 kg, o +2,5 en pesos pequeños; más si te sobra mucho) y otra vez desde 10.' },
   { desde:FASE_EXTRAS, titulo:'Se suman dos ejercicios', txt:'Hombro lateral, brazos y parte de atrás del muslo, turnándose: un día dos, el siguiente los otros dos.' },
   { desde:12,          titulo:'4 series en los cuatro grandes', txt:'Prensa, jalón, pecho y remo pasan a 4 series. Aquí la sesión completa ya es un entreno de gimnasio en toda regla.' }
 ];
@@ -3071,7 +3071,7 @@ function renderHoy(){
       : 'No hace falta que hoy sea un entrenamiento. Puede ser solo ir a ver dónde está cada máquina.';
   } else if(reentrada && tipo !== 'libre'){
     titulo = 'Qué bien verte';
-    sub = 'Empezamos por la sesión mínima: los 3 primeros ejercicios, peso bajo, 15 minutos. Sin más.';
+    sub = 'Empezamos por la sesión mínima: los 3 primeros ejercicios, peso bajo, unos ' + minutosPlan('minima') + ' minutos. Sin más.';
   }
 
   /* Antes, un domingo en que había entrenado seguía diciendo "Hoy no toca
@@ -3843,7 +3843,7 @@ const TANDA_MIN = 15;
 const DESCANSO_TANDAS = 120;   // 2 min entre las dos tandas de cinta
 
 /* modo: 'fuerza' (todo) · 'minima' (3 primeros) · 'express' (3 primeros, 1 serie,
-   ~8 min, para los días de verdad malos) · 'viaje' (4 en casa, 1 serie). */
+   ~5 min, para los días de verdad malos) · 'viaje' (4 en casa, 1 serie). */
 function empezarSesion(modo){
   const todos = (modo === 'viaje' || modo === 'casa') ? EJERCICIOS_CASA : ejerciciosActuales();
   S.tipo = 'fuerza';
@@ -4698,9 +4698,10 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-10-19'; }
+function novedadesId(){ return '2026-10-20'; }
 function novedadesFechadas(){
   return [
+    { id:'2026-10-20', t:'<b>Información al día:</b> los minutos de la sesión mínima, express, viaje y casa en la Guía ahora son los mismos que ves al empezar (decían 15, 8, 10 y 20; son 25, 5, 5 y 35). La Guía ya no dice que los seis ejercicios son «de máquina y sentado» (la plancha va en el suelo) y la regla del peso incluye lo de +2,5 kg y el «al límite».' },
     { id:'2026-10-19', t:'<b>Tres cosas:</b> 1) al acabar cada ejercicio puedes dejar un comentario (lo ves en Semana y te sale la próxima vez que llegues a él). 2) La plancha ahora pita aunque el móvil esté bloqueado o en el bolsillo (la música se pausa mientras dura). 3) Remo con mancuerna, paso a paso, dentro de «¿Está ocupada?».' },
     { id:'2026-10-11', t:'<b>«Hoy voy suave»:</b> al calentar, un botón para días con agujetas, resaca o poco sueño. Ese día no se propone subir peso y la plancha se queda en 30 s. Queda apuntado en Semana.' },
     { id:'2026-10-09', t:'<b>¿Cómo de duro ha sido? (1-5):</b> al acabar cada ejercicio, también la plancha, puedes puntuar cuánto te ha costado. Es opcional. Si marcas 5 («al límite»), la app no te manda subir peso ni segundos. Y si corriges una plancha en Semana con menos segundos, el objetivo baja a eso.' },
@@ -7770,9 +7771,16 @@ function showTab(name, btn){
   btn.classList.add('active');
   btn.setAttribute('aria-current', 'page');
   setLS(K.tab, name);
+  rellenarMinutos();
   if(name === 'volver') pintarVolver();
 }
 const TABS = ['hoy','rutina','guia','volver','semana'];
+/* Los minutos que se ven en la Guía salen del mismo cálculo que usa la sesión. */
+function rellenarMinutos(){
+  try{
+    Array.prototype.forEach.call(document.querySelectorAll('[data-minplan]'), el => { el.textContent = minutosPlan(el.getAttribute('data-minplan')); });
+  }catch(e){}
+}
 function showTabByName(name){
   const i = TABS.indexOf(name);
   if(i < 0) return;
@@ -7907,6 +7915,7 @@ if('serviceWorker' in navigator){
     window.location.reload();
   });
 }
+rellenarMinutos();
 </script>
 
 </body>
