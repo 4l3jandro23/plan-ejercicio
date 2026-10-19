@@ -1870,7 +1870,7 @@ const EJERCICIOS_GYM = [
     bien:'Notas que se juntan las paletillas y trabaja el centro de la espalda.',
     mal:'Si te balanceas adelante y atrás para tirar, baja el peso. Y si no notas nada en la espalda, estás tirando solo con los brazos: saca pecho, lleva los codos hacia atrás pegados al cuerpo y aguanta un segundo con las paletillas juntas antes de volver.',
     clave:'Tira con la espalda: codos atrás y paletillas juntas un segundo. Sin balancearte.',
-    alternativa:'Si está ocupado o no la encuentras: <b>remo con pecho apoyado</b> (Chest Supported Row), <b>remo con mancuerna</b> apoyado en un banco (10-12 por brazo), o cualquier <b>polea baja</b> sentado tirando hacia la barriga. La de remar con asiento que se desliza no vale: esa es de cardio.'
+    alternativa:'Si está ocupado o no la encuentras: <b>remo con pecho apoyado</b> (Chest Supported Row), <b>polea baja</b> sentado tirando hacia la barriga, o <b>remo con mancuerna</b>. La de remar con asiento que se desliza no vale: esa es de cardio.<br><br><b>Remo con mancuerna a una mano</b> (el más fácil de hacer bien):<br>1. Pon la mano y la rodilla de un lado en un banco. Si no hay banco, apoya la mano en una máquina fija o en el rack. El otro pie, firme en el suelo.<br>2. Espalda recta y casi paralela al suelo. La mancuerna cuelga con el brazo estirado.<br>3. Tira del codo hacia la cadera (no hacia el techo) y junta la paletilla. Aguanta un segundo.<br>4. Baja despacio, contando dos segundos.<br><b>10-12 por lado,</b> las 3 series de un lado y luego del otro. Empieza con <b>8-10 kg</b>: con una mano cuesta más de lo que parece, y no sirve el peso de la máquina.<br>No gires el torso ni tires de impulso: si lo haces, baja el peso. Apunta en la nota del ejercicio qué mancuerna usaste.'
   },
   {
     id:'hombros', nombre:'Press de hombros',
@@ -3836,7 +3836,7 @@ const S = {
   descansando:false, finDescanso:0, tick:null, hechos:0,
   tanda:0, tandaObjetivo:2, cintaExtra:false, finTanda:0, pausada:false, restante:0, ultimoSeg:-1,
   aguantando:false, preparando:false, finAguante:0, segAguante:0,
-  hechasPor:[], historial:[], terminada:false, valorados:{}, dureza:{}, ultimoCompletado:null, viendoLista:false,
+  hechasPor:[], historial:[], terminada:false, valorados:{}, dureza:{}, notasEj:{}, ultimoCompletado:null, viendoLista:false,
   inicio:0, reg:{}, repsSel:{}, calentando:false, finCalentar:0, subeAguante:{}, segHecho:null, marcasHoy:{}, nota:'', suave:false
 };
 const TANDA_MIN = 15;
@@ -3853,7 +3853,7 @@ function empezarSesion(modo){
   S.lista = S.lista.map(conVariante);
   S.modo = modo; S.iEj = 0; S.serie = 0; S.activa = true; S.descansando = false; S.aguantando = false; S.preparando = false; S.hechos = 0;
   S.hechasPor = S.lista.map(() => 0); S.historial = []; S.terminada = false;
-  S.valorados = {}; S.dureza = {}; S.ultimoCompletado = null; S.viendoLista = false;
+  S.valorados = {}; S.dureza = {}; S.notasEj = {}; S.ultimoCompletado = null; S.viendoLista = false;
   S.reg = {}; S.repsSel = {}; S.subeAguante = {}; S.segHecho = null; S.marcasHoy = {}; S.nota = ''; S.suave = false;
   /* La sesión empieza calentando: en el gimnasio, en la cinta; en casa, con
      los movimientos guiados. En express y viaje no: son la salida rápida y
@@ -3958,7 +3958,7 @@ function pintarSesionDentro(){
           ? 'Ocho minutos en un día malo valen más que una sesión perfecta dentro de dos semanas. Cuenta igual que cualquier otra.'
           : T('Ya está. No hay nada más que rellenar ni que apuntar en ningún sitio.', 'Guardado.')) + '</p>' +
         resumenFinHTML() +
-        bloqueFinPendientes() + preguntaSensacion(S.ultimoCompletado) + preguntaDureza(S.ultimoCompletado) +
+        bloqueFinPendientes() + preguntaSensacion(S.ultimoCompletado) + preguntaFinEj(S.ultimoCompletado) +
         notaSesionHTML() +
         '<button class="btn-main" onclick="terminarSesion()">Guardar y salir</button>' +
         /* Solo en sesión completa y en el gimnasio: es donde de verdad hay
@@ -4012,7 +4012,7 @@ function pintarSesionDentro(){
           'placeholder="kg" onchange="fijarPeso(\'' + ej.id + '\', this.value)" aria-label="Peso en kilos">' +
         '<button onclick="cambiarPeso(\'' + ej.id + '\',1)" aria-label="Subir peso">' + ic('i-mas') + '</button>' +
       '</div>' +
-    '</div>' + ajusteMaquinaHTML(ej) + sugerenciaPeso(ej) + estancamientoHTML(ej);
+    '</div>' + ajusteMaquinaHTML(ej) + notaEjAnteriorHTML(ej) + sugerenciaPeso(ej) + estancamientoHTML(ej);
 
   const bloqueReps = segundosDe(ej) ? '' :
     '<div class="ses-reps">' +
@@ -4107,7 +4107,7 @@ function pintarDescanso(ej, nSeries){
       (S.serie >= nSeries && sigIdx !== -1 ? siguienteMaquinaHTML(sigIdx) : '') +
       /* El descanso es justo cuando te das cuenta de que has tocado el botón
          sin querer, así que el deshacer también tiene que estar aquí. */
-      (S.serie >= nSeries ? preguntaSensacion(S.iEj) + preguntaDureza(S.iEj) : '') +
+      (S.serie >= nSeries ? preguntaSensacion(S.iEj) + preguntaFinEj(S.iEj) : '') +
       (puedeDeshacer() ? '<button class="btn-undo" onclick="deshacerSerie()">Deshacer la última serie</button>' : '') +
     '</div>';
   actualizarRing(true);
@@ -4360,7 +4360,7 @@ function autoValorar(i){
   S.valorados[i] = v;
 }
 function detalleSeries(x){
-  const d = x.d >= 1 && x.d <= 5 ? ' · dureza ' + x.d + '/5' : '';
+  const d = (x.d >= 1 && x.d <= 5 ? ' · dureza ' + x.d + '/5' : '') + (x.n ? ' · «' + x.n + '»' : '');
   if(Array.isArray(x.r) && x.r.length) return x.r.join(' · ') + ' repeticiones' + d;
   if(Array.isArray(x.seg) && x.seg.length) return x.seg.map(n => n + ' s').join(' · ') + d;
   return x.s + (x.s === 1 ? ' serie' : ' series') + (x.v && REPS_TXT[x.v] ? ' · ' + REPS_TXT[x.v] : '');
@@ -4698,9 +4698,10 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-10-11'; }
+function novedadesId(){ return '2026-10-19'; }
 function novedadesFechadas(){
   return [
+    { id:'2026-10-19', t:'<b>Tres cosas:</b> 1) al acabar cada ejercicio puedes dejar un comentario (lo ves en Semana y te sale la próxima vez que llegues a él). 2) La plancha ahora pita aunque el móvil esté bloqueado o en el bolsillo (la música se pausa mientras dura). 3) Remo con mancuerna, paso a paso, dentro de «¿Está ocupada?».' },
     { id:'2026-10-11', t:'<b>«Hoy voy suave»:</b> al calentar, un botón para días con agujetas, resaca o poco sueño. Ese día no se propone subir peso y la plancha se queda en 30 s. Queda apuntado en Semana.' },
     { id:'2026-10-09', t:'<b>¿Cómo de duro ha sido? (1-5):</b> al acabar cada ejercicio, también la plancha, puedes puntuar cuánto te ha costado. Es opcional. Si marcas 5 («al límite»), la app no te manda subir peso ni segundos. Y si corriges una plancha en Semana con menos segundos, el objetivo baja a eso.' },
     { id:'2026-10-08', t:'<b>La cuesta de la cinta se apunta:</b> en Semana, dentro de una cinta, pones el % que usaste. La siguiente te propone, como mínimo, el que ya hiciste hace poco (si hiciste 9 %, no vuelve a decirte 6 %).' },
@@ -5237,6 +5238,28 @@ function preguntaDureza(i){
   return '<div class="ses-sensacion"><p>' + (d ? 'Apuntado: <b>' + d + ' · ' + DUREZA_TXT[d].toLowerCase() + '</b>.' : '¿Cómo de duro ha sido? <span style="color:var(--muted);">(opcional · 1 fácil, 5 al límite)</span>') + '</p>' +
     '<div class="ses-sensacion-ops">' + ops + '</div></div>';
 }
+/* Un comentario libre por ejercicio («me tiró el hombro», «asiento 5», «usé
+   mancuerna de 10»). Se guarda en el entreno, se ve en Semana y se le enseña
+   la próxima vez que llegue a ese ejercicio. */
+function preguntaFinEj(i){ return preguntaDureza(i) + notaEjInput(i); }
+function notaEjInput(i){
+  const e = (i === undefined || i === null) ? null : S.lista[i];
+  if(!e || S.tipo === 'cinta') return '';
+  return '<label class="ses-ajuste" style="margin:10px 0 6px;"><span>Algo a tener en cuenta (opcional)</span>' +
+    '<input type="text" maxlength="140" enterkeyhint="done" autocomplete="off" value="' + esc((S.notasEj || {})[i] || '') + '" ' +
+      'placeholder="Me tiró el hombro, asiento muy alto…" oninput="guardarNotaEj(' + i + ', this.value)" ' +
+      'onkeydown="if(event.key===\'Enter\')this.blur()"></label>';
+}
+function guardarNotaEj(i, v){
+  S.notasEj = S.notasEj || {};
+  S.notasEj[i] = String(v || '').slice(0, 140);
+  guardarSesion();
+}
+function notaEjAnteriorHTML(ej){
+  const u = ej ? ultimoRegistro(ej.id) : null;
+  if(!u || !u.x || !u.x.n) return '';
+  return '<div class="ses-recuerda"><b>Tu nota de la última vez:</b> ' + esc(u.x.n) + '</div>';
+}
 function valorarDureza(i, n){
   const e = S.lista[i];
   if(!e) return;
@@ -5357,6 +5380,8 @@ function fotoEntreno(tipo){
     if(!e.sinPeso && kgUsado(i, e)) o.kg = kgUsado(i, e);
     if(S.valorados[i]) o.v = S.valorados[i];
     if(S.dureza && S.dureza[i]) o.d = S.dureza[i];
+    const nEj = String((S.notasEj || {})[i] || '').trim().slice(0, 140);
+    if(nEj) o.n = nEj;
     const apuntes = (S.reg && S.reg[i]) || [];
     const r = apuntes.map(x => x.r).filter(n => n > 0);
     const seg = apuntes.map(x => x.seg).filter(n => n > 0);
@@ -6218,11 +6243,67 @@ function programarPitos(segundos){
     sonarEn(PITOS.seguir, t0);
   }catch(e){ cancelarPitos(); }
 }
+/* Con el móvil bloqueado o en el bolsillo, el AudioContext se calla y el
+   temporizador de la página se congela. Un archivo de audio de verdad, en
+   cambio, sigue sonando con la pantalla apagada. Así que para la plancha se
+   fabrica un audio con silencio hasta el momento justo y los pitidos dentro,
+   y se pone a sonar al empezar. Efecto secundario: la música se pausa lo que
+   dure la plancha, porque iOS lo trata como reproducción. */
+function wavPitos(eventos, total){
+  const sr = 8000, n = Math.ceil((total + 1.5) * sr);
+  const buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const w = (o, s) => { for(let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  w(36, 'data'); v.setUint32(40, n * 2, true);
+  eventos.forEach(ev => ev.notas.forEach(nt => {
+    const ini = Math.round((ev.t + nt.t) * sr), len = Math.round((nt.d + 0.02) * sr);
+    for(let i = 0; i < len && ini + i < n; i++){
+      const x = i / sr;
+      const env = x < 0.02 ? x / 0.02 : Math.max(0, 1 - (x - 0.02) / nt.d);
+      const k = 44 + (ini + i) * 2;
+      const s = v.getInt16(k, true) + Math.sin(2 * Math.PI * nt.f * x) * env * 0.7 * 32767;
+      v.setInt16(k, Math.max(-32768, Math.min(32767, s)), true);
+    }
+  }));
+  return new Blob([buf], { type: 'audio/wav' });
+}
+function sonarPlanchaBloqueado(hastaEmpezar, hastaAcabar){
+  try{
+    if(typeof Audio === 'undefined' || !window.URL || !URL.createObjectURL) return false;
+    const ev = [];
+    if(hastaEmpezar > 0){
+      [3, 2, 1].forEach(d => { if(hastaEmpezar - d > 0.3) ev.push({ t: hastaEmpezar - d, notas: PITOS.cuenta }); });
+      ev.push({ t: hastaEmpezar, notas: PITOS.seguir });
+    }
+    [3, 2, 1].forEach(d => { if(hastaAcabar - d > hastaEmpezar + 0.3) ev.push({ t: hastaAcabar - d, notas: PITOS.cuenta }); });
+    ev.push({ t: hastaAcabar, notas: PITOS.plancha });
+    const url = URL.createObjectURL(wavPitos(ev, hastaAcabar));
+    const el = new Audio(url);
+    try{ if(navigator.audioSession) navigator.audioSession.type = 'playback'; }catch(e){}
+    try{ if(navigator.mediaSession && window.MediaMetadata) navigator.mediaSession.metadata = new MediaMetadata({ title: 'Plancha en marcha', artist: 'Plan de ejercicio' }); }catch(e){}
+    const marca = { stop: () => limpiar() };
+    function limpiar(){
+      try{ el.pause(); }catch(e){}
+      try{ URL.revokeObjectURL(url); }catch(e){}
+      pitosProgramados = pitosProgramados.filter(o => o !== marca);
+      audioDeFondo();
+      try{ if(navigator.mediaSession) navigator.mediaSession.metadata = null; }catch(e){}
+    }
+    el.addEventListener('ended', limpiar);
+    const p = el.play();
+    if(p && p.catch) p.catch(limpiar);
+    pitosProgramados.push(marca);
+    return true;
+  }catch(e){ return false; }
+}
 /* Plancha: con los segundos que quedan para empezar (0 si ya está en marcha)
    y los que quedan para acabar. */
 function programarPitosAguante(hastaEmpezar, hastaAcabar){
   cancelarPitos();
   if(getSonido() === 'no' || !(hastaAcabar > 0)) return;
+  if(sonarPlanchaBloqueado(hastaEmpezar, hastaAcabar)) return;
   prepararSonido();
   if(!audioCtx || audioCtx.state !== 'running') return;
   try{
@@ -7509,7 +7590,7 @@ function toggleTheme(){ toggleThemeManual(); }
    y a la misma altura en vez de aparecer en Hoy. */
 const CAMPOS_SESION = ['activa','tipo','modo','iEj','serie','descansando','finDescanso','hechos',
   'tanda','tandaObjetivo','cintaExtra','finTanda','pausada','restante',
-  'aguantando','preparando','finAguante','segAguante','hechasPor','historial','terminada','valorados','dureza','ultimoCompletado','inicio',
+  'aguantando','preparando','finAguante','segAguante','hechasPor','historial','terminada','valorados','dureza','notasEj','ultimoCompletado','inicio',
   'reg','repsSel','calentando','finCalentar','calPaso','subeAguante','marcasHoy','nota','suave'];
 
 function guardarSesion(){
@@ -7534,7 +7615,7 @@ function restaurarSesion(){
   }
   if(!Array.isArray(S.historial)) S.historial = [];
   if(!S.valorados || typeof S.valorados !== 'object') S.valorados = {};
-  ['reg','repsSel','subeAguante','marcasHoy','dureza'].forEach(c => { if(!S[c] || typeof S[c] !== 'object') S[c] = {}; });
+  ['reg','repsSel','subeAguante','marcasHoy','dureza','notasEj'].forEach(c => { if(!S[c] || typeof S[c] !== 'object') S[c] = {}; });
   S.segHecho = null;
   S.viendoLista = false; S.tick = null; S.ultimoSeg = -1; S.animAbierta = {};
   abrirSesion();
