@@ -4698,9 +4698,10 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-10-20'; }
+function novedadesId(){ return '2026-10-22'; }
 function novedadesFechadas(){
   return [
+    { id:'2026-10-22', t:'<b>Plancha:</b> el pitido iba desfasado respecto al cronómetro. Ahora el audio se recoloca solo si se desvía más de medio segundo.' },
     { id:'2026-10-20', t:'<b>Información al día:</b> los minutos de la sesión mínima, express, viaje y casa en la Guía ahora son los mismos que ves al empezar (decían 15, 8, 10 y 20; son 25, 5, 5 y 35). La Guía ya no dice que los seis ejercicios son «de máquina y sentado» (la plancha va en el suelo) y la regla del peso incluye lo de +2,5 kg y el «al límite».' },
     { id:'2026-10-19', t:'<b>Tres cosas:</b> 1) al acabar cada ejercicio puedes dejar un comentario (lo ves en Semana y te sale la próxima vez que llegues a él). 2) La plancha ahora pita aunque el móvil esté bloqueado o en el bolsillo (la música se pausa mientras dura). 3) Remo con mancuerna, paso a paso, dentro de «¿Está ocupada?».' },
     { id:'2026-10-11', t:'<b>«Hoy voy suave»:</b> al calentar, un botón para días con agujetas, resaca o poco sueño. Ese día no se propone subir peso y la plancha se queda en 30 s. Queda apuntado en Semana.' },
@@ -6039,6 +6040,7 @@ function arrancarTick(){
     const quedanSeg = Math.ceil((objetivo - Date.now()) / 1000);
     if(quedanSeg > 3) S.ultimoAviso = 0;
     else if(((S.descansando && S.tipo !== 'cinta') || S.aguantando) && quedanSeg !== S.ultimoAviso){ S.ultimoAviso = quedanSeg; if(!pitosProgramados.length) pito('cuenta'); }
+    sincronizarAudioPlancha();
     actualizarRing();
   }, 250);
 }
@@ -6270,6 +6272,15 @@ function wavPitos(eventos, total){
   }));
   return new Blob([buf], { type: 'audio/wav' });
 }
+let audioPlanchaAct = null;
+function sincronizarAudioPlancha(){
+  const a = audioPlanchaAct;
+  if(!a || a.el.paused) return;
+  const obj = (Date.now() - a.t0) / 1000;
+  if(isFinite(a.el.duration) && obj < a.el.duration - 0.2 && Math.abs(a.el.currentTime - obj) > 0.4){
+    try{ a.el.currentTime = obj; }catch(e){}
+  }
+}
 function sonarPlanchaBloqueado(hastaEmpezar, hastaAcabar){
   try{
     if(typeof Audio === 'undefined' || !window.URL || !URL.createObjectURL) return false;
@@ -6285,7 +6296,10 @@ function sonarPlanchaBloqueado(hastaEmpezar, hastaAcabar){
     try{ if(navigator.audioSession) navigator.audioSession.type = 'playback'; }catch(e){}
     try{ if(navigator.mediaSession && window.MediaMetadata) navigator.mediaSession.metadata = new MediaMetadata({ title: 'Plancha en marcha', artist: 'Plan de ejercicio' }); }catch(e){}
     const marca = { stop: () => limpiar() };
+    const t0 = Date.now();
+    audioPlanchaAct = { el: el, t0: t0 };
     function limpiar(){
+      if(audioPlanchaAct && audioPlanchaAct.el === el) audioPlanchaAct = null;
       try{ el.pause(); }catch(e){}
       try{ URL.revokeObjectURL(url); }catch(e){}
       pitosProgramados = pitosProgramados.filter(o => o !== marca);
@@ -6293,6 +6307,7 @@ function sonarPlanchaBloqueado(hastaEmpezar, hastaAcabar){
       try{ if(navigator.mediaSession) navigator.mediaSession.metadata = null; }catch(e){}
     }
     el.addEventListener('ended', limpiar);
+    el.addEventListener('playing', sincronizarAudioPlancha);
     const p = el.play();
     if(p && p.catch) p.catch(limpiar);
     pitosProgramados.push(marca);
