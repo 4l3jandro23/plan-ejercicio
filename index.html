@@ -1467,21 +1467,21 @@
   <div id="vistaGym">
     <div id="fasesBox"></div>
     <div class="quiet">
-      Las cinco máquinas son de <b>placas con pin</b> (Technogym y Gym80, la zona de "musculación guiada"). Si no tienes claro cuáles son, están explicadas en la pestaña <b>Guía</b>.
+      Las cuatro máquinas son de <b>placas con pin</b> (Technogym y Gym80, la zona de "musculación guiada"). Si no tienes claro cuáles son, están explicadas en la pestaña <b>Guía</b>.
     </div>
     <h3>Calentar — 5 minutos</h3>
     <p style="font-size:var(--t-base); margin-top:0;">Cinta andando rápido en cuesta, o bici estática, suave: tienes que acabar pudiendo hablar sin esfuerzo. Luego, en la primera máquina, una serie de prueba con menos peso que no se apunta. La sesión guiada empieza por aquí y te cuenta los 5 minutos.</p>
     <p style="font-size:var(--t-base);"><b>Antes de las máquinas no se estira.</b> Estirar en frío no evita lesiones y quita un poco de fuerza en ese momento. Los estiramientos van al final, o en casa.</p>
 
     <h3 style="margin-top:26px;">Los 6 ejercicios</h3>
-    <p class="lead" style="margin-bottom:4px;">Cinco en máquina y sentado, y la sexta es la plancha, en el suelo. Las máquinas te obligan a hacer el movimiento bien: es físicamente difícil hacerlo mal. Por eso empiezas aquí y no con pesas sueltas.</p>
+    <p class="lead" style="margin-bottom:4px;">Cuatro en máquina y sentado, el remo con una mancuerna apoyado en un banco, y la plancha en el suelo. Las máquinas te obligan a hacer el movimiento bien: es físicamente difícil hacerlo mal. Por eso empiezas aquí y casi no usas pesas sueltas.</p>
     <div id="listaGym"></div>
     <!-- La regla del peso vivía arriba del todo, antes de la rutina: un muro de
          texto entre tú y los seis ejercicios, cada vez que abrías la pestaña.
          Aquí debajo sigue estando, que es donde de verdad la vas a leer. -->
     <div class="tip" style="margin-top:18px;">
       <b>La regla del peso, que es la única que importa:</b><br>
-      El primer día pon <b>el peso más bajo</b> en todo: el pin, arriba del todo de la torre de placas. Haz <b>entre 10 y 15 repeticiones</b>. Cuando te salgan 15 en las tres series, la próxima vez subes (5 kg, o 2,5 en los pesos pequeños; más si te sobraba mucho) y vuelves a empezar desde 10. Si marcas «5, al límite» o es un día suave, la app no te manda subir. Ya está. No existe el peso "correcto" — si te quedas corto, lo subes el día siguiente y no ha pasado nada.
+      El primer día pon <b>el peso más bajo</b> en todo: el pin, arriba del todo de la torre de placas. Haz <b>entre 10 y 15 repeticiones</b>. Cuando te salgan 15 en las tres series, la próxima vez subes (5 kg, o 2,5 en los pesos pequeños; más si te sobraba mucho) y vuelves a empezar desde 10. Si marcas «5, al límite» o es un día suave, la app no te manda subir. Si una máquina tiene la placa amarilla de 2,5 kg, o no sube de 2,5, díselo en «Saltos de peso» dentro del ejercicio y te propone solo subidas que puedas poner. Ya está. No existe el peso "correcto" — si te quedas corto, lo subes el día siguiente y no ha pasado nada.
     </div>
     <h3 style="margin-top:26px;">Tras 6 sesiones: dos más, que se turnan</h3>
     <p style="font-size:var(--t-base); margin-top:0;">Los seis de arriba cubren todo el cuerpo, pero se quedan cortos en lo que más se ve: la anchura de hombros, los brazos y la parte de atrás del muslo. Cuando los seis ya no te den corte, la sesión completa añade dos de estos después del press de hombros: un día los dos primeros, el siguiente los otros dos. Lo hace sola.</p>
@@ -1834,7 +1834,7 @@ const EJERCICIOS_GYM = [
     bien:'Notas que trabajan los laterales de la espalda, debajo de las axilas.',
     mal:'Si te echas muy hacia atrás o das tirones con todo el cuerpo, el peso es demasiado. Bájalo, en serio, no pasa nada.',
     clave:'Tira hacia el pecho, no hacia la nuca. Y sin dar tirones.',
-    alternativa:'Si está ocupado, cualquiera de estas vale igual, en este orden:<br>1. <b>Remo sentado</b> (el número 4) y vuelves al jalón después.<br>2. <b>Dominadas asistidas</b> (Assisted Pull-up): te arrodillas en una plataforma que te ayuda a subir. Más peso en la máquina es más fácil.<br>3. <b>Otra polea alta</b> con barra o cuerda, de rodillas delante, tirando hacia el pecho.<br>4. <b>Remo con mancuerna</b>, una mano y una rodilla en un banco, 10-12 por brazo.<br>Y si está siempre lleno, hazlo <b>el primero</b> nada más llegar: el orden da igual.'
+    alternativa:'Si está ocupado, cualquiera de estas vale igual, en este orden:<br>1. <b>Remo con mancuerna</b> (el número 4) y vuelves al jalón después.<br>2. <b>Dominadas asistidas</b> (Assisted Pull-up): te arrodillas en una plataforma que te ayuda a subir. Más peso en la máquina es más fácil.<br>3. <b>Otra polea alta</b> con barra o cuerda, de rodillas delante, tirando hacia el pecho.<br>Y si está siempre lleno, hazlo <b>el primero</b> nada más llegar: el orden da igual.'
   },
   {
     id:'pecho', nombre:'Press de pecho',
@@ -1855,22 +1855,22 @@ const EJERCICIOS_GYM = [
     alternativa:'Si está ocupada: <b>contractor de pecho</b> ("Pec Deck" o "Butterfly"), la máquina donde juntas los brazos por delante. Es aún más fácil de usar que esta.'
   },
   {
-    id:'remo', nombre:'Remo sentado',
-    alias:'En la máquina pone "Seated Row", "Low Row" o "Remo". El asiento NO se mueve',
+    id:'remo', nombre:'Remo con mancuerna',
+    alias:'Una mancuerna, una mano y una rodilla apoyadas en el banco',
     series:3, reps:'10-15 repeticiones',
     musculo:'La espalda del medio: la que te mantiene derecho. Muy útil si pasas ocho horas sentado delante de un ordenador, que es tu caso.',
-    maquina:'Te sientas y tiras de dos asas hacia tu barriga, como si remaras. Ojo: no es la máquina de remar de cardio, la que tiene el asiento que se desliza por un raíl, pedales con correas y una pantalla. Esta tiene una pila de placas de peso con un pasador (o discos), y tú te quedas quieto en el asiento. Muchas veces es una polea baja con un asa en forma de V.',
-    ajuste:'Si la máquina tiene una almohadilla para el pecho, ajústala para apoyarte en ella; así la espalda baja no trabaja de más.',
+    maquina:'Con una mancuerna en una mano, apoyas la otra mano y la rodilla del mismo lado en un banco, y tiras de la mancuerna hacia la cadera. Es el ejercicio más fácil de hacer bien porque el banco te sujeta. Aquí se usa en lugar de la máquina de remo.',
+    ajuste:'Un banco plano. La mancuerna, a tu lado, en el suelo. Si no hay banco libre, apoya la mano en una máquina fija o en el rack, a la altura de la cintura.',
     pasos:[
-      'Siéntate derecho, pecho apoyado si hay almohadilla.',
-      'Agarra las asas con los brazos estirados.',
-      'Tira hacia tu ombligo, juntando los omóplatos como si sujetaras un lápiz entre ellos.',
-      'Vuelve despacio hasta estirar los brazos, sin dejar que el peso caiga de golpe.'
+      'Apoya la mano y la rodilla de un lado en el banco. El otro pie, firme en el suelo.',
+      'Espalda recta y casi paralela al suelo. La mancuerna cuelga con el brazo estirado.',
+      'Tira del codo hacia la cadera (no hacia el techo) y junta la paletilla. Aguanta un segundo.',
+      'Baja despacio, contando dos segundos. Una serie son las repeticiones de un brazo y luego las del otro.'
     ],
-    bien:'Notas que se juntan las paletillas y trabaja el centro de la espalda.',
-    mal:'Si te balanceas adelante y atrás para tirar, baja el peso. Y si no notas nada en la espalda, estás tirando solo con los brazos: saca pecho, lleva los codos hacia atrás pegados al cuerpo y aguanta un segundo con las paletillas juntas antes de volver.',
-    clave:'Tira con la espalda: codos atrás y paletillas juntas un segundo. Sin balancearte.',
-    alternativa:'Si está ocupado o no la encuentras: <b>remo con pecho apoyado</b> (Chest Supported Row), <b>polea baja</b> sentado tirando hacia la barriga, o <b>remo con mancuerna</b>. La de remar con asiento que se desliza no vale: esa es de cardio.<br><br><b>Remo con mancuerna a una mano</b> (el más fácil de hacer bien):<br>1. Pon la mano y la rodilla de un lado en un banco. Si no hay banco, apoya la mano en una máquina fija o en el rack. El otro pie, firme en el suelo.<br>2. Espalda recta y casi paralela al suelo. La mancuerna cuelga con el brazo estirado.<br>3. Tira del codo hacia la cadera (no hacia el techo) y junta la paletilla. Aguanta un segundo.<br>4. Baja despacio, contando dos segundos.<br><b>10-12 por lado,</b> las 3 series de un lado y luego del otro. Empieza con <b>8-10 kg</b>: con una mano cuesta más de lo que parece, y no sirve el peso de la máquina.<br>No gires el torso ni tires de impulso: si lo haces, baja el peso. Apunta en la nota del ejercicio qué mancuerna usaste.'
+    bien:'Notas que se junta la paletilla y trabaja el centro de la espalda, sin que gire el cuerpo.',
+    mal:'Si giras el tronco o tiras de impulso, baja la mancuerna. Si solo notas el brazo, tira del codo hacia la cadera y no del puño hacia arriba.',
+    clave:'Tira con el codo hacia la cadera, paletilla junta un segundo. Sin girar.',
+    alternativa:'Si no hay banco o mancuernas: <b>remo sentado en máquina</b> (el asiento NO se mueve; la de remar con asiento que se desliza es de cardio), <b>remo con pecho apoyado</b> o cualquier <b>polea baja</b> sentado tirando hacia la barriga.<br><br>Las mancuernas suben de 2 en 2 kg. Apunta en la nota del ejercicio cuál usaste.'
   },
   {
     id:'hombros', nombre:'Press de hombros',
@@ -1954,19 +1954,19 @@ const EJERCICIOS_EXTRA = [
   },
   {
     id:'biceps', turno:'B', nombre:'Curl de bíceps',
-    alias:'En la máquina pone "Biceps Curl" o "Arm Curl"', series:3, reps:'10-15 repeticiones',
+    alias:'En la máquina pone "Arm Curl" o "Biceps Curl"', series:3, reps:'10-15 repeticiones',
     musculo:'El bíceps, la parte de delante del brazo.',
-    maquina:'Te sientas, apoyas los brazos en un atril inclinado y doblas los codos subiendo unas asas.',
-    ajuste:'El asiento a la altura en la que las axilas quedan pegadas al borde de arriba del atril y los codos alineados con el eje de giro.',
+    maquina:'Te sientas con la parte de atrás de los brazos apoyada en un atril inclinado y doblas los codos para subir dos asas hacia los hombros.',
+    ajuste:'Ajusta el asiento hasta que las axilas queden contra el borde de arriba del atril y los codos justo a la altura del eje de giro (el círculo o tornillo que hay al lado de la máquina). Si el asiento está bajo, se te suben los hombros; si está alto, el brazo se despega.',
     pasos:[
-      'Siéntate y apoya la parte de atrás de los brazos en el atril.',
-      'Agarra las asas con las palmas hacia arriba.',
-      'Sube doblando los codos, sin despegar los brazos del atril.',
-      'Baja despacio hasta casi estirar.'
+      'Siéntate con el pecho pegado al borde del atril y los brazos apoyados enteros, desde la axila hasta el codo.',
+      'Agarra las asas con las palmas hacia arriba, sin encoger los hombros hacia las orejas.',
+      'Sube doblando los codos hasta que las manos queden cerca de los hombros. No levantes los codos del atril.',
+      'Baja en dos segundos hasta casi estirar el brazo, sin bloquear el codo ni soltar el peso de golpe.'
     ],
-    bien:'Notas el bíceps, y los brazos no se mueven del atril.',
-    mal:'Si echas el cuerpo hacia atrás para subir, sobra peso.',
-    clave:'Brazos quietos en el atril. Baja despacio.',
+    bien:'Notas el bíceps trabajar, los codos no se despegan del atril y los hombros se quedan abajo.',
+    mal:'Si los hombros suben hacia las orejas, el asiento está bajo o el peso es mucho. Si echas el cuerpo atrás o los codos se levantan del atril, baja peso. Si dejas caer el peso al bajar, pierdes la mitad del trabajo.',
+    clave:'Codos pegados al atril, hombros abajo, baja despacio.',
     alternativa:'Si está ocupada: <b>curl en polea baja</b> con una barra corta, de pie y con los codos pegados al cuerpo.'
   },
   {
@@ -2237,7 +2237,8 @@ const K = {
   syncOk:'planEjercicioSyncOk', syncError:'planEjercicioSyncError',
   entrenos:'planEjercicioEntrenos', ajustesMaq:'planEjercicioAjustesMaquina',
   aguante:'planEjercicioAguante', voz:'planEjercicioVoz', casaVariante:'planEjercicioCasaVariante',
-  andarExtra:'planEjercicioAndarExtra', medidas:'planEjercicioMedidas', medidasRopa:'planEjercicioMedidasRopa'
+  andarExtra:'planEjercicioAndarExtra', medidas:'planEjercicioMedidas', medidasRopa:'planEjercicioMedidasRopa',
+  pasoMaq:'planEjercicioPasoMaquina'
 };
 /* Qué viaja entre el móvil y el ordenador, y cómo se junta (ver fusionarEstado).
    Tema, tamaño de letra, contraste y 'al abrir la app' se quedan en cada
@@ -2245,8 +2246,8 @@ const K = {
 const SYNC_CFG = {
   todas: [K.color, K.dias, K.lugar, K.descanso, K.sonido, K.tono,
           K.log, K.pesos, K.check, K.sensacion, K.cintaExtra, K.andarExtra, K.pesosHist,
-          K.entrenos, K.ajustesMaq, K.aguante, K.casaVariante, K.medidas, K.medidasRopa],
-  objeto: [K.log, K.pesos, K.check, K.sensacion, K.entrenos, K.ajustesMaq, K.aguante, K.casaVariante, K.medidas, K.medidasRopa],
+          K.entrenos, K.ajustesMaq, K.aguante, K.casaVariante, K.medidas, K.medidasRopa, K.pasoMaq],
+  objeto: [K.log, K.pesos, K.check, K.sensacion, K.entrenos, K.ajustesMaq, K.aguante, K.casaVariante, K.medidas, K.medidasRopa, K.pasoMaq],
   union: { [K.cintaExtra]: 'fechas', [K.andarExtra]: 'fechas', [K.pesosHist]: 'historial' }
 };
 /* Lo que nunca sale del dispositivo, ni en la copia descargada: el token de
@@ -2407,7 +2408,24 @@ function nivelCinta(){
   if(enReentrada() && i > 0) i--;
   const niv = CINTA_NIVELES[i];
   const ya = incCintaReciente();
-  return ya > parseFloat(niv.inc) ? Object.assign({}, niv, { inc: String(ya).replace('.', ',') }) : niv;
+  if(!(ya > 0)) return niv;
+  /* Sube una sola variable cada vez: si el nivel pide mucha más cuesta de la
+     que ya hace, se propone la misma, y un punto más solo cuando lleva al
+     menos dos cintas seguidas a esa. */
+  let inc = parseFloat(niv.inc);
+  if(inc > ya) inc = cintasAlNivel(ya) >= 2 ? Math.min(inc, ya + 1) : ya;
+  else inc = Math.max(inc, ya);
+  return inc === parseFloat(niv.inc) ? niv : Object.assign({}, niv, { inc: String(inc).replace('.', ',') });
+}
+function cintasAlNivel(ya){
+  const todos = getEntrenos();
+  const limite = new Date(); limite.setDate(limite.getDate() - 21);
+  return Object.keys(todos).filter(k => todos[k] && todos[k].cinta && todos[k].inc >= ya && desdeKey(k) >= limite).length;
+}
+function incRealHTML(niv){
+  return '<label class="ses-ajuste" style="margin:0 0 10px;"><span>Cuesta que has puesto (%)</span>' +
+    '<input type="number" inputmode="decimal" min="0" max="15" step="1" value="' + (S.incReal || '') + '" placeholder="' + esc(niv.inc) + '" ' +
+    'onchange="S.incReal = Math.min(15, parseFloat(String(this.value).replace(\',\', \'.\')) || 0); guardarSesion()"></label>';
 }
 /* La cuesta de la última cinta de las tres últimas semanas, si la apuntó. */
 function incCintaReciente(){
@@ -3329,13 +3347,28 @@ function minRepsUltima(id, kg, s){
   }
   return 15;
 }
+/* Saltos de peso de cada máquina. Algunas llevan una placa amarilla de 2,5 kg
+   para subir de 2,5 en 2,5; otras solo suben de 5 en 5; las mancuernas del
+   remo, de 2 en 2. Se apunta dentro del ejercicio. Sin apuntar, como siempre. */
+const PASO_DEFECTO = { remo: 2 };
+function getPasoMaq(){ const a = loadJSON(K.pasoMaq, {}); return (a && typeof a === 'object') ? a : {}; }
+function pasoMaq(id){ const p = parseFloat(getPasoMaq()[id]); return p > 0 ? p : (PASO_DEFECTO[id] || 0); }
+function pasoBaseDe(id, kg){ const p = pasoMaq(id); return p ? kg + p : pasoBase(kg); }
+function guardarPasoMaq(id, v){
+  const a = getPasoMaq(), p = parseFloat(v);
+  if(p > 0) a[id] = p; else delete a[id];
+  saveJSON(K.pasoMaq, a);
+  toast(p > 0 ? 'Saltos de ' + String(p).replace('.', ',') + ' kg' : 'Saltos automáticos');
+  if(S.activa) pintarSesion();
+}
 function pesoSubida(id, kg, s){
-  const base = pasoBase(kg);
+  const base = pasoBaseDe(id, kg);
   const r = minRepsUltima(id, kg, s);
   if(r < 18) return base;
   const para12 = kg * (1 + r / 30) / (1 + 12 / 30);
   const tope = kg * 1.3;
-  const est = Math.floor(Math.min(para12, tope) / 2.5) * 2.5;
+  const u = pasoMaq(id) || 2.5;
+  const est = Math.floor(Math.min(para12, tope) / u) * u;
   return Math.max(base, est);
 }
 /* En el descanso antes de cambiar de máquina: qué peso y qué ajuste poner,
@@ -3836,7 +3869,7 @@ const S = {
   descansando:false, finDescanso:0, tick:null, hechos:0,
   tanda:0, tandaObjetivo:2, cintaExtra:false, finTanda:0, pausada:false, restante:0, ultimoSeg:-1,
   aguantando:false, preparando:false, finAguante:0, segAguante:0,
-  hechasPor:[], historial:[], terminada:false, valorados:{}, dureza:{}, notasEj:{}, ultimoCompletado:null, viendoLista:false,
+  hechasPor:[], historial:[], terminada:false, valorados:{}, dureza:{}, notasEj:{}, incReal:0, ultimoCompletado:null, viendoLista:false,
   inicio:0, reg:{}, repsSel:{}, calentando:false, finCalentar:0, subeAguante:{}, segHecho:null, marcasHoy:{}, nota:'', suave:false
 };
 const TANDA_MIN = 15;
@@ -3853,7 +3886,7 @@ function empezarSesion(modo){
   S.lista = S.lista.map(conVariante);
   S.modo = modo; S.iEj = 0; S.serie = 0; S.activa = true; S.descansando = false; S.aguantando = false; S.preparando = false; S.hechos = 0;
   S.hechasPor = S.lista.map(() => 0); S.historial = []; S.terminada = false;
-  S.valorados = {}; S.dureza = {}; S.notasEj = {}; S.ultimoCompletado = null; S.viendoLista = false;
+  S.valorados = {}; S.dureza = {}; S.notasEj = {}; S.incReal = 0; S.ultimoCompletado = null; S.viendoLista = false;
   S.reg = {}; S.repsSel = {}; S.subeAguante = {}; S.segHecho = null; S.marcasHoy = {}; S.nota = ''; S.suave = false;
   /* La sesión empieza calentando: en el gimnasio, en la cinta; en casa, con
      los movimientos guiados. En express y viaje no: son la salida rápida y
@@ -4176,7 +4209,7 @@ function pintarCintaDentro(){
     '<div class="cinta-nums">' +
       '<div class="cinta-num"><b>' + niv.vel + '</b><span>km/h</span></div>' +
       '<div class="cinta-num"><b>' + niv.inc + '%</b><span>de cuesta</span></div>' +
-    '</div>' +
+    '</div>' + incRealHTML(niv) +
     '<div class="cinta-fase" id="cintaFase"></div>' +
     '<div class="ses-recuerda"><b>La regla que no se salta:</b> si te tienes que agarrar a las barras, baja la cuesta o la velocidad. Tienes que poder andar sin tocarlas.</div>' +
     '<details class="ses-alt"><summary>¿Todas las cintas ocupadas?</summary><div class="content">Cualquiera de estas vale lo mismo, con el mismo tiempo:<br>1. <b>Remo de cardio</b> (el del asiento que se desliza y pantalla): nivel 4-6, a un ritmo en el que puedas hablar a trozos. Empuja con las piernas primero y tira con los brazos al final.<br>2. <b>Bici estática</b>, con resistencia media.<br>3. <b>Elíptica</b>.<br>Cuenta igual para tu progresión de cinta.</div></details>' +
@@ -4698,9 +4731,10 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-10-22'; }
+function novedadesId(){ return '2026-10-22b'; }
 function novedadesFechadas(){
   return [
+    { id:'2026-10-22b', t:'<b>Varios cambios:</b> 1) «Saltos de peso» en cada máquina (placa amarilla de 2,5 kg, solo de 5 en 5…): la app solo te propone subidas que puedas poner. 2) El remo ahora es con mancuerna, con su ficha y su dibujo. 3) El curl de bíceps explica bien la máquina Arm Curl. 4) En la cinta apuntas la cuesta que has puesto de verdad, y la app solo propone subir un punto cuando llevas dos cintas seguidas a la misma.' },
     { id:'2026-10-22', t:'<b>Plancha:</b> el pitido iba desfasado respecto al cronómetro. Ahora el audio se recoloca solo si se desvía más de medio segundo.' },
     { id:'2026-10-20', t:'<b>Información al día:</b> los minutos de la sesión mínima, express, viaje y casa en la Guía ahora son los mismos que ves al empezar (decían 15, 8, 10 y 20; son 25, 5, 5 y 35). La Guía ya no dice que los seis ejercicios son «de máquina y sentado» (la plancha va en el suelo) y la regla del peso incluye lo de +2,5 kg y el «al límite».' },
     { id:'2026-10-19', t:'<b>Tres cosas:</b> 1) al acabar cada ejercicio puedes dejar un comentario (lo ves en Semana y te sale la próxima vez que llegues a él). 2) La plancha ahora pita aunque el móvil esté bloqueado o en el bolsillo (la música se pausa mientras dura). 3) Remo con mancuerna, paso a paso, dentro de «¿Está ocupada?».' },
@@ -5299,7 +5333,7 @@ function sugerenciaPeso(e){
   if(s.v === 'sobra'){
     const nuevo = pesoSubida(e.id, actual, s);
     const r = minRepsUltima(e.id, actual, s);
-    const texto = nuevo > pasoBase(actual)
+    const texto = nuevo > pasoBaseDe(e.id, actual)
       ? 'La última vez te salieron <b>' + r + ' o más en todas</b> con ' + actual + ' kg: te sobraba bastante. Esta vez sube más: <b>' + nuevo + ' kg</b>. Busca que te salgan 10-12 costando. Si no llegas a 8, baja un poco, no pasa nada.'
       : 'La última vez sacaste <b>15 en las tres series</b> con ' + actual + ' kg. Toca subir: <b>' + nuevo + ' kg</b>, y vuelves a empezar desde 10.';
     return '<div class="ses-sugerencia">' + texto +
@@ -5348,13 +5382,20 @@ function guardarAjusteMaq(id, txt){
   saveJSON(K.ajustesMaq, a);
   if(limpio) toast('Ajuste apuntado');
 }
+function pasoMaqHTML(ej){
+  const g = getPasoMaq()[ej.id];
+  const v = g > 0 ? String(g) : '';
+  const op = (val, txt) => '<option value="' + val + '"' + (v === val ? ' selected' : '') + '>' + txt + '</option>';
+  return '<label class="ses-ajuste"><span>Saltos de peso</span><select onchange="guardarPasoMaq(\'' + ej.id + '\', this.value)">' +
+    op('', 'Automático') + op('2', '2 kg (mancuernas)') + op('2.5', '2,5 kg (hay placa amarilla)') + op('5', 'Solo de 5 en 5') + '</select></label>';
+}
 function ajusteMaquinaHTML(ej){
   if(!ej || ej.sinPeso || !EJERCICIOS_GYM.concat(EJERCICIOS_EXTRA).some(e => e.id === ej.id)) return '';
   const actual = getAjustesMaq()[ej.id] || '';
   return '<label class="ses-ajuste"><span>Cómo la dejas</span>' +
     '<input type="text" maxlength="80" enterkeyhint="done" autocomplete="off" value="' + esc(actual) + '" ' +
       'placeholder="Asiento 4, respaldo 2…" onchange="guardarAjusteMaq(\'' + ej.id + '\', this.value)" ' +
-      'onkeydown="if(event.key===\'Enter\')this.blur()"></label>';
+      'onkeydown="if(event.key===\'Enter\')this.blur()"></label>' + pasoMaqHTML(ej);
 }
 
 /* ---------- Registro de cada sesión ----------
@@ -5392,7 +5433,7 @@ function fotoEntreno(tipo){
     return o;
   }).filter(Boolean);
   const foto = { tipo: tipo, modo: S.modo, min: minutosSesion(), ej: ej, cinta: S.tipo === 'cinta' ? (S.tanda || 0) * TANDA_MIN : 0 };
-  if(foto.cinta){ const inc = parseFloat(String(nivelCinta().inc).replace(',', '.')); if(inc > 0) foto.inc = inc; }
+  if(foto.cinta){ const inc = S.incReal > 0 ? S.incReal : parseFloat(String(nivelCinta().inc).replace(',', '.')); if(inc > 0) foto.inc = inc; }
   const nota = String(S.nota || '').trim().slice(0, 200);
   if(nota) foto.nota = nota;
   if(S.suave) foto.suave = 1;
@@ -6165,7 +6206,7 @@ function fijarPeso(id, valor){
 }
 function cambiarPeso(id, delta){
   const pesos = getPesos();
-  const nuevo = Math.max(0, (pesos[id] || 0) + delta * 5);
+  const nuevo = Math.max(0, (pesos[id] || 0) + delta * (pasoMaq(id) || 5));
   if(nuevo === 0) delete pesos[id]; else pesos[id] = nuevo;
   saveJSON(K.pesos, pesos);
   const inp = document.getElementById('inpPeso');
@@ -6430,16 +6471,14 @@ const ANIMS = {
   },
   remo: {
     t:[1, .5, 2, .4], ritmo:'Tira en 1 s · aprieta · vuelve en 2 s',
-    maq: SUELO + '<path d="M64 116H106" stroke-width="8"/><path d="M84 120V146" stroke-width="4"/>' +
-      '<path d="M104 60V98" stroke-width="10"/><path d="M104 98V146" stroke-width="4"/><path d="M134 146L146 116" stroke-width="5"/><path d="M210 146V40" stroke-width="4"/>',
+    maq: SUELO + '<path d="M56 112H150" stroke-width="8"/><path d="M68 116V146" stroke-width="4"/><path d="M138 116V146" stroke-width="4"/>',
     calc(k){
-      const hip = [84, 112], sho = aPol(hip, -88, 50), head = aPol(sho, -86, 15);
-      const [rod, tob] = aIK(hip, [138, 136], 36, 34, -1);
-      const [codo, mano] = aIK(sho, aLpP([142, 72], [96, 78], k), 28, 26, 1);
-      return { hip, sho, head, rod, tob, punta:aPol(tob, -68, 12), codo, mano };
+      const hip = [88, 96], sho = aPol(hip, -14, 50), head = aPol(sho, -14, 15);
+      const [rod, tob] = aIK(hip, [66, 144], 36, 34, -1);
+      const [codo, mano] = aIK(sho, aLpP([134, 132], [104, 100], k), 28, 26, 1);
+      return { hip, sho, head, rod, tob, punta:[tob[0] + 12, 146], codo, mano };
     },
-    atras(p){ return [{ l:[p.mano, [210, 70]], w:2, c:'cable' }]; },
-    delante(p){ return [{ l:[[p.mano[0], p.mano[1] - 10], [p.mano[0], p.mano[1] + 10]], w:7, c:'mueve' }]; }
+    delante(p){ return [{ l:[[p.mano[0] - 9, p.mano[1]], [p.mano[0] + 9, p.mano[1]]], w:7, c:'mueve' }]; }
   },
   hombros: {
     t:[1, .3, 2, .5], ritmo:'Empuja en 1 s · baja en 2 s',
@@ -7606,7 +7645,7 @@ function toggleTheme(){ toggleThemeManual(); }
    y a la misma altura en vez de aparecer en Hoy. */
 const CAMPOS_SESION = ['activa','tipo','modo','iEj','serie','descansando','finDescanso','hechos',
   'tanda','tandaObjetivo','cintaExtra','finTanda','pausada','restante',
-  'aguantando','preparando','finAguante','segAguante','hechasPor','historial','terminada','valorados','dureza','notasEj','ultimoCompletado','inicio',
+  'aguantando','preparando','finAguante','segAguante','hechasPor','historial','terminada','valorados','dureza','notasEj','incReal','ultimoCompletado','inicio',
   'reg','repsSel','calentando','finCalentar','calPaso','subeAguante','marcasHoy','nota','suave'];
 
 function guardarSesion(){
@@ -7820,7 +7859,7 @@ function toast(msg){
    Lo que queda es lo que sí funciona: todo vive en este dispositivo, y para
    llevártelo a otro está la copia manual. La fusión clave a clave sigue aquí
    porque restaurar una copia no debe borrar lo que hayas hecho desde entonces. */
-const FUSIONABLES = [K.log, K.pesos, K.sensacion, K.entrenos, K.ajustesMaq, K.aguante, K.casaVariante];
+const FUSIONABLES = [K.log, K.pesos, K.sensacion, K.entrenos, K.ajustesMaq, K.aguante, K.casaVariante, K.pasoMaq];
 
 function fusionarObjetos(localRaw, remotoRaw){
   let local = {}, remoto = {};
