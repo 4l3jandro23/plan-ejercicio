@@ -9,7 +9,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Ejercicio">
-<meta name="theme-color" content="#2b6cb0">
+<meta name="theme-color" content="#eff0f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
 <meta name="description" content="Qué toca hoy, rutina de fuerza explicada desde cero, sesión guiada paso a paso y vía de escape para los días malos. Sin rachas y sin culpa.">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -1133,6 +1134,7 @@
   }
 </style>
 </style>
+<link rel="stylesheet" href="diseno.css">
 </head>
 <body>
 
@@ -1276,7 +1278,7 @@
     <div class="settings-row">
       <div class="lbl">Color</div>
       <div class="swatches" id="colorSwatches">
-        <div class="swatch" data-color=""         style="background:#2b6cb0" onclick="setColor('')"></div>
+        <div class="swatch" data-color=""         style="background:#1d3fd6" onclick="setColor('')"></div>
         <div class="swatch" data-color="verde"    style="background:#2f7a5f" onclick="setColor('verde')"></div>
         <div class="swatch" data-color="turquesa" style="background:#0f766e" onclick="setColor('turquesa')"></div>
         <div class="swatch" data-color="morado"   style="background:#6b46c1" onclick="setColor('morado')"></div>
@@ -3104,6 +3106,7 @@ function renderHoy(){
       '<div class="hoy-fecha">' + fechaTxt + '</div>' +
       '<div class="hoy-que">' + titulo + '</div>' +
       '<p class="hoy-sub">' + sub + '</p>' +
+      tiraSemanaHTML() +
       (marcado ? (
         '<div class="hoy-hecho">' +
           '<b>' + ic(etiqueta(marcado).ico) + etiqueta(marcado).txt + '</b>' +
@@ -4731,9 +4734,10 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-10-22b'; }
+function novedadesId(){ return '2026-10-30'; }
 function novedadesFechadas(){
   return [
+    { id:'2026-10-30', t:'<b>Nuevo diseño:</b> más limpio y plano, con titulares en otra letra, el bloque de color de Hoy con tu semana dibujada (los días sin nada son una línea fina, no un hueco) y el dorado reservado para cuando subes peso.' },
     { id:'2026-10-22b', t:'<b>Varios cambios:</b> 1) «Saltos de peso» en cada máquina (placa amarilla de 2,5 kg, solo de 5 en 5…): la app solo te propone subidas que puedas poner. 2) El remo ahora es con mancuerna, con su ficha y su dibujo. 3) El curl de bíceps explica bien la máquina Arm Curl. 4) En la cinta apuntas la cuesta que has puesto de verdad, y la app solo propone subir un punto cuando llevas dos cintas seguidas a la misma.' },
     { id:'2026-10-22', t:'<b>Plancha:</b> el pitido iba desfasado respecto al cronómetro. Ahora el audio se recoloca solo si se desvía más de medio segundo.' },
     { id:'2026-10-20', t:'<b>Información al día:</b> los minutos de la sesión mínima, express, viaje y casa en la Guía ahora son los mismos que ves al empezar (decían 15, 8, 10 y 20; son 25, 5, 5 y 35). La Guía ya no dice que los seis ejercicios son «de máquina y sentado» (la plancha va en el suelo) y la regla del peso incluye lo de +2,5 kg y el «al límite».' },
@@ -6148,6 +6152,21 @@ function cerrarSesion(){
    no hace falta un tipo nuevo en el historial para distinguirlas. */
 function tipoDeModo(){ return (S.modo === 'fuerza' || S.modo === 'casa') ? 'fuerza' : 'minima'; }
 
+/* La semana en el bloque de Hoy: un recuadro por día, lleno si hiciste algo.
+   Los días vacíos son neutros, no faltas. */
+function tiraSemanaHTML(){
+  const log = getLog(), hoy = new Date(), hk = dateKey(hoy);
+  const lun = new Date(hoy); lun.setDate(hoy.getDate() - ((hoy.getDay() + 6) % 7));
+  const L = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+  let h = '<div class="tira" role="img" aria-label="Tu semana">';
+  for(let i = 0; i < 7; i++){
+    const d = new Date(lun); d.setDate(lun.getDate() + i);
+    const k = dateKey(d), t = log[k];
+    const cls = (t ? (t === 'descanso' ? ' reposo' : ' hecho') : '') + (k === hk ? ' hoy' : '');
+    h += '<span class="tira-d' + cls + '"><i></i><b>' + L[i] + '</b></span>';
+  }
+  return h + '</div>';
+}
 function subidasDeHoy(){
   const hist = getPesosHist(), hoy = hoyKey();
   return EJERCICIOS_GYM.concat(EJERCICIOS_EXTRA).filter(e => !e.sinPeso).map(e => {

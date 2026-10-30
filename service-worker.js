@@ -1,10 +1,12 @@
 /* Al cambiar el contenido de la app, sube este número:
    es lo que hace saltar el aviso de "hay una versión nueva". */
-const CACHE_VERSION = 'plan-ejercicio-v54';
+const CACHE_VERSION = 'plan-ejercicio-v55';
 
 const APP_SHELL = [
   './',
   './index.html',
+  './diseno.css',
+  './fonts/bricolage-grotesque.woff2',
   './rescate.js',
   './manifest.json',
   './fonts/fraunces-600.woff2',
