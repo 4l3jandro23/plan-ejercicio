@@ -1386,6 +1386,7 @@
 <!-- ==================== HOY ==================== -->
 <div id="tab-hoy" class="tabpanel active">
   <div id="hoyHero"></div>
+  <div id="hoyMedir"></div>
 
   <!-- Cómo está el gimnasio AHORA. Lo que te paró tres meses fue el aforo, y
        hasta ahora esa información estaba enterrada en la pestaña Guía: había
@@ -1769,6 +1770,7 @@
     <div class="saved-note" id="savedNote" role="status"></div>
   </div>
 
+  <div id="cierresBox"></div>
   <div id="medidasBox" style="margin-top:28px;"></div>
 
   <h3 style="margin-top:32px;">Días de esta semana</h3>
@@ -2409,15 +2411,28 @@ function nivelCinta(){
   while(i < CINTA_NIVELES.length - 1 && hechas >= CINTA_NIVELES[i].hasta) i++;
   if(enReentrada() && i > 0) i--;
   const niv = CINTA_NIVELES[i];
-  const ya = incCintaReciente();
-  if(!(ya > 0)) return niv;
+  const ya = incCintaReciente(), yv = velCintaReciente();
+  if(!(ya > 0) && !(yv > 0)) return niv;
   /* Sube una sola variable cada vez: si el nivel pide mucha más cuesta de la
      que ya hace, se propone la misma, y un punto más solo cuando lleva al
-     menos dos cintas seguidas a esa. */
-  let inc = parseFloat(niv.inc);
-  if(inc > ya) inc = cintasAlNivel(ya) >= 2 ? Math.min(inc, ya + 1) : ya;
-  else inc = Math.max(inc, ya);
-  return inc === parseFloat(niv.inc) ? niv : Object.assign({}, niv, { inc: String(inc).replace('.', ',') });
+     menos dos cintas seguidas a esa. La velocidad espera a que la cuesta
+     llegue a la del nivel, y entonces sube de dos en dos décimas. */
+  const nInc = parseFloat(niv.inc), nVel = parseFloat(String(niv.vel).replace(',', '.'));
+  let inc = nInc, vel = nVel;
+  if(ya > 0){
+    if(inc > ya) inc = cintasAlNivel(ya) >= 2 ? Math.min(inc, ya + 1) : ya;
+    else inc = Math.max(inc, ya);
+  }
+  if(yv > 0) vel = inc >= nInc ? Math.max(yv, Math.min(nVel, Math.round((yv + 0.2) * 10) / 10)) : yv;
+  if(inc === nInc && vel === nVel) return niv;
+  return Object.assign({}, niv, { inc: String(inc).replace('.', ','), vel: vel.toFixed(1).replace('.', ',') });
+}
+/* La velocidad de la última cinta de las tres últimas semanas, si la apuntó. */
+function velCintaReciente(){
+  const todos = getEntrenos();
+  const limite = new Date(); limite.setDate(limite.getDate() - 21);
+  const f = Object.keys(todos).filter(k => todos[k] && todos[k].cinta && todos[k].vel > 0 && desdeKey(k) >= limite).sort().pop();
+  return f ? Math.min(7, todos[f].vel) : 0;
 }
 function cintasAlNivel(ya){
   const todos = getEntrenos();
@@ -2425,9 +2440,13 @@ function cintasAlNivel(ya){
   return Object.keys(todos).filter(k => todos[k] && todos[k].cinta && todos[k].inc >= ya && desdeKey(k) >= limite).length;
 }
 function incRealHTML(niv){
-  return '<label class="ses-ajuste" style="margin:0 0 10px;"><span>Cuesta que has puesto (%)</span>' +
-    '<input type="number" inputmode="decimal" min="0" max="15" step="1" value="' + (S.incReal || '') + '" placeholder="' + esc(niv.inc) + '" ' +
-    'onchange="S.incReal = Math.min(15, parseFloat(String(this.value).replace(\',\', \'.\')) || 0); guardarSesion()"></label>';
+  const num = v => parseFloat(String(v).replace(',', '.'));
+  const pon = (campo, rotulo, valor, min, max, paso, ph) =>
+    '<label class="ses-ajuste"><span>' + rotulo + '</span>' +
+    '<input type="number" inputmode="decimal" min="' + min + '" max="' + max + '" step="' + paso + '" value="' + (valor || '') + '" placeholder="' + esc(ph) + '" ' +
+    'onchange="S.' + campo + ' = Math.min(' + max + ', parseFloat(String(this.value).replace(\',\', \'.\')) || 0); guardarSesion()"></label>';
+  return '<div class="cinta-real">' + pon('incReal', 'Cuesta que has puesto (%)', S.incReal, 0, 15, 1, niv.inc) +
+    pon('velReal', 'Velocidad (km/h)', S.velReal, 0, 9, 0.1, niv.vel) + '</div>';
 }
 /* La cuesta de la última cinta de las tres últimas semanas, si la apuntó. */
 function incCintaReciente(){
@@ -3120,6 +3139,7 @@ function renderHoy(){
       (marcado ? subidasHoyHTML() : '') +
       avisosHTML(tipo, marcado) +
     '</div>';
+  hoyExtraRender(tipo, marcado);
 
   const acciones = document.getElementById('hoyActions');
   const bEmpezar  = '<button class="btn-main" onclick="empezarSesion(\'fuerza\')">' + ic('i-play') + 'Empezar la sesión · unos ' + minutosPlan('fuerza') + ' min</button>';
@@ -3872,7 +3892,7 @@ const S = {
   descansando:false, finDescanso:0, tick:null, hechos:0,
   tanda:0, tandaObjetivo:2, cintaExtra:false, finTanda:0, pausada:false, restante:0, ultimoSeg:-1,
   aguantando:false, preparando:false, finAguante:0, segAguante:0,
-  hechasPor:[], historial:[], terminada:false, valorados:{}, dureza:{}, notasEj:{}, incReal:0, ultimoCompletado:null, viendoLista:false,
+  hechasPor:[], historial:[], terminada:false, valorados:{}, dureza:{}, notasEj:{}, incReal:0, velReal:0, fin:'', avisosSes:{}, ultimoCompletado:null, viendoLista:false,
   inicio:0, reg:{}, repsSel:{}, calentando:false, finCalentar:0, subeAguante:{}, segHecho:null, marcasHoy:{}, nota:'', suave:false
 };
 const TANDA_MIN = 15;
@@ -3889,7 +3909,7 @@ function empezarSesion(modo){
   S.lista = S.lista.map(conVariante);
   S.modo = modo; S.iEj = 0; S.serie = 0; S.activa = true; S.descansando = false; S.aguantando = false; S.preparando = false; S.hechos = 0;
   S.hechasPor = S.lista.map(() => 0); S.historial = []; S.terminada = false;
-  S.valorados = {}; S.dureza = {}; S.notasEj = {}; S.incReal = 0; S.ultimoCompletado = null; S.viendoLista = false;
+  S.valorados = {}; S.dureza = {}; S.notasEj = {}; S.incReal = 0; S.velReal = 0; S.fin = ''; S.avisosSes = {}; S.ultimoCompletado = null; S.viendoLista = false;
   S.reg = {}; S.repsSel = {}; S.subeAguante = {}; S.segHecho = null; S.marcasHoy = {}; S.nota = ''; S.suave = false;
   /* La sesión empieza calentando: en el gimnasio, en la cinta; en casa, con
      los movimientos guiados. En express y viaje no: son la salida rápida y
@@ -4070,6 +4090,7 @@ function pintarSesionDentro(){
     '<p class="ses-alias">' + esc(ej.alias) + ' · ' + esc(repsTexto(ej)) + '</p>' +
     ultimaVezHTML(ej) + animSesionHTML(ej) +
     '<div class="ses-recuerda"><b>Lo único que importa:</b> ' + esc(ej.clave) + '</div>' +
+    (ej.sinPeso ? '<p class="ses-aire">Respira normal. No aguantes el aire.</p>' : '<p class="ses-aire">Suelta el aire al empujar o tirar y no lo aguantes. Deja 2 o 3 repeticiones de reserva.</p>') +
     '<ol class="ses-pasos">' + ej.pasos.map(p => '<li>' + esc(p) + '</li>').join('') + '</ol>' +
     alt + bloquePeso + varianteHTML(ej) + bloqueReps +
     '<div class="ses-series">' + series + '</div>' +
@@ -4734,9 +4755,10 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-10-30'; }
+function novedadesId(){ return '2026-10-31'; }
 function novedadesFechadas(){
   return [
+    { id:'2026-10-31', t:'<b>Más a tu medida:</b> 1) al acabar, «¿cómo has acabado?» (con energía, bien, KO) y un apunte de mareo o dolor: en Semana ves cómo acabas y qué contarle al médico. 2) Cada mes, un aviso para medirte (cintura, pecho, brazo, muslo) y comprobar que cambias. 3) Si la última vez acabaste KO, Hoy te propone la versión corta. 4) En cada ejercicio, un recordatorio para soltar el aire y dejar 2-3 repeticiones de reserva. 5) En la cinta apuntas también la velocidad, y la app parte de lo que de verdad haces (5,4 y no 6,0).' },
     { id:'2026-10-30', t:'<b>Nuevo diseño:</b> más limpio y plano, con titulares en otra letra, el bloque de color de Hoy con tu semana dibujada (los días sin nada son una línea fina, no un hueco) y el dorado reservado para cuando subes peso.' },
     { id:'2026-10-22b', t:'<b>Varios cambios:</b> 1) «Saltos de peso» en cada máquina (placa amarilla de 2,5 kg, solo de 5 en 5…): la app solo te propone subidas que puedas poner. 2) El remo ahora es con mancuerna, con su ficha y su dibujo. 3) El curl de bíceps explica bien la máquina Arm Curl. 4) En la cinta apuntas la cuesta que has puesto de verdad, y la app solo propone subir un punto cuando llevas dos cintas seguidas a la misma.' },
     { id:'2026-10-22', t:'<b>Plancha:</b> el pitido iba desfasado respecto al cronómetro. Ahora el audio se recoloca solo si se desvía más de medio segundo.' },
@@ -4850,8 +4872,24 @@ function registrarCaminata(min){
    "Me molestaba el hombro", "la prensa del fondo tiene el pin roto". Lo que
    se olvida en una semana y hace falta justo al volver. Opcional: el campo
    está en la pantalla final y si se deja vacío no pasa nada. */
+/* Cómo has acabado: opcional. Con el tiempo enseña si las sesiones largas te
+   dejan KO, y deja apuntado un mareo o una molestia para contárselo al médico. */
+function cierreHTML(){
+  const f = S.fin || '', av = S.avisosSes || {};
+  const op = (v, t) => '<button class="' + (f === v ? 'on' : '') + '" onclick="elegirFin(\'' + v + '\')">' + t + '</button>';
+  const ch = (k, t) => '<button class="' + (av[k] ? 'on' : '') + '" aria-pressed="' + !!av[k] + '" onclick="alternarAviso(\'' + k + '\')">' + t + '</button>';
+  return '<div class="ses-sensacion" style="margin-top:0;">' +
+      '<div class="ses-sensacion-ops">' + op('fresco', 'Con energía') + op('bien', 'Bien') + op('ko', 'KO') + '</div>' +
+    '<p style="margin-top:14px;">¿Algo que quieras dejar apuntado?</p>' +
+      '<div class="ses-sensacion-ops">' + ch('mareo', 'Me mareé') + ch('dolor', 'Me dolió algo') + '</div></div>';
+}
+function elegirFin(v){ S.fin = (S.fin === v) ? '' : v; guardarSesion(); pintarSesion(); }
+function alternarAviso(k){ S.avisosSes = S.avisosSes || {}; S.avisosSes[k] = !S.avisosSes[k]; guardarSesion(); pintarSesion(); }
 function notaSesionHTML(){
-  return '<label class="ses-nota"><span>¿Algo que recordar para la próxima? (opcional)</span>' +
+  const abierto = !!S.fin || Object.keys(S.avisosSes || {}).some(k => S.avisosSes[k]);
+  return ((S.tipo === 'cinta' || S.cintaExtra) ? incRealHTML(nivelCinta()) : '') +
+    '<details class="ses-alt" style="margin-top:18px;"' + (abierto ? ' open' : '') + '><summary>¿Cómo has acabado? (opcional)</summary><div class="content">' + cierreHTML() + '</div></details>' +
+    '<label class="ses-nota"><span>¿Algo que recordar para la próxima? (opcional)</span>' +
     '<textarea rows="2" maxlength="200" placeholder="Me molestaba el hombro, la prensa del fondo tiene el pin roto…" ' +
       'oninput="S.nota = this.value; guardarSesion()">' + esc(S.nota || '') + '</textarea></label>';
 }
@@ -5437,10 +5475,19 @@ function fotoEntreno(tipo){
     return o;
   }).filter(Boolean);
   const foto = { tipo: tipo, modo: S.modo, min: minutosSesion(), ej: ej, cinta: S.tipo === 'cinta' ? (S.tanda || 0) * TANDA_MIN : 0 };
-  if(foto.cinta){ const inc = S.incReal > 0 ? S.incReal : parseFloat(String(nivelCinta().inc).replace(',', '.')); if(inc > 0) foto.inc = inc; }
+  if(foto.cinta){
+    const niv = nivelCinta();
+    const inc = S.incReal > 0 ? S.incReal : parseFloat(String(niv.inc).replace(',', '.'));
+    const vel = S.velReal > 0 ? S.velReal : parseFloat(String(niv.vel).replace(',', '.'));
+    if(inc > 0) foto.inc = inc;
+    if(vel > 0) foto.vel = vel;
+  }
   const nota = String(S.nota || '').trim().slice(0, 200);
   if(nota) foto.nota = nota;
   if(S.suave) foto.suave = 1;
+  if(S.fin) foto.fin = S.fin;
+  const avs = Object.keys(S.avisosSes || {}).filter(k => S.avisosSes[k]);
+  if(avs.length) foto.av = avs;
   return foto;
 }
 function guardarEntreno(tipo){
@@ -5453,7 +5500,7 @@ function guardarEntreno(tipo){
      suman en vez de pisarse. */
   if(previo){
     if(!foto.ej.length && Array.isArray(previo.ej)) foto.ej = previo.ej;
-    if(!foto.cinta && previo.cinta){ foto.cinta = previo.cinta; if(previo.inc) foto.inc = previo.inc; }
+    if(!foto.cinta && previo.cinta){ foto.cinta = previo.cinta; if(previo.inc) foto.inc = previo.inc; if(previo.vel) foto.vel = previo.vel; }
     if(!foto.nota && previo.nota) foto.nota = previo.nota;
     if(!foto.andar && previo.andar) foto.andar = previo.andar;
     if(previo.min && previo.modo !== foto.modo) foto.min += previo.min;
@@ -6154,6 +6201,69 @@ function tipoDeModo(){ return (S.modo === 'fuerza' || S.modo === 'casa') ? 'fuer
 
 /* La semana en el bloque de Hoy: un recuadro por día, lleno si hiciste algo.
    Los días vacíos son neutros, no faltas. */
+/* Dos avisos que solo salen cuando sirven, y que se pueden dejar para luego. */
+function ultimoFin(){
+  const todos = getEntrenos();
+  const f = Object.keys(todos).filter(k => todos[k] && todos[k].fin).sort().pop();
+  if(!f) return null;
+  const dias = Math.round((desdeKey(hoyKey()) - desdeKey(f)) / 86400000);
+  return { f: f, fin: todos[f].fin, dias: dias };
+}
+function medirPendiente(){
+  if(S.activa) return false;
+  if(sesionesFuerza() + sesionesCinta() < 3) return false;
+  const m = getMedidas()[mesKey()];
+  if(m && Object.keys(m).length) return false;
+  let hasta = 0;
+  try{ hasta = parseInt(localStorage.getItem('planEjercicioMedirHasta') || '0', 10) || 0; }catch(e){}
+  return Date.now() >= hasta;
+}
+function medirPosponer(){
+  try{ localStorage.setItem('planEjercicioMedirHasta', String(Date.now() + 7 * 86400000)); }catch(e){}
+  renderHoy();
+}
+function abrirMedidas(){
+  medidasAbierto = true;
+  showTabByName('semana');
+  renderMedidas();
+  setTimeout(() => { const el = document.getElementById('medidasBox'); if(el) el.scrollIntoView({ block:'start' }); }, 60);
+}
+function hoyExtraRender(tipo, marcado){
+  const el = document.getElementById('hoyMedir');
+  if(!el) return;
+  let h = '';
+  const u = ultimoFin();
+  if(u && u.fin === 'ko' && u.dias <= 4 && !marcado && (tipo === 'fijo' || tipo === 'flex')){
+    h += '<div class="card hoy-aviso"><b>La última vez acabaste KO.</b>' +
+      '<p>Si hoy vas, prueba la versión corta: tres ejercicios y a casa. Cuenta igual.</p>' +
+      '<button class="btn-second" onclick="empezarSesion(\'minima\')">Hacer solo los 3 primeros</button></div>';
+  }
+  if(medirPendiente()){
+    h += '<div class="card hoy-aviso"><b>Toca medirte este mes.</b>' +
+      '<p>Cintura, pecho, brazo y muslo: un minuto, una vez al mes. Es la forma de ver si cambias de verdad: el espejo engaña, la cinta no.</p>' +
+      '<button class="btn-second" onclick="abrirMedidas()">Medirme ahora</button>' +
+      '<button class="btn-undo" onclick="medirPosponer()">Ahora no, recuérdamelo dentro de una semana</button></div>';
+  }
+  el.innerHTML = h;
+}
+function renderCierres(){
+  const el = document.getElementById('cierresBox');
+  if(!el) return;
+  const todos = getEntrenos();
+  const f = Object.keys(todos).sort().filter(k => todos[k] && (todos[k].fin || (todos[k].av && todos[k].av.length))).slice(-12);
+  if(!f.length){ el.innerHTML = ''; return; }
+  const conFin = f.filter(k => todos[k].fin).length;
+  const ko = f.filter(k => todos[k].fin === 'ko').length;
+  const mareo = f.filter(k => (todos[k].av || []).indexOf('mareo') !== -1).length;
+  const dolor = f.filter(k => (todos[k].av || []).indexOf('dolor') !== -1).length;
+  const l = [];
+  if(conFin) l.push('Has acabado <b>KO</b> en ' + ko + ' de ' + conFin + (conFin === 1 ? ' sesión.' : ' sesiones.') + (ko >= 2 ? ' Si se repite, prueba sesiones más cortas o más descanso entre series.' : ''));
+  if(mareo) l.push('Anotaste <b>mareo</b> en ' + mareo + ' de ' + f.length + '. Suelta el aire al esfuerzo y levántate despacio de las máquinas. Si se repite, coméntalo con tu médico.');
+  if(dolor) l.push('Anotaste <b>dolor</b> en ' + dolor + ' de ' + f.length + '. Si es punzante o en una articulación, para ese ejercicio y consúltalo.');
+  el.innerHTML = '<h3 style="margin-top:28px;">Cómo acabas las sesiones</h3><div class="card">' +
+    l.map(t => '<p style="margin:0 0 8px;">' + t + '</p>').join('') +
+    '<p style="margin:6px 0 0; font-size:var(--t-xs); color:var(--muted);">Sale de lo que apuntas al terminar cada sesión. Es solo para ti.</p></div>';
+}
 function tiraSemanaHTML(){
   const log = getLog(), hoy = new Date(), hk = dateKey(hoy);
   const lun = new Date(hoy); lun.setDate(hoy.getDate() - ((hoy.getDay() + 6) % 7));
@@ -6874,6 +6984,7 @@ function renderSemana(){
   if(hist) hist.hidden = total === 0;
 
   renderFaseResumen();
+  renderCierres();
   renderMedidas();
   renderCheckin();
   renderSemanaDias();
@@ -7664,7 +7775,7 @@ function toggleTheme(){ toggleThemeManual(); }
    y a la misma altura en vez de aparecer en Hoy. */
 const CAMPOS_SESION = ['activa','tipo','modo','iEj','serie','descansando','finDescanso','hechos',
   'tanda','tandaObjetivo','cintaExtra','finTanda','pausada','restante',
-  'aguantando','preparando','finAguante','segAguante','hechasPor','historial','terminada','valorados','dureza','notasEj','incReal','ultimoCompletado','inicio',
+  'aguantando','preparando','finAguante','segAguante','hechasPor','historial','terminada','valorados','dureza','notasEj','incReal','velReal','fin','avisosSes','ultimoCompletado','inicio',
   'reg','repsSel','calentando','finCalentar','calPaso','subeAguante','marcasHoy','nota','suave'];
 
 function guardarSesion(){
@@ -7689,7 +7800,7 @@ function restaurarSesion(){
   }
   if(!Array.isArray(S.historial)) S.historial = [];
   if(!S.valorados || typeof S.valorados !== 'object') S.valorados = {};
-  ['reg','repsSel','subeAguante','marcasHoy','dureza','notasEj'].forEach(c => { if(!S[c] || typeof S[c] !== 'object') S[c] = {}; });
+  ['reg','repsSel','subeAguante','marcasHoy','dureza','notasEj','avisosSes'].forEach(c => { if(!S[c] || typeof S[c] !== 'object') S[c] = {}; });
   S.segHecho = null;
   S.viendoLista = false; S.tick = null; S.ultimoSeg = -1; S.animAbierta = {};
   abrirSesion();
