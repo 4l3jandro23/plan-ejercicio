@@ -271,3 +271,19 @@ main{ padding-left:16px; padding-right:16px; }
 .cinta-real{ display:flex; gap:10px; margin:0 0 12px; }
 .cinta-real .ses-ajuste{ flex:1; flex-direction:column; align-items:flex-start; gap:4px; margin:0; padding:0; }
 .cinta-real .ses-ajuste input{ width:100%; }
+
+/* ---- Calidez: el bloque de Hoy lleva el color de tu acento, plano ----
+   Es el único bloque de color de la app; la semana se dibuja en blanco encima. */
+.hoy-hero{ background:var(--accent); color:#fff; border:none; }
+html.dark .hoy-hero{ background:color-mix(in srgb, var(--accent) 52%, #000); }
+.hoy-hero .hoy-fecha{ color:rgba(255,255,255,.84); }
+.hoy-hero .hoy-que{ color:#fff; }
+.hoy-hero .hoy-sub{ color:rgba(255,255,255,.92); }
+.hoy-hero .tira-d{ color:rgba(255,255,255,.78); }
+.hoy-hero .tira-d i{ background:rgba(255,255,255,.28); }
+.hoy-hero .tira-d.hecho i{ background:#fff; }
+.hoy-hero .tira-d.reposo i{ background:transparent; box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.6); }
+.hoy-hero .tira-d.hoy{ color:#fff; }
+.hoy-hero .tira-d.hoy b{ border-bottom-color:#fff; }
+.hoy-hero .hoy-hecho{ background:rgba(255,255,255,.16); border:none; color:#fff; }
+.hoy-hero .hoy-hecho span{ color:rgba(255,255,255,.9); }
