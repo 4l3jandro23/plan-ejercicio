@@ -9,8 +9,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Ejercicio">
-<meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#eef0f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a0c13" media="(prefers-color-scheme: dark)">
 <meta name="description" content="Qué toca hoy, rutina de fuerza explicada desde cero, sesión guiada paso a paso y vía de escape para los días malos. Sin rachas y sin culpa.">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -4755,9 +4755,10 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-11-01'; }
+function novedadesId(){ return '2026-11-09'; }
 function novedadesFechadas(){
   return [
+    { id:'2026-11-09', t:'<b>Nuevo diseño con más color,</b> y una cosa nueva: si llevas una semana o más sin entrenar, Hoy te propone la <b>vuelta suave</b> (tres ejercicios, sin subir pesos, sin cinta) en vez de la sesión de siempre.' },
     { id:'2026-11-01', t:'<b>Diseño más sobrio:</b> el color se queda solo para tus datos (la semana dibujada con tu acento). Todo lo demás es papel y tinta, con el botón principal casi negro, los iconos sueltos y las cifras como texto. Las etiquetas ya no van en mayúsculas pequeñas.' },
     { id:'2026-10-31', t:'<b>Más a tu medida:</b> 1) al acabar, «¿cómo has acabado?» (con energía, bien, KO) y un apunte de mareo o dolor: en Semana ves cómo acabas y qué contarle al médico. 2) Cada mes, un aviso para medirte (cintura, pecho, brazo, muslo) y comprobar que cambias. 3) Si la última vez acabaste KO, Hoy te propone la versión corta. 4) En cada ejercicio, un recordatorio para soltar el aire y dejar 2-3 repeticiones de reserva. 5) En la cinta apuntas también la velocidad, y la app parte de lo que de verdad haces (5,4 y no 6,0).' },
     { id:'2026-10-30', t:'<b>Nuevo diseño:</b> más limpio y plano, con titulares en otra letra, el bloque de color de Hoy con tu semana dibujada (los días sin nada son una línea fina, no un hueco) y el dorado reservado para cuando subes peso.' },
@@ -6229,6 +6230,18 @@ function abrirMedidas(){
   renderMedidas();
   setTimeout(() => { const el = document.getElementById('medidasBox'); if(el) el.scrollIntoView({ block:'start' }); }, 60);
 }
+function diasSinEntrenar(){
+  const log = getLog(), hoy = hoyKey();
+  const ks = Object.keys(log).filter(k => log[k] && log[k] !== 'descanso' && k <= hoy).sort();
+  if(!ks.length) return 0;
+  return Math.round((desdeKey(hoy) - desdeKey(ks[ks.length - 1])) / 86400000);
+}
+function empezarSuave(){
+  empezarSesion('minima');
+  S.suave = true;
+  guardarSesion();
+  pintarSesion();
+}
 function hoyExtraRender(tipo, marcado){
   const el = document.getElementById('hoyMedir');
   if(!el) return;
@@ -6239,7 +6252,14 @@ function hoyExtraRender(tipo, marcado){
       '<p>Si hoy vas, prueba la versión corta: tres ejercicios y a casa. Cuenta igual.</p>' +
       '<button class="btn-second" onclick="empezarSesion(\'minima\')">Hacer solo los 3 primeros</button></div>';
   }
-  if(medirPendiente()){
+  const sinDias = diasSinEntrenar();
+  const vuelta = !marcado && sinDias >= 7;
+  if(vuelta){
+    h += '<div class="card hoy-aviso"><b>Vuelves de una pausa.</b>' +
+      '<p>Llevas ' + sinDias + ' días sin entrenar y no pasa nada. Hoy, vuelta suave: los tres primeros ejercicios, los pesos de siempre sin subir nada y sin cinta. Si notas que cuesta, baja un 10-20 %. Cuenta igual.</p>' +
+      '<button class="btn-main" onclick="empezarSuave()">Empezar la vuelta suave</button></div>';
+  }
+  if(!vuelta && medirPendiente()){
     h += '<div class="card hoy-aviso"><b>Toca medirte este mes.</b>' +
       '<p>Cintura, pecho, brazo y muslo: un minuto, una vez al mes. Es la forma de ver si cambias de verdad: el espejo engaña, la cinta no.</p>' +
       '<button class="btn-second" onclick="abrirMedidas()">Medirme ahora</button>' +
