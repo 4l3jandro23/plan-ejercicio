@@ -9,8 +9,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Ejercicio">
-<meta name="theme-color" content="#eef0f8" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0a0c13" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f2f3f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#08090d" media="(prefers-color-scheme: dark)">
 <meta name="description" content="Qué toca hoy, rutina de fuerza explicada desde cero, sesión guiada paso a paso y vía de escape para los días malos. Sin rachas y sin culpa.">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -1468,6 +1468,7 @@
   </div>
 
   <div id="vistaGym">
+  <div id="misMaquinasBox"></div>
     <div id="fasesBox"></div>
     <div class="quiet">
       Las cuatro máquinas son de <b>placas con pin</b> (Technogym y Gym80, la zona de "musculación guiada"). Si no tienes claro cuáles son, están explicadas en la pestaña <b>Guía</b>.
@@ -4755,9 +4756,10 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-11-09'; }
+function novedadesId(){ return '2026-11-10'; }
 function novedadesFechadas(){
   return [
+    { id:'2026-11-10', t:'<b>Diseño nuevo, de gimnasio de noche:</b> fondo oscuro, cifras grandes y la semana como un anillo de siete tramos que se enciende con cada día que haces algo. Y dos cosas útiles: <b>Tu sesión de hoy</b> en Hoy (ejercicios, pesos y el que toca subir) y <b>Tus máquinas</b> en Rutina (tus pesos, la última vez y cómo dejas cada máquina, para mirarlo en el gimnasio).' },
     { id:'2026-11-09', t:'<b>Nuevo diseño con más color,</b> y una cosa nueva: si llevas una semana o más sin entrenar, Hoy te propone la <b>vuelta suave</b> (tres ejercicios, sin subir pesos, sin cinta) en vez de la sesión de siempre.' },
     { id:'2026-11-01', t:'<b>Diseño más sobrio:</b> el color se queda solo para tus datos (la semana dibujada con tu acento). Todo lo demás es papel y tinta, con el botón principal casi negro, los iconos sueltos y las cifras como texto. Las etiquetas ya no van en mayúsculas pequeñas.' },
     { id:'2026-10-31', t:'<b>Más a tu medida:</b> 1) al acabar, «¿cómo has acabado?» (con energía, bien, KO) y un apunte de mareo o dolor: en Semana ves cómo acabas y qué contarle al médico. 2) Cada mes, un aviso para medirte (cintura, pecho, brazo, muslo) y comprobar que cambias. 3) Si la última vez acabaste KO, Hoy te propone la versión corta. 4) En cada ejercicio, un recordatorio para soltar el aire y dejar 2-3 repeticiones de reserva. 5) En la cinta apuntas también la velocidad, y la app parte de lo que de verdad haces (5,4 y no 6,0).' },
@@ -6230,6 +6232,33 @@ function abrirMedidas(){
   renderMedidas();
   setTimeout(() => { const el = document.getElementById('medidasBox'); if(el) el.scrollIntoView({ block:'start' }); }, 60);
 }
+/* Lo que vas a hacer hoy, de un vistazo: ejercicio, peso y, si toca, la subida. */
+function previewSesionHTML(){
+  if(getLugar() !== 'gym') return '';
+  const lista = conExtras(EJERCICIOS_GYM.slice()), pesos = getPesos();
+  const filas = lista.map(e => {
+    const kg = e.sinPeso ? segundosDe(e) + ' s' : (pesos[e.id] ? String(pesos[e.id]).replace('.', ',') + ' kg' : 'sin peso');
+    const sube = (!e.sinPeso && proximoPeso(e) > 0) ? '<span class="pv-sube">→ ' + String(proximoPeso(e)).replace('.', ',') + '</span>' : '';
+    return '<div class="pv-fila"><span class="pv-n">' + esc(e.nombre) + '</span><span class="pv-kg">' + kg + sube + '</span></div>';
+  }).join('');
+  return '<div class="card hoy-aviso pv"><b>Tu sesión de hoy</b><p>' + lista.length + ' ejercicios, unos ' + minutosPlan('fuerza') + ' minutos. La flecha es el peso que toca probar.</p>' + filas + '</div>';
+}
+function renderMisMaquinas(){
+  const el = document.getElementById('misMaquinasBox');
+  if(!el) return;
+  const pesos = getPesos(), aj = getAjustesMaq();
+  const tarjetas = EJERCICIOS_GYM.concat(EJERCICIOS_EXTRA).map(e => {
+    const u = ultimoRegistro(e.id);
+    let grande;
+    if(e.sinPeso){ const g = getAguante()[e.id]; grande = '<b>' + (g >= 30 ? g : 30) + '</b><span>s</span>'; }
+    else grande = pesos[e.id] ? '<b>' + String(pesos[e.id]).replace('.', ',') + '</b><span>kg</span>' : '<b class="maq-vacio">—</b>';
+    const ultima = u ? 'Última vez: ' + esc(detalleSeries(u.x).replace(/ repeticiones/, '')) + ' · ' + u.f.slice(8) + '/' + u.f.slice(5, 7) : 'Aún sin registrar';
+    return '<div class="maq"><div class="maq-n">' + esc(e.nombre) + '</div><div class="maq-kg">' + grande + '</div><div class="maq-u">' + ultima + '</div>' +
+      (aj[e.id] ? '<div class="maq-a">' + esc(aj[e.id]) + '</div>' : '') + '</div>';
+  }).join('');
+  el.innerHTML = '<h3 style="margin:22px 0 10px;">Tus máquinas</h3><div class="maq-grid">' + tarjetas + '</div>' +
+    '<p class="lead" style="font-size:var(--t-xs); margin:8px 0 0;">Tus pesos, lo que hiciste la última vez y cómo dejas cada máquina. Para mirarlo en el gimnasio sin abrir cada ejercicio.</p>';
+}
 function diasSinEntrenar(){
   const log = getLog(), hoy = hoyKey();
   const ks = Object.keys(log).filter(k => log[k] && log[k] !== 'descanso' && k <= hoy).sort();
@@ -6254,6 +6283,7 @@ function hoyExtraRender(tipo, marcado){
   }
   const sinDias = diasSinEntrenar();
   const vuelta = !marcado && sinDias >= 7;
+  if(!marcado && (tipo === 'fijo' || tipo === 'flex') && !vuelta) h += previewSesionHTML();
   if(vuelta){
     h += '<div class="card hoy-aviso"><b>Vuelves de una pausa.</b>' +
       '<p>Llevas ' + sinDias + ' días sin entrenar y no pasa nada. Hoy, vuelta suave: los tres primeros ejercicios, los pesos de siempre sin subir nada y sin cinta. Si notas que cuesta, baja un 10-20 %. Cuenta igual.</p>' +
@@ -6285,7 +6315,28 @@ function renderCierres(){
     l.map(t => '<p style="margin:0 0 8px;">' + t + '</p>').join('') +
     '<p style="margin:6px 0 0; font-size:var(--t-xs); color:var(--muted);">Sale de lo que apuntas al terminar cada sesión. Es solo para ti.</p></div>';
 }
-function tiraSemanaHTML(){
+/* La semana como un anillo de siete tramos: se enciende el de cada día que
+   haces algo. Un tramo apagado no es una falta, es un día sin nada. */
+function anilloSemanaHTML(){
+  const log = getLog(), hoy = new Date(), hk = dateKey(hoy);
+  const lun = new Date(hoy); lun.setDate(hoy.getDate() - ((hoy.getDay() + 6) % 7));
+  const R = 50, C = 2 * Math.PI * R, seg = C / 7, trazo = seg - 13;
+  let arcos = '', n = 0;
+  for(let i = 0; i < 7; i++){
+    const d = new Date(lun); d.setDate(lun.getDate() + i);
+    const k = dateKey(d), t = log[k];
+    const hecho = !!t && t !== 'descanso';
+    if(hecho) n++;
+    const cls = 'arco' + (hecho ? ' hecho' : '') + (t === 'descanso' ? ' reposo' : '') + (k === hk ? ' hoy' : '');
+    arcos += '<circle class="' + cls + '" cx="60" cy="60" r="' + R + '" stroke-dasharray="' + trazo.toFixed(2) + ' ' + (C - trazo).toFixed(2) +
+      '" transform="rotate(' + (-90 + i * 360 / 7 + 3.5).toFixed(2) + ' 60 60)"/>';
+  }
+  return '<div class="anillo" role="img" aria-label="Esta semana: ' + n + (n === 1 ? ' día con actividad' : ' días con actividad') + '">' +
+    '<svg viewBox="0 0 120 120" aria-hidden="true">' + arcos + '</svg>' +
+    '<div class="anillo-c"><b>' + n + '</b><span>esta semana</span></div></div>';
+}
+function tiraSemanaHTML(){ return anilloSemanaHTML(); }
+function tiraSemanaHTMLViejo(){
   const log = getLog(), hoy = new Date(), hk = dateKey(hoy);
   const lun = new Date(hoy); lun.setDate(hoy.getDate() - ((hoy.getDay() + 6) % 7));
   const L = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -6910,6 +6961,7 @@ function ejercicioHTML(ej, i, marca){
 let rutinaPintada = false;
 function renderRutina(){
   renderCasaVariantes();
+  renderMisMaquinas();
   /* El contenido no depende de ningún dato guardado, así que se construye una
      vez. Repintarlo en cada sync cerraba las fichas que tuvieras abiertas. */
   if(rutinaPintada) return;
@@ -7977,6 +8029,7 @@ function showTab(name, btn){
   btn.setAttribute('aria-current', 'page');
   setLS(K.tab, name);
   rellenarMinutos();
+  if(name === 'rutina') renderMisMaquinas();
   if(name === 'volver') pintarVolver();
 }
 const TABS = ['hoy','rutina','guia','volver','semana'];
