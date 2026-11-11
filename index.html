@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>💪 Plan de Ejercicio — Alejandro</title>
+<title>Ejercicio</title>
 <!-- Ajustes para que se comporte como app al añadirla a pantalla de inicio en iPhone -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Ejercicio">
-<meta name="theme-color" content="#f2f3f7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#08090d" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e0e0d" media="(prefers-color-scheme: dark)">
 <meta name="description" content="Qué toca hoy, rutina de fuerza explicada desde cero, sesión guiada paso a paso y vía de escape para los días malos. Sin rachas y sin culpa.">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -1190,8 +1190,8 @@
 <header>
   <div class="headtop">
     <div>
-      <h1><svg class="ic-v" aria-hidden="true"><use href="#i-pesa"/></svg>Plan de Ejercicio</h1>
-      <p id="headSub">Sin culpa. Sin rachas. Solo volver.</p>
+      <div class="marca"><svg class="marca-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="8" width="4" height="8" rx="1.6" fill="var(--accent)"/><rect x="18" y="8" width="4" height="8" rx="1.6" fill="var(--accent)"/><rect x="6.6" y="5.5" width="3.2" height="13" rx="1.4" fill="currentColor"/><rect x="14.2" y="5.5" width="3.2" height="13" rx="1.4" fill="currentColor"/><rect x="9.8" y="10.8" width="4.4" height="2.4" fill="currentColor"/></svg><span>Ejercicio</span></div>
+      <p id="headSub" hidden></p>
     </div>
     <div class="headbtns">
       <button id="themeBtn" onclick="toggleTheme()" aria-label="Cambiar modo claro/oscuro"><svg class="ic-v" aria-hidden="true"><use href="#i-luna" id="themeUse"/></svg></button>
@@ -1396,6 +1396,7 @@
   <!-- Los tres botones de rescate van ANTES que el plan del día, a propósito.
        El día que el plan se cae es justo el día que abre la app, y lo primero
        que tiene que ver es la salida, no lo que no va a hacer. -->
+  <h2 class="sos-tit">Si hoy se tuerce</h2>
   <div class="sos-row" id="sosRow"></div>
 
   <div id="hoyEntreno"></div>
@@ -3124,7 +3125,7 @@ function renderHoy(){
   document.getElementById('hoyHero').innerHTML =
     '<div class="hoy-hero">' +
       '<div class="hoy-fecha">' + fechaTxt + '</div>' +
-      '<div class="hoy-que">' + titulo + '</div>' +
+      '<h1 class="hoy-que">' + titulo + '</h1>' +
       '<p class="hoy-sub">' + sub + '</p>' +
       tiraSemanaHTML() +
       (marcado ? (
@@ -4756,10 +4757,10 @@ function posponerAvisoCopia(){
    Se ha añadido mucho en poco tiempo y casi nada se ve si no se busca. Una
    tarjeta, una sola vez por tanda de novedades, que dice qué es y dónde está.
    Quien abre la app por primera vez no la ve: para él todo es nuevo. */
-function novedadesId(){ return '2026-11-10'; }
+function novedadesId(){ return '2026-11-10b'; }
 function novedadesFechadas(){
   return [
-    { id:'2026-11-10', t:'<b>Diseño nuevo, de gimnasio de noche:</b> fondo oscuro, cifras grandes y la semana como un anillo de siete tramos que se enciende con cada día que haces algo. Y dos cosas útiles: <b>Tu sesión de hoy</b> en Hoy (ejercicios, pesos y el que toca subir) y <b>Tus máquinas</b> en Rutina (tus pesos, la última vez y cómo dejas cada máquina, para mirarlo en el gimnasio).' },
+    { id:'2026-11-10b', t:'<b>Todo cambiado, también la forma:</b> Hoy empieza con un bloque de lado a lado con el titular en grande y la semana en siete casillas con su fecha. Las salidas son cuatro fichas de color bajo «Si hoy se tuerce», los botones son píldoras y la barra de abajo es una cápsula que flota.' },
     { id:'2026-11-09', t:'<b>Nuevo diseño con más color,</b> y una cosa nueva: si llevas una semana o más sin entrenar, Hoy te propone la <b>vuelta suave</b> (tres ejercicios, sin subir pesos, sin cinta) en vez de la sesión de siempre.' },
     { id:'2026-11-01', t:'<b>Diseño más sobrio:</b> el color se queda solo para tus datos (la semana dibujada con tu acento). Todo lo demás es papel y tinta, con el botón principal casi negro, los iconos sueltos y las cifras como texto. Las etiquetas ya no van en mayúsculas pequeñas.' },
     { id:'2026-10-31', t:'<b>Más a tu medida:</b> 1) al acabar, «¿cómo has acabado?» (con energía, bien, KO) y un apunte de mareo o dolor: en Semana ves cómo acabas y qué contarle al médico. 2) Cada mes, un aviso para medirte (cintura, pecho, brazo, muslo) y comprobar que cambias. 3) Si la última vez acabaste KO, Hoy te propone la versión corta. 4) En cada ejercicio, un recordatorio para soltar el aire y dejar 2-3 repeticiones de reserva. 5) En la cinta apuntas también la velocidad, y la app parte de lo que de verdad haces (5,4 y no 6,0).' },
@@ -6335,7 +6336,24 @@ function anilloSemanaHTML(){
     '<svg viewBox="0 0 120 120" aria-hidden="true">' + arcos + '</svg>' +
     '<div class="anillo-c"><b>' + n + '</b><span>esta semana</span></div></div>';
 }
-function tiraSemanaHTML(){ return anilloSemanaHTML(); }
+/* La semana en siete casillas con su fecha. Una casilla vacía no es una falta:
+   es un día sin nada, y se pinta igual de tranquila que las demás. */
+function casillasSemanaHTML(){
+  const log = getLog(), hoy = new Date(), hk = dateKey(hoy);
+  const lun = new Date(hoy); lun.setDate(hoy.getDate() - ((hoy.getDay() + 6) % 7));
+  const L = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+  let h = '', n = 0;
+  for(let i = 0; i < 7; i++){
+    const d = new Date(lun); d.setDate(lun.getDate() + i);
+    const k = dateKey(d), t = log[k];
+    const hecho = !!t && t !== 'descanso';
+    if(hecho) n++;
+    h += '<span class="sem-d' + (hecho ? ' hecho' : '') + (t === 'descanso' ? ' reposo' : '') + (k === hk ? ' hoy' : '') + '"><b>' + L[i] + '</b><i>' + d.getDate() + '</i></span>';
+  }
+  const pie = n === 0 ? 'La semana está por estrenar.' : (n === 1 ? 'Un día con actividad esta semana.' : n + ' días con actividad esta semana.');
+  return '<div class="sem7" role="img" aria-label="' + pie + '">' + h + '</div><p class="sem-pie">' + pie + '</p>';
+}
+function tiraSemanaHTML(){ return casillasSemanaHTML(); }
 function tiraSemanaHTMLViejo(){
   const log = getLog(), hoy = new Date(), hk = dateKey(hoy);
   const lun = new Date(hoy); lun.setDate(hoy.getDate() - ((hoy.getDay() + 6) % 7));

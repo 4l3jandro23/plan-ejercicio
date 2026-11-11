@@ -1,13 +1,13 @@
 {
-  "name": "Plan de Ejercicio",
+  "name": "Ejercicio",
   "short_name": "Ejercicio",
   "description": "Qué toca hoy, rutina de fuerza explicada desde cero y vía de escape para los días malos. Sin rachas y sin culpa.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f2f3f7",
-  "theme_color": "#f2f3f7",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
   "lang": "es",
   "icons": [
     {
