@@ -4070,7 +4070,8 @@ function pintarSesionDentro(){
           'placeholder="kg" onchange="fijarPeso(\'' + ej.id + '\', this.value)" aria-label="Peso en kilos">' +
         '<button onclick="cambiarPeso(\'' + ej.id + '\',1)" aria-label="Subir peso">' + ic('i-mas') + '</button>' +
       '</div>' +
-    '</div>' + ajusteMaquinaHTML(ej) + notaEjAnteriorHTML(ej) + sugerenciaPeso(ej) + estancamientoHTML(ej);
+    '</div>';
+  const extrasPeso = ej.sinPeso ? '' : ajusteMaquinaHTML(ej) + notaEjAnteriorHTML(ej) + sugerenciaPeso(ej) + estancamientoHTML(ej);
 
   const bloqueReps = segundosDe(ej) ? '' :
     '<div class="ses-reps">' +
@@ -4090,12 +4091,16 @@ function pintarSesionDentro(){
   body.innerHTML =
     '<h2 class="ses-nombre">' + esc(ej.nombre) + '</h2>' +
     '<p class="ses-alias">' + esc(ej.alias) + ' · ' + esc(repsTexto(ej)) + '</p>' +
-    ultimaVezHTML(ej) + animSesionHTML(ej) +
     '<div class="ses-recuerda"><b>Lo único que importa:</b> ' + esc(ej.clave) + '</div>' +
-    (ej.sinPeso ? '<p class="ses-aire">Respira normal. No aguantes el aire.</p>' : '<p class="ses-aire">Suelta el aire al empujar o tirar y no lo aguantes. Deja 2 o 3 repeticiones de reserva.</p>') +
-    '<ol class="ses-pasos">' + ej.pasos.map(p => '<li>' + esc(p) + '</li>').join('') + '</ol>' +
-    alt + bloquePeso + varianteHTML(ej) + bloqueReps +
+    /* Entrenando, lo que se toca va arriba: series, peso y repeticiones.
+       Cómo se hace va plegado; abierto solo mientras no hay peso apuntado. */
     '<div class="ses-series">' + series + '</div>' +
+    bloquePeso + bloqueReps + ultimaVezHTML(ej) + extrasPeso + varianteHTML(ej) +
+    '<details class="ses-como"' + (pesoGuardado || (S.reg[S.iEj] || []).length ? '' : ' open') + '><summary>Cómo se hace</summary>' +
+      animSesionHTML(ej) +
+      (ej.sinPeso ? '<p class="ses-aire">Respira normal. No aguantes el aire.</p>' : '<p class="ses-aire">Suelta el aire al empujar o tirar y no lo aguantes. Deja 2 o 3 repeticiones de reserva.</p>') +
+      '<ol class="ses-pasos">' + ej.pasos.map(p => '<li>' + esc(p) + '</li>').join('') + '</ol>' +
+    '</details>' + alt +
     '<div class="ses-foot">' +
       (segundosDe(ej)
         ? '<button class="btn-main" onclick="empezarAguante()">' + ic('i-reloj') + 'Empezar los ' + segundosDe(ej) + ' segundos</button>'
