@@ -1569,11 +1569,11 @@
   </div>
 
   <h2><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-reloj"/></svg></span>Cuándo está vacío</h2>
-  <p class="lead">Tu gimnasio ahora es <b>Anytime Fitness</b> y abre <b>las 24 horas, todos los días</b>, con tu llave de socio. Lo más lleno suelen ser las tardes entre semana, y en los días de teletrabajo no puedes ir a mediodía. Con eso, estos son tus huecos, de más a menos realista:</p>
+  <p class="lead">Tu gimnasio ahora es <b>Anytime Fitness</b> y abre <b>las 24 horas, todos los días</b>, con tu llave de socio. En Les Corts lo más lleno son las tardes de lunes a jueves (16:00-20:00), y lo más vacío las noches y las tardes de fin de semana. En los días de teletrabajo no puedes ir a mediodía. Con eso, estos son tus huecos, de más a menos realista:</p>
   <div id="franjasBox"></div>
   <div class="tip">
     <b>Abierto 24 horas no quiere decir que siempre haya alguien.</b> Muchas horas estarás sin personal. Los primeros días, si vas a querer preguntar algo, pregunta en el club a qué horas hay alguien y ve entonces.<br><br>
-    <b>Ojo:</b> estas horas son lo normal en cualquier gimnasio, no la gráfica de tu Anytime. Mira la de Les Corts en Google Maps («Horas punta») y fíate de ella antes que de esto.
+    <b>Cuánta gente hay ahora mismo:</b> en la app de Anytime, «Medidor de ocupación». Las franjas de aquí salen de ahí (las medias de Les Corts), pero el dato en directo manda.
   </div>
 
   <h2><span class="h2-badge"><svg class="ic-v" aria-hidden="true"><use href="#i-maquina"/></svg></span>Tus dos gimnasios</h2>
@@ -2813,7 +2813,7 @@ function abrirAndar(apilar){
 
 /* ===== 5. FRANJAS HORARIAS ===== */
 function tarjetasFranjas(){
-  const nombre = { vacio:'Vacío', bien:'Tranquilo', lleno:'A reventar' };
+  const nombre = { vacio:'Vacío', bien:'Hay sitio', lleno:'Lo más lleno' };
   return FRANJAS.map(f =>
     '<div class="franja">' +
       '<div class="franja-top"><b>' + esc(f.cuando) + '</b>' +
@@ -2827,9 +2827,9 @@ function tarjetasFranjas(){
 function abrirHoras(){
   abrirSheet('i-reloj', 'Horas',
     cabSheet('Cuándo está vacío',
-      'Tu Anytime abre <b>las 24 horas, todos los días</b>. El problema no es el horario: es elegir bien a qué hora vas. Estas franjas son lo normal en cualquier gimnasio; la gráfica de Google de Les Corts manda sobre ellas.') +
+      'Tu Anytime abre <b>las 24 horas, todos los días</b>. El problema no es el horario: es elegir bien a qué hora vas. Estas franjas son las medias de Les Corts que da la app de Anytime; lo que hay ahora mismo lo ves en su «Medidor de ocupación».') +
     tarjetasFranjas() +
-    '<div class="veredicto"><b>Si solo vas a cambiar una cosa</b><br>Huye de las 18:00-21:30 entre semana. Con tu horario, los ratos flojos son antes de trabajar, a partir de las 22:30 y el fin de semana por la mañana.</div>' +    (hayComparador() ? '<button class="btn-second" style="margin-top:10px;" onclick="abrirComparar(true)">' + ic('i-gente') + '¿A cuál voy ahora?</button>' : '') +
+    '<div class="veredicto"><b>Si solo vas a cambiar una cosa</b><br>Huye de las 16:00-20:00 de lunes a jueves. Lo más vacío: entre semana a partir de las 21:30, el viernes desde las 20:00 y el fin de semana por la tarde.</div>' +    (hayComparador() ? '<button class="btn-second" style="margin-top:10px;" onclick="abrirComparar(true)">' + ic('i-gente') + '¿A cuál voy ahora?</button>' : '') +
     '');
 }
 
@@ -2860,12 +2860,17 @@ function hhmm(min){
 /* ===== LOS DOS GIMNASIOS, A ESTA HORA =====
    Puede ir a dos Anytime: Les Corts (el habitual) y Mataró. La pregunta que se
    hace antes de coger la bolsa no es "cuál es mejor gimnasio", es "a cuál voy
-   ahora". Sale de las curvas de GIMNASIOS, leídas de Google Maps. */
+   ahora". Sale de GIMNASIOS[].personas, leídas del medidor de la app de Anytime. */
 function curvaGym(g, d){
   const dia = (d.getDay() + 6) % 7;
-  if(dia >= 5) return g.curvas.finde || null;
-  if(dia === 4) return g.curvas.viernes || null;
-  return g.curvas.semana || null;
+  /* {hora: % respecto a la hora más llena de la semana de ese gimnasio} */
+  if(!g.personas || !g.personas[dia]) return null;
+  const max = Math.max.apply(null, [].concat.apply([], g.personas)) || 1;
+  const hoy = g.personas[dia], man = g.personas[(dia + 1) % 7] || hoy;
+  const c = {};
+  hoy.forEach((p, h) => { c[h] = Math.round(p / max * 100); });
+  c[24] = Math.round(man[0] / max * 100);
+  return c;
 }
 /* % respecto a la hora más llena de ESE gimnasio, interpolando entre horas. */
 function pctGym(g, d){
@@ -2892,7 +2897,7 @@ function proximaBajada(g, d){
 function hayComparador(){
   /* Sin la gráfica de al menos dos, comparar sería inventárselo. */
   return typeof GIMNASIOS !== 'undefined' && Array.isArray(GIMNASIOS) &&
-    GIMNASIOS.filter(g => g.curvas && (g.curvas.semana || g.curvas.viernes || g.curvas.finde)).length > 1;
+    GIMNASIOS.filter(g => Array.isArray(g.personas)).length > 1;
 }
 function abrirComparar(apilar){
   if(!hayComparador()) return;
@@ -3013,6 +3018,15 @@ function renderAforo(){
             'los planes de "está lleno" están hechos para esto.';
     boton = '<button class="btn-second" style="margin-top:10px;" onclick="abrirLleno()">' +
             ic('i-gente') + 'Ver los planes para gimnasio lleno</button>';
+  }
+
+  /* La media de gente de Les Corts a esta hora, y dónde mirar la de ahora. */
+  const base = (typeof GIMNASIOS !== 'undefined' && Array.isArray(GIMNASIOS)) ? GIMNASIOS.find(g => Array.isArray(g.personas)) : null;
+  if(base){
+    const ah = new Date();
+    const n = base.personas[(ah.getDay() + 6) % 7][ah.getHours()];
+    texto += ' <br><br>En ' + esc(base.nombre) + ', a esta hora suele haber unas <b>' + n + (n === 1 ? ' persona' : ' personas') + '</b> (en la hora más llena de la semana, unas 24). ' +
+             'Las de ahora mismo: app de Anytime › Medidor de ocupación.';
   }
 
   if(!a.cerrado && hayComparador()){
@@ -4758,6 +4772,7 @@ function posponerAvisoCopia(){
 function novedadesId(){ return '2026-11-10b'; }
 function novedadesFechadas(){
   return [
+    { id:'2026-11-24b', t:'<b>Horas de Les Corts con datos reales:</b> las franjas y el aviso de Hoy salen ahora del medidor de ocupación de la app de Anytime. Hoy te dice cuánta gente suele haber a esa hora. Lo más vacío: noches entre semana, viernes por la noche y tardes de fin de semana.' },
     { id:'2026-11-24', t:'<b>Gimnasio nuevo: Anytime Fitness.</b> La app ya sabe que es 24 horas y que vas sobre todo al de Les Corts y a veces al de Mataró (Guía › Tus dos gimnasios). Ojo: tus pesos apuntados son de las máquinas de antes, así que las primeras sesiones empieza con menos.' },
     { id:'2026-11-10b', t:'<b>Todo cambiado, también la forma:</b> Hoy empieza con un bloque de lado a lado con el titular en grande y la semana en siete casillas con su fecha. Las salidas son cuatro fichas de color bajo «Si hoy se tuerce», los botones son píldoras y la barra de abajo es una cápsula que flota.' },
     { id:'2026-11-09', t:'<b>Nuevo diseño con más color,</b> y una cosa nueva: si llevas una semana o más sin entrenar, Hoy te propone la <b>vuelta suave</b> (tres ejercicios, sin subir pesos, sin cinta) en vez de la sesión de siempre.' },

@@ -236,32 +236,36 @@ const ANDAR = [
    Desde el 24-11-2026 va a Anytime Fitness: sobre todo al de Les Corts y,
    cuando está en Mataró, al de al lado del Parc Central. Los dos abren
    24 horas, todos los días, con la llave de socio.
-   De estos dos aún NO hay gráfica de horas punta de Google Maps: las franjas
-   de abajo son el patrón normal de cualquier gimnasio de ciudad (tardes
-   entre semana llenas, primera hora y noche flojas), no datos suyos. Cuando
-   se lea la gráfica de Les Corts, se corrigen aquí y se rellenan las curvas
-   de GIMNASIOS. No puede ir a mediodía en días de teletrabajo.
+   Las franjas salen del «Medidor de ocupación» de la app de Anytime para
+   Les Corts (capturas del 24-11-2026): personas de media por hora. Están en
+   GIMNASIOS[0].personas; si cambian, cambiar las dos cosas.
+   No puede ir a mediodía en días de teletrabajo.
    ========================================================================== */
 /* `dias` va en índices de lunes(0) a domingo(6), y `desde`/`hasta` en minutos
    desde medianoche. Está así para que la pestaña Hoy pueda decir a qué hora
    está lleno AHORA MISMO sin tener que interpretar el texto de `cuando`.
-   Una sola fuente: si cambia un horario, cambia en los dos sitios. */
+   Dentro de un mismo día las franjas no se pisan. */
 const FRANJAS = [
-  { cuando:'Entre semana, 6:00 - 8:00', corto:'Antes de trabajar suele estar vacío', nivel:'vacio', dias:[0,1,2,3,4], desde:360, hasta:480, quePasa:'En casi cualquier gimnasio es la hora más floja del día. De tu Anytime todavía no tengo la gráfica de Google: el primer día que vayas a esta hora, fíjate.', veredicto:'El mejor hueco que tienes. Un extra, no la base: con tu sueño irregular no lo vas a sostener todas las semanas, pero un día suelto que te despiertes pronto, es oro.' },
-  { cuando:'Entre semana, 18:00 - 21:30', corto:'Por la tarde, lo más lleno', nivel:'lleno', dias:[0,1,2,3,4], desde:1080, hasta:1290, quePasa:'Es la hora a la que va todo el mundo al salir de trabajar, en cualquier gimnasio. Los Anytime suelen ser más pequeños que los de antes, así que pocas personas ya se notan.', veredicto:'Si vas a esta hora, ve sabiendo que habrá gente y lleva abierto el plan de «está lleno». No es cabezonería tuya: es la hora.' },
-  { cuando:'Lunes a jueves, 22:30 - 1:00', corto:'Después de cenar ya ha bajado', nivel:'bien', dias:[0,1,2,3], desde:1350, hasta:1500, quePasa:'Lo normal es que a partir de las 22:30 se vacíe. Y como es 24 horas, no hay prisa por la hora de cierre.', veredicto:'Funciona, pero entrenar tan tarde te descoloca el sueño, y el sueño ya lo tienes movido. Como excepción, no como plan.' },
-  { cuando:'Viernes, 21:30 - 1:00', corto:'El viernes se vacía antes', nivel:'bien', dias:[4], desde:1290, hasta:1500, quePasa:'El viernes por la noche la gente tiene otros planes: suele vaciarse antes que el resto de días.', veredicto:'Si el viernes te da igual entrenar tarde, este rato es bastante mejor que la salida del trabajo.' },
-  { cuando:'Cualquier día, 1:00 - 6:00', corto:'De madrugada, abierto y vacío', nivel:'vacio', dias:[0,1,2,3,4,5,6], desde:60, hasta:360, quePasa:'Abre con tu llave las 24 horas. A estas horas lo normal es que estés solo o casi.', veredicto:'Está ahí si un día te desvelas y te apetece, pero no lo conviertas en plan: el sueño manda más que el entreno.' },
-  { cuando:'Sábado o domingo, 8:00 - 11:00', corto:'Por la mañana, lo más tranquilo', nivel:'bien', dias:[5,6], desde:480, hasta:660, quePasa:'En casi todos los gimnasios las mañanas de fin de semana son tranquilas, y el mediodía es lo más lleno.', veredicto:'Lo mejor del fin de semana. Además es cuando más fácil te pilla ir a Mataró.' }
+  { cuando:'Lunes a jueves, 7:00 - 9:00', corto:'Antes de trabajar hay sitio', nivel:'bien', dias:[0,1,2,3], desde:420, hasta:540, quePasa:'Unas 10-16 personas. Ojo con las 6:00: hay un pico de madrugadores de casi 20.', veredicto:'Un buen extra si un día te despiertas pronto. Con tu sueño irregular, no la base del plan.' },
+  { cuando:'Lunes a jueves, 16:00 - 20:00', corto:'Por la tarde, lo más lleno', nivel:'lleno', dias:[0,1,2,3], desde:960, hasta:1200, quePasa:'La hora más llena de la semana: unas 22-24 personas de lunes a miércoles, unas 17-18 el jueves.', veredicto:'Si vas a esta hora, lleva abierto el plan de «está lleno». No es cabezonería tuya: es la hora.' },
+  { cuando:'Lunes a jueves, 20:00 - 21:30', corto:'Va bajando', nivel:'bien', dias:[0,1,2,3], desde:1200, hasta:1290, quePasa:'Baja de unas 18 personas a unas 10.', veredicto:'Si sales tarde de trabajar, es mejor esperar a esta hora que ir a las 19:00.' },
+  { cuando:'Lunes a jueves, 21:30 - 1:00', corto:'Por la noche, casi vacío', nivel:'vacio', dias:[0,1,2,3], desde:1290, hasta:1500, quePasa:'Menos de 10 personas, y a partir de las 22:00 unas 5.', veredicto:'El hueco vacío de entre semana. Pega con tu horario; solo vigila que no te robe sueño.' },
+  { cuando:'Viernes, 16:00 - 20:00', corto:'El viernes por la tarde, hay sitio', nivel:'bien', dias:[4], desde:960, hasta:1200, quePasa:'Unas 12-16 personas: bastante menos que de lunes a miércoles.', veredicto:'La mejor tarde de entre semana para ir al salir de trabajar.' },
+  { cuando:'Viernes, 20:00 - 1:00', corto:'El viernes por la noche, vacío', nivel:'vacio', dias:[4], desde:1200, hasta:1500, quePasa:'Menos de 10 personas, y a partir de las 21:00 unas 3-5.', veredicto:'Casi para ti solo, si el viernes te da igual entrenar tarde.' },
+  { cuando:'Sábado o domingo, 9:00 - 12:00', corto:'La mañana es lo más lleno del finde', nivel:'bien', dias:[5,6], desde:540, hasta:720, quePasa:'Unas 11-14 personas. Es la hora punta del fin de semana, y aun así hay menos gente que un martes a las 19:00.', veredicto:'Se puede ir sin problema, pero la tarde está más vacía.' },
+  { cuando:'Sábado o domingo, 13:00 - 1:00', corto:'Por la tarde, casi vacío', nivel:'vacio', dias:[5,6], desde:780, hasta:1500, quePasa:'Unas 5-10 personas toda la tarde, y menos por la noche.', veredicto:'El mejor rato de la semana entera. Y si estás en Mataró, también es cuando más fácil te pilla ir allí.' },
+  { cuando:'Cualquier día, 1:00 - 5:00', corto:'De madrugada, vacío', nivel:'vacio', dias:[0,1,2,3,4,5,6], desde:60, hasta:300, quePasa:'Abre con tu llave las 24 horas. A estas horas hay 0-2 personas.', veredicto:'Está ahí si un día te desvelas, pero no lo conviertas en plan: el sueño manda más que el entreno.' }
 ];
 
 /* ==========================================================================
    5 bis. TUS DOS GIMNASIOS
-   Datos de las fichas oficiales de Anytime Fitness (24-11-2026). Las curvas
-   son las gráficas de "horas punta" de Google Maps, en % respecto a la hora
-   MÁS llena de ESE gimnasio: {hora: %}. Aún no están leídas, por eso van a
-   null y el botón "¿A cuál voy ahora?" no sale. Cuando se lean, se rellenan
-   y el botón aparece solo.
+   Direcciones de las fichas oficiales de Anytime Fitness (24-11-2026).
+   `personas`: media de personas por hora (0-23), de lunes a domingo, leída a
+   ojo de las barras del «Medidor de ocupación» de la app de Anytime. Cada día
+   tiene un dato exacto (18-19 h) y el resto se saca de la altura de las barras,
+   así que es orientativo (±2 personas). El martes no salía su media: se usa la
+   forma del miércoles, que es casi igual.
+   Mataró aún sin datos: con uno solo, el botón "¿A cuál voy ahora?" no sale.
    ========================================================================== */
 const GIMNASIOS = [
   {
@@ -269,14 +273,22 @@ const GIMNASIOS = [
     nombre:'Les Corts',
     direccion:'Carrer del Montnegre, 8-10',
     detalle:'El tuyo, el de casi siempre.',
-    curvas:{ semana:null, viernes:null, finde:null }
+    personas:[
+      /* lun */ [1,0,0,1,5,11,19,14,14,22,22,17,17,22,17,22,23,24,24,24,19,12,8,4],
+      /* mar */ [2,1,1,2,5,12,20,16,13,20,19,13,17,21,17,19,22,22,22,22,16,10,6,3],
+      /* mié */ [2,1,1,2,5,12,20,16,13,20,19,13,17,21,17,19,22,22,22,22,16,10,6,3],
+      /* jue */ [2,1,1,2,4,9,14,10,12,16,16,11,15,15,13,15,16,17,18,18,12,9,5,2],
+      /* vie */ [2,1,1,2,4,7,11,11,11,15,13,13,12,11,10,11,13,16,12,13,8,5,3,2],
+      /* sáb */ [2,1,1,1,2,3,7,10,11,13,14,11,8,7,7,8,9,9,6,7,3,2,2,2],
+      /* dom */ [1,1,1,1,2,3,6,8,10,11,11,11,8,5,5,7,7,10,10,8,7,2,2,2]
+    ]
   },
   {
     id:'mataro',
     nombre:'Mataró',
     direccion:'Camí de la Geganta, 7',
     detalle:'El de al lado del Parc Central, para cuando estés en Mataró.',
-    curvas:{ semana:null, viernes:null, finde:null }
+    personas:null
   }
 ];
 
